@@ -1,19 +1,22 @@
 # QualiTrace
 
 <p align="center">
-  <img src="docs/assets/logo-qualitrace.png" alt="QualiTrace Logo" width="200" height="206">
-  <br>
-  <b>Pilotage de la conformité et traçabilité des flux industriels.</b>
+    <img src="docs/assets/logo-qualitrace.png" alt="QualiTrace Logo" width="200" height="206">
+    <br>
+    <b>Pilotage de la conformité et traçabilité des flux industriels.</b>
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Java-21-orange?style=for-the-badge&logo=openjdk" alt="Java 21">
-  <img src="https://img.shields.io/badge/Spring_Boot-4.0_M1-brightgreen?style=for-the-badge&logo=spring" alt="Spring Boot 4">
-  <img src="https://img.shields.io/badge/PostgreSQL-16-blue?style=for-the-badge&logo=postgresql" alt="PostgreSQL">
-  <img src="https://img.shields.io/badge/License-Apache_2.0-blue.svg?style=for-the-badge" alt="License">
-  <br>
-  <img src="https://img.shields.io/badge/Status-In_Development-yellow?style=flat-square" alt="Status">
-  <img src="https://img.shields.io/badge/Build-Passing-success?style=flat-square" alt="Build">
+    <img src="https://img.shields.io/badge/Java-F29011?style=for-the-badge&logo=openjdk&logoColor=white" alt="Java 21">
+    <img src="https://img.shields.io/badge/Spring_Boot-6CB52D?style=for-the-badge&logo=springboot&logoColor=white" alt="Spring Boot 4">
+    <img src="https://img.shields.io/badge/PostgreSQL-336791?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL">
+    <img src="https://img.shields.io/badge/Docker-2560FF?style=for-the-badge&logo=docker&logoColor=white" alt="Docker">
+    <img src="https://img.shields.io/badge/Redis-FF4438?style=for-the-badge&logo=redis&logoColor=white" alt="Redis">
+    <img src="https://img.shields.io/badge/VueJS-3FB984?style=for-the-badge&logo=vuedotjs&logoColor=white" alt="VueJS">
+    <br>
+    <img src="https://img.shields.io/github/actions/workflow/status/neeftarah/qualitrace/build.yml?label=Build" alt="Build">
+    <img src="https://img.shields.io/badge/Status-In_Development-yellow" alt="Status">
+    <img src="https://img.shields.io/badge/License-Apache_2.0-blue.svg" alt="License">
 </p>
 
 ---
