@@ -1,0 +1,32 @@
+spring:
+  application:
+    name: QualiTrace
+
+  # Datasource configuration
+  datasource:
+      url: jdbc:postgresql://localhost:5432/qualitrace
+      username: root
+      password: P@ssw0rd
+      driver-class-name: org.postgresql.Driver
+
+  # JPA configuration
+  jpa:
+      hibernate:
+          ddl-auto: update # 'update' pour le dev, 'validate' pour la prod
+      show-sql: true # Pour voir les requêtes SQL dans la console (comme la barre de debug !)
+      properties:
+          hibernate:
+              format_sql: true
+
+  # Configuration Redis
+  data:
+      redis:
+          host: localhost
+          port: 6379
+
+# Configuration Actuator pour le debug
+management:
+    endpoints:
+        web:
+            exposure:
+                include: "health,info,metrics,beans"
