@@ -1,6 +1,6 @@
 plugins {
 	java
-	id("org.springframework.boot") version "4.0.2"
+	id("org.springframework.boot") version "4.0.5"
 	id("io.spring.dependency-management") version "1.1.7"
 }
 
@@ -10,7 +10,7 @@ description = "Pilotage de la conformité et traçabilité des flux industriels.
 
 java {
 	toolchain {
-		languageVersion = JavaLanguageVersion.of(25)
+            languageVersion = JavaLanguageVersion.of(25)
 	}
 }
 
@@ -38,7 +38,7 @@ dependencies {
 	runtimeOnly("org.postgresql:postgresql")
 
 	// Documentation (Swagger UI)
-//	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.4")
+	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.3")
 
 	// Outils
 	developmentOnly("org.springframework.boot:spring-boot-devtools")
