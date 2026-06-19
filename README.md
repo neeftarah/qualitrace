@@ -66,3 +66,7 @@ docker-compose up -d
 # Lancer l'application
 ./gradlew bootRun
 ```
+
+### Accéder à l'application
+- **Frontend :** [http://localhost:8080](http://localhost:8080)
+- **API Swagger :** [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
