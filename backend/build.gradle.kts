@@ -36,6 +36,8 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 	implementation("org.springframework.boot:spring-boot-starter-data-redis")
 	runtimeOnly("org.postgresql:postgresql")
+    implementation("org.flywaydb:flyway-core:12.8.1")
+    implementation("org.flywaydb:flyway-core:12.8.1")
 
 	// Documentation (Swagger UI)
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.3")
