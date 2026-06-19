@@ -35,10 +35,11 @@ Le projet vise à garantir l'intégrité des données (**ALCOA+**) et la traçab
 ---
 
 ## 🛠 Stack Technique
-* **Backend :** Java 21, Spring Boot 4.0, Spring Data JPA.
+* **Backend :** Java 25, Spring Boot 4.0, Spring Data JPA.
 * **API :** RESTful avec support **HATEOAS** pour une navigation hypermédia.
 * **Documentation :** OpenAPI / Swagger UI.
 * **Base de données :** PostgreSQL (Persistence) & Redis (Cache/Session).
+* **Frontend :** Angular 21, PrimeNG avec template de base Sakai.
 * **Build Tool :** Gradle (Kotlin DSL).
 * **DevOps :** Docker & Docker Compose.
 
@@ -48,7 +49,7 @@ Le projet vise à garantir l'intégrité des données (**ALCOA+**) et la traçab
 
 ### Pré-requis
 * Docker & Docker Compose
-* JDK 21 (pour le développement local)
+* JDK 25 (pour le développement local)
 
 
 ### Récupération du projet
