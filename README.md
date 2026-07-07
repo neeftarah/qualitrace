@@ -55,17 +55,23 @@ Le projet vise à garantir l'intégrité des données (**ALCOA+**) et la traçab
 ### Récupération du projet
 
 ```bash
-# Cloner le projet
 git clone https://github.com/neeftarah/qualitrace.git
 ```
 
-### Lancement avec Docker
-```bash
-# Lancer les services (Base de données, etc.)
-docker-compose up -d
+### Lancement des services Docker (Base de données, etc.)
 
-# Lancer l'application
-./gradlew bootRun
+```bash
+docker-compose up -d
+```
+
+### Build du projet avec live reload (Spring Boot DevTools)
+```bash
+.\backend\gradlew.bat -p backend build --continuous -x test
+```
+
+### Lancement de l'application
+```bash
+.\backend\gradlew.bat -p backend bootRun
 ```
 
 ### Accéder à l'application

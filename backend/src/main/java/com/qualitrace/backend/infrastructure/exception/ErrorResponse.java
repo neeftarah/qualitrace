@@ -1,4 +1,4 @@
-package com.qualitrace.backend.exception;
+package com.qualitrace.backend.infrastructure.exception;
 
 import java.time.LocalDateTime;
 

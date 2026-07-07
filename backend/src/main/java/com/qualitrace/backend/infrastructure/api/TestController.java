@@ -1,4 +1,4 @@
-package com.qualitrace.backend.controller;
+package com.qualitrace.backend.infrastructure.api;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;

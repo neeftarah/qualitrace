@@ -1,4 +1,4 @@
-package com.qualitrace.backend.config;
+package com.qualitrace.backend.infrastructure.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
