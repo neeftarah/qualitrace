@@ -1,4 +1,4 @@
-package com.qualitrace.backend.exception;
+package com.qualitrace.backend.infrastructure.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
