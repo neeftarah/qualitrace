@@ -26,7 +26,6 @@ repositories {
 
 dependencies {
 	// Core & Web
-	implementation("org.springframework.boot:spring-boot-starter-actuator")
 	implementation("org.springframework.boot:spring-boot-starter-hateoas")
 	implementation("org.springframework.boot:spring-boot-starter-security")
 	implementation("org.springframework.boot:spring-boot-starter-validation")
@@ -45,6 +44,7 @@ dependencies {
 
 	// Outils
 	developmentOnly("org.springframework.boot:spring-boot-devtools")
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
 
 	// Tests (Spring Boot centralise presque tout dans 'starter-test')
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
@@ -58,4 +58,10 @@ dependencies {
 
 tasks.withType<Test> {
 	useJUnitPlatform()
+    jvmArgs("-XX:+EnableDynamicAgentLoading", "-Xshare:off")
+}
+tasks.processResources {
+    filesMatching("application.yml") {
+        expand(project.properties)
+    }
 }

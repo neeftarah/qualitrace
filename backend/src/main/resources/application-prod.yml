@@ -1,0 +1,5 @@
+springdoc:
+  api-docs:
+    enabled: true # false pour désactiver la génération de la documentation OpenAPI
+  swagger-ui:
+    enabled: true # false pour désactiver l'interface Swagger UI

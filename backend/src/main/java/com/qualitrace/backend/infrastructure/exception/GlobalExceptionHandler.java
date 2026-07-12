@@ -1,12 +1,15 @@
 package com.qualitrace.backend.infrastructure.exception;
 
+import com.qualitrace.backend.domain.exception.DomainNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
+import org.hibernate.exception.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ProblemDetail;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.*;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -19,6 +22,7 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @RestControllerAdvice
@@ -26,26 +30,76 @@ public class GlobalExceptionHandler {
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     // Gère spécifiquement les 404 (si configuré)
-    @ExceptionHandler({NoHandlerFoundException.class, NoResourceFoundException.class, NoSuchElementException.class})
+    @ExceptionHandler({
+            NoHandlerFoundException.class,
+            NoResourceFoundException.class,
+            NoSuchElementException.class,
+            DomainNotFoundException.class
+    })
     public ProblemDetail handleNotFound(Exception ex, HttpServletRequest request) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
         problem.setType(URI.create("urn:qualitrace:errors:ressource-not-found"));
         problem.setTitle("Resource Not Found");
-        problem.setType(URI.create("https://api.qualitrace.com/errors/not-found"));
         problem.setInstance(URI.create(request.getRequestURI()));
         problem.setProperty("timestamp", Instant.now());
 
         return problem;
     }
 
-    @ExceptionHandler(IllegalStateException.class)
-    public ProblemDetail handleInvalidTransition(IllegalStateException ex, HttpServletRequest request) {
-        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
-        problem.setType(URI.create("urn:qualitrace:errors:invalid-transition"));
-        problem.setTitle("Invalid State Transition");
-        problem.setType(URI.create("https://api.qualitrace.com/errors/invalid-transition"));
+    // Gère les 405 - Méthode non autorisée
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<ProblemDetail> handleMethodNotSupported(HttpRequestMethodNotSupportedException ex, HttpServletRequest request) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.METHOD_NOT_ALLOWED,
+                "The %s method is not supported for this resource".formatted(ex.getMethod())
+        );
+        problem.setTitle("HTTP Method Not Allowed");
+        problem.setType(URI.create("urn:qualitrace:errors:http-method-not-allowed"));
         problem.setInstance(URI.create(request.getRequestURI()));
         problem.setProperty("timestamp", Instant.now());
+
+        Set<HttpMethod> supportedMethods = ex.getSupportedHttpMethods();
+        if (supportedMethods != null) {
+            problem.setProperty("allowedMethods", supportedMethods.stream().map(HttpMethod::name).toList());
+        }
+
+        HttpHeaders headers = new HttpHeaders();
+        if (supportedMethods != null) {
+            headers.setAllow(supportedMethods);
+        }
+
+        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
+                .headers(headers)
+                .body(problem);
+    }
+
+    @ExceptionHandler(IllegalStateException.class)
+    public ProblemDetail handleIllegalState(IllegalStateException ex, HttpServletRequest request) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+        problem.setType(URI.create("urn:qualitrace:errors:illegal-state"));
+        problem.setTitle("Illegal State");
+        problem.setInstance(URI.create(request.getRequestURI()));
+        problem.setProperty("timestamp", Instant.now());
+
+        return problem;
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ProblemDetail handleDataIntegrityViolation(DataIntegrityViolationException ex, HttpServletRequest request) {
+        String constraintName = (ex.getCause() instanceof ConstraintViolationException cve)
+                ? cve.getConstraintName()
+                : "unknown";
+
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.CONFLICT,
+                "Une ressource avec le même identifiant unique (%s) existe déjà !".formatted(constraintName)
+        );
+        problem.setType(URI.create("urn:qualitrace:errors:duplicate-resource"));
+        problem.setTitle("Duplicate Resource");
+        problem.setInstance(URI.create(request.getRequestURI()));
+        problem.setProperty("timestamp", Instant.now());
+
+        log.warn("Data integrity violation on {}: {}", request.getRequestURI(), ex.getMostSpecificCause().getMessage());
 
         return problem;
     }
@@ -55,12 +109,12 @@ public class GlobalExceptionHandler {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
         problem.setType(URI.create("urn:qualitrace:errors:invalid-argument"));
         problem.setTitle("Invalid Argument");
-        problem.setType(URI.create("https://api.qualitrace.com/errors/invalid-argument"));
         problem.setInstance(URI.create(request.getRequestURI()));
         problem.setProperty("timestamp", Instant.now());
 
         return problem;
     }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ProblemDetail handleValidation(MethodArgumentNotValidException ex, HttpServletRequest request) {
         Map<String, String> errors = ex.getBindingResult().getFieldErrors().stream()
@@ -74,6 +128,7 @@ public class GlobalExceptionHandler {
         problem.setType(URI.create("urn:qualitrace:errors:validation-failed"));
         problem.setTitle("Invalid Request");
         problem.setInstance(URI.create(request.getRequestURI()));
+        problem.setProperty("timestamp", Instant.now());
         problem.setProperty("errors", errors); // extension custom RFC 7807
 
         return problem;
@@ -99,6 +154,7 @@ public class GlobalExceptionHandler {
         problem.setType(URI.create("urn:qualitrace:errors:malformed-request-body"));
         problem.setTitle("Malformed Request Body");
         problem.setInstance(URI.create(request.getRequestURI()));
+        problem.setProperty("timestamp", Instant.now());
 
         return problem;
     }
@@ -110,9 +166,8 @@ public class GlobalExceptionHandler {
                 HttpStatus.INTERNAL_SERVER_ERROR,
                 "Une erreur inattendue est survenue"
         );
-        problem.setType(URI.create("urn:qualitrace:errors:server-error"));
+        problem.setType(URI.create("urn:qualitrace:errors:internal-server-error"));
         problem.setTitle("Internal Server Error");
-        problem.setType(URI.create("https://api.qualitrace.com/errors/internal-server-error"));
         problem.setInstance(URI.create(request.getRequestURI()));
         problem.setProperty("timestamp", Instant.now());
 

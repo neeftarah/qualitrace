@@ -1,35 +1,116 @@
 package com.qualitrace.backend.infrastructure.api;
 
+import com.qualitrace.backend.application.assembler.UserModelAssembler;
+import com.qualitrace.backend.application.dto.UserCreateRequest;
+import com.qualitrace.backend.application.dto.UserResponse;
+import com.qualitrace.backend.application.dto.UserUpdateRequest;
+import com.qualitrace.backend.application.service.UserService;
+import com.qualitrace.backend.domain.model.PageQuery;
+import com.qualitrace.backend.domain.model.PageResult;
+import com.qualitrace.backend.domain.model.SortQuery;
+import com.qualitrace.backend.domain.model.UserFilter;
+import com.qualitrace.backend.domain.type.UserRole;
+import com.qualitrace.backend.domain.type.UserStatus;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.IanaLinkRelations;
+import org.springframework.hateoas.PagedModel;
+import org.springframework.http.ProblemDetail;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 /**
  * Infrastructure class that define the users API endpoints.
  */
+@Tag(name = "Users", description = "Gestion des comptes utilisateurs et de leurs habilitations")
 @RestController
+@RequestMapping("/api/v1/users")
 public class UserController {
+    private final UserService userService;
+    private final UserModelAssembler assembler;
+    private static final Set<String> ALLOWED_SORT_FIELDS = Set.of(
+            "login", "email", "firstname", "surname", "status", "created_at", "updated_at"
+    );
+
+    public UserController(UserService userService, UserModelAssembler assembler) {
+        this.userService = userService;
+        this.assembler = assembler;
+    }
 
     /**
      * List all users.
      *
      * @return The list of all users
      */
-    @GetMapping("/api/v1/users")
-    public Map<String, String> list() {
-        return Map.of("controller", "UserController", "method", "list");
+    @GetMapping
+    public PagedModel<EntityModel<UserResponse>> list(
+            @RequestParam(required = false) String login,
+            @RequestParam(required = false) String email,
+            @RequestParam(required = false) String firstname,
+            @RequestParam(required = false) String surname,
+            @RequestParam(required = false) UserStatus status,
+            @RequestParam(required = false) UserRole role,
+            @ParameterObject @PageableDefault(size = 10, sort = "surname") Pageable pageable,
+            PagedResourcesAssembler<UserResponse> pagedAssembler
+    ) {
+        validateSortFields(pageable.getSort());
+
+        List<SortQuery> sortOrders = pageable.getSort().stream()
+                .map(order -> new SortQuery(order.getProperty(),
+                        order.isDescending() ? SortQuery.Direction.DESC : SortQuery.Direction.ASC))
+                .toList();
+
+        PageQuery pageQuery = new PageQuery(pageable.getPageNumber(), pageable.getPageSize(), sortOrders);
+        UserFilter filter = new UserFilter(login, email, firstname, surname, status, role);
+
+        PageResult<UserResponse> result = userService.getAll(pageQuery, filter);
+
+        Page<UserResponse> page = new PageImpl<>(
+                result.content(),
+                pageable,
+                result.totalElements()
+        );
+
+        return pagedAssembler.toModel(page, assembler);
     }
 
     /**
-     * A sublist of all users matching the search criteria.
-     * The search criteria are passed in the request body as a JSON object.
+     * Get details of a specific user.
      *
-     * @return The list of matching users
+     * @param id The UUID of the user
+     * @return The details of the user
      */
-    @PostMapping("/api/v1/users/search")
-    public Map<String, String> search() {
-        return Map.of("controller", "UserController", "method", "search");
+    @Operation(
+            summary = "Consulter un utilisateur",
+            description = "Retourne le détail d'un utilisateur par son identifiant."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Utilisateur trouvé"),
+            @ApiResponse(responseCode = "404", description = "Utilisateur introuvable",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+    })
+    @GetMapping("/{id}")
+    public EntityModel<UserResponse> get(@PathVariable UUID id) {
+        UserResponse user = userService.getOneById(id);
+
+        return assembler.toModel(user);
     }
 
     /**
@@ -37,43 +118,119 @@ public class UserController {
      *
      * @return The created user
      */
-    @PostMapping("/api/v1/users")
-    public Map<String, String> create() {
-        return Map.of("controller", "UserController", "method", "create");
-    }
+    @Operation(
+            summary = "Créer un utilisateur",
+            description = "Crée un nouvel utilisateur avec au moins un rôle. Le login doit être unique."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Utilisateur créé"),
+            @ApiResponse(responseCode = "400", description = "Requête invalide (validation, rôle manquant)",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "409", description = "Login déjà utilisé",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+    })
+    @PostMapping
+    public ResponseEntity<EntityModel<UserResponse>> create(@Valid @RequestBody UserCreateRequest request) {
+        UserResponse created = userService.save(request);
+        EntityModel<UserResponse> model = assembler.toModel(created);
 
-    /**
-     * Get details of a specific user.
-     *
-     * @param id The ID of the user
-     *
-     * @return The details of the user
-     */
-    @GetMapping("/api/v1/users/{id}")
-    public Map<String, String> get(@PathVariable UUID id) {
-        return Map.of("controller", "UserController", "method", "get", "id", id.toString());
+        return ResponseEntity.created(model.getRequiredLink(IanaLinkRelations.SELF).toUri()).body(model);
     }
 
     /**
      * Update an existing user.
      *
-     * @param id The ID of the user
+     * @param id The UUID of the user
      * @return The updated user
      */
-    @PutMapping("/api/v1/users/{id}")
-    public Map<String, String> update(@PathVariable UUID id) {
-        return Map.of("controller", "UserController", "method", "update", "id", id.toString());
+    @Operation(
+            summary = "Mettre à jour un utilisateur",
+            description = "Met à jour les informations d'un utilisateur existant."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Utilisateur mis à jour"),
+            @ApiResponse(responseCode = "400", description = "Requête invalide (validation, rôle manquant)",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "404", description = "Utilisateur introuvable",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+    })
+    @PutMapping("/{id}")
+    public EntityModel<UserResponse> update(@PathVariable UUID id, @Valid @RequestBody UserUpdateRequest request) {
+        UserResponse updated = userService.update(id, request);
+
+        return assembler.toModel(updated);
     }
 
     /**
-     * Archive an active user.
+     * Change the status of a user.
      *
-     * @param id The ID of the user
-     *
-     * @return The result of the request
+     * @param id The UUID of the user
+     * @return The updated user
      */
-    @DeleteMapping("/api/v1/users/{id}")
-    public Map<String, String> delete(@PathVariable UUID id) {
-        return Map.of("controller", "UserController", "method", "delete", "id", id.toString());
+    @Operation(
+            summary = "Déverrouiller un utilisateur",
+            description = "Débloque un utilisateur verrouillé par le système et active de nouveau la connexion."
+    )
+    @ApiResponse(responseCode = "200", description = "Utilisateur déverrouillé")
+    @ApiResponse(responseCode = "404", description = "Utilisateur introuvable")
+    @ApiResponse(responseCode = "409", description = "Transition invalide depuis le statut actuel")
+    @PatchMapping("/{id}/unlock")
+    public EntityModel<UserResponse> unlock(@PathVariable UUID id) {
+        UserResponse updated = userService.unlock(id);
+
+        return assembler.toModel(updated);
+    }
+
+    /**
+     * Change the status of a user.
+     *
+     * @param id The UUID of the user
+     * @return The updated user
+     */
+    @Operation(
+            summary = "Réactiver un utilisateur archivé",
+            description = "Permet la connexion. Réversible via /archive."
+    )
+    @ApiResponse(responseCode = "200", description = "Utilisateur activé")
+    @ApiResponse(responseCode = "404", description = "Utilisateur introuvable")
+    @ApiResponse(responseCode = "409", description = "Transition invalide depuis le statut actuel")
+    @PatchMapping("/{id}/activate")
+    public EntityModel<UserResponse> activate(@PathVariable UUID id) {
+        UserResponse updated = userService.reactivate(id);
+
+        return assembler.toModel(updated);
+    }
+
+    /**
+     * Change the status of a user.
+     *
+     * @param id The UUID of the user
+     * @return The updated user
+     */
+    @Operation(
+            summary = "Archiver un utilisateur",
+            description = "Rend l'utilisateur indisponible. Réversible via /activate."
+    )
+    @ApiResponse(responseCode = "200", description = "Utilisateur archivé")
+    @ApiResponse(responseCode = "404", description = "Utilisateur introuvable")
+    @ApiResponse(responseCode = "409", description = "Transition invalide depuis le statut actuel")
+    @PatchMapping("/{id}/archive")
+    public EntityModel<UserResponse> archive(@PathVariable UUID id) {
+        UserResponse updated = userService.archive(id);
+
+        return assembler.toModel(updated);
+    }
+
+    /**
+     * Validation des critères de tri.
+     *
+     * @param sort Critères de tri.
+     */
+    private void validateSortFields(Sort sort) {
+        sort.forEach(order -> {
+            if (!ALLOWED_SORT_FIELDS.contains(order.getProperty())) {
+                throw new IllegalArgumentException("Champ de tri non autorisé : " + order.getProperty());
+            }
+        });
     }
 }

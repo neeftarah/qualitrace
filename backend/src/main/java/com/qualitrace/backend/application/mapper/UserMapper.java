@@ -10,14 +10,15 @@ public class UserMapper {
 
     public UserResponse toResponse(User user) {
         return new UserResponse(
-            user.getId(),
-            user.getLogin(),
-            user.getEmail(),
-            user.getFirstname(),
-            user.getSurname(),
-            user.getStatus(),
-            user.getCreatedAt(),
-            user.getUpdatedAt()
+            user.id(),
+            user.login(),
+            user.email(),
+            user.firstname(),
+            user.surname(),
+            user.status(),
+            user.roles(),
+            user.createdAt(),
+            user.updatedAt()
         );
     }
 
@@ -27,7 +28,8 @@ public class UserMapper {
             request.password(),
             request.email(),
             request.firstname(),
-            request.surname()
+            request.surname(),
+            request.roles()
         );
     }
 }

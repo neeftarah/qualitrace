@@ -1,14 +1,19 @@
 package com.qualitrace.backend.infrastructure.persistence.entity;
 
+import com.qualitrace.backend.domain.type.UserRole;
 import com.qualitrace.backend.domain.type.UserStatus;
 import jakarta.persistence.*;
+import org.hibernate.annotations.ColumnTransformer;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import org.springframework.data.domain.Persistable;
 
 import java.time.Instant;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Entity
-@Table(name = "user")
+@Table(name = "users")
 public class UserEntity implements Persistable<UUID> {
     @Id
     @Column(name = "id", nullable = false)
@@ -43,6 +48,11 @@ public class UserEntity implements Persistable<UUID> {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
+    @JdbcTypeCode(SqlTypes.ARRAY)
+    @Column(name = "roles", columnDefinition = "user_role[]")
+    @ColumnTransformer(write = "?::user_role[]")
+    private String[] roles = new String[0];
+
     @Transient
     private boolean isNew;
 
@@ -51,7 +61,7 @@ public class UserEntity implements Persistable<UUID> {
 
     // Constructeur métier (Exemple)
     public UserEntity(UUID id, String login, String password, String email, String firstname, String surname,
-                      UserStatus status, Long version, Instant createdAt, Instant updatedAt, boolean isNew) {
+                      UserStatus status, Long version, Instant createdAt, Instant updatedAt, String[] roles, boolean isNew) {
         this.id = id;
         this.login = login;
         this.password = password;
@@ -61,6 +71,7 @@ public class UserEntity implements Persistable<UUID> {
         this.status = status;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+        this.roles = roles;
         this.isNew = isNew;
     }
 
@@ -101,4 +112,14 @@ public class UserEntity implements Persistable<UUID> {
 
     public Instant getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(Instant updatedAt) { this.updatedAt = updatedAt; }
+
+    public Set<UserRole> getRoles() {
+        return Arrays.stream(roles)
+                .map(UserRole::valueOf)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+    }
+
+    public void setRoles(Set<UserRole> roles) {
+        this.roles = roles.stream().map(Enum::name).toArray(String[]::new);
+    }
 }
