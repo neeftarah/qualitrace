@@ -23,6 +23,8 @@ public class SecurityConfig {
 
             // Autorise tout le monde à accéder aux endpoints pour le moment
             .authorizeHttpRequests(auth -> auth
+                    .requestMatchers("/actuator/health").permitAll()
+//                    .requestMatchers("/actuator/**").hasRole("ADMIN")
                     .anyRequest().permitAll()
             )
 

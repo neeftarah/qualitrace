@@ -1,14 +1,20 @@
 package com.qualitrace.backend.infrastructure.persistence.adapter;
 
-import com.qualitrace.backend.domain.model.User;
+import com.qualitrace.backend.domain.model.*;
 import com.qualitrace.backend.domain.repository.UserRepository;
 import com.qualitrace.backend.infrastructure.persistence.entity.UserEntity;
 import com.qualitrace.backend.infrastructure.persistence.repository.UserJpaRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import javax.swing.*;
 import java.util.Optional;
 import java.util.UUID;
 
+@Repository
 public class UserRepositoryAdapter implements UserRepository {
 
     private final UserJpaRepository jpaRepository;
@@ -18,10 +24,31 @@ public class UserRepositoryAdapter implements UserRepository {
     }
 
     @Override
-    public List<User> findAll() {
-        return jpaRepository.findAll().stream()
-                .map(this::toDomain)
-                .toList();
+    public PageResult<User> findAll(PageQuery pageQuery, UserFilter filter) {
+        Sort sort = Sort.by(pageQuery.sort().stream()
+                .map(s -> new Sort.Order(
+                        s.direction() == SortQuery.Direction.DESC ? Sort.Direction.DESC : Sort.Direction.ASC,
+                        s.field()))
+                .toList());
+        Pageable pageable = PageRequest.of(pageQuery.page(), pageQuery.size(), sort);
+
+        Page<UserEntity> page = jpaRepository.search(
+                filter.login(),
+                filter.email(),
+                filter.firstname(),
+                filter.surname(),
+                filter.status() != null ? filter.status().name() : null,
+                filter.role() != null ? filter.role().name() : null,
+                pageable
+        );
+
+        return new PageResult<>(
+                page.getContent().stream().map(this::toDomain).toList(),
+                page.getNumber(),
+                page.getSize(),
+                page.getTotalElements(),
+                page.getTotalPages()
+        );
     }
 
     @Override
@@ -36,12 +63,24 @@ public class UserRepositoryAdapter implements UserRepository {
 
     @Override
     public User save(User user) {
-        boolean isNew = !jpaRepository.existsById(user.getId());
-        UserEntity entity = toEntity(user, isNew);
-        UserEntity saved = jpaRepository.save(entity);
+        UserEntity entity = jpaRepository.findById(user.id())
+                .map(existing -> applyChanges(existing, user))
+                .orElseGet(() -> toNewEntity(user));
+        UserEntity saved = jpaRepository.saveAndFlush(entity);
         return toDomain(saved);
     }
 
+    @Override
+    public boolean existsById(UUID id) {
+        return jpaRepository.existsById(id);
+    }
+
+    /**
+     * Construit une entité du domaine à partir d'une entité JPA
+     * @param entity Objet JPA
+     *
+     * @return Objet du domaine (User)
+     */
     private User toDomain(UserEntity entity) {
         return new User(
             entity.getId(),
@@ -53,23 +92,38 @@ public class UserRepositoryAdapter implements UserRepository {
             entity.getStatus(),
             entity.getVersion(),
             entity.getCreatedAt(),
-            entity.getUpdatedAt()
+            entity.getUpdatedAt(),
+            entity.getRoles()
         );
     }
 
-    private UserEntity toEntity(User user, boolean isNew) {
+
+    private UserEntity applyChanges(UserEntity entity, User user) {
+        entity.setLogin(user.login());
+        entity.setPassword(user.password());
+        entity.setEmail(user.email());
+        entity.setFirstname(user.firstname());
+        entity.setSurname(user.surname());
+        entity.setStatus(user.status());
+        entity.setUpdatedAt(user.updatedAt());
+        entity.setRoles(user.roles());
+        return entity;
+    }
+
+    private UserEntity toNewEntity(User user) {
         return new UserEntity(
-            user.getId(),
-            user.getLogin(),
-            user.getPassword(),
-            user.getEmail(),
-            user.getFirstname(),
-            user.getSurname(),
-            user.getStatus(),
-            user.getVersion(),
-            user.getCreatedAt(),
-            user.getUpdatedAt(),
-            isNew
+                user.id(),
+                user.login(),
+                user.password(),
+                user.email(),
+                user.firstname(),
+                user.surname(),
+                user.status(),
+                user.version(),
+                user.createdAt(),
+                user.updatedAt(),
+                user.roles().stream().map(Enum::name).toArray(String[]::new),
+                true
         );
     }
 }
