@@ -12,7 +12,7 @@ spring:
   # JPA configuration
   jpa:
       hibernate:
-          ddl-auto: update # 'update' pour le dev, 'validate' pour la prod
+          ddl-auto: validate
       show-sql: true # Pour voir les requêtes SQL dans la console (comme la barre de debug !)
       properties:
           hibernate:
@@ -23,6 +23,9 @@ spring:
       redis:
           host: localhost
           port: 6379
+  web:
+    error:
+      include-stacktrace: never
 
 # Configuration Actuator pour le debug
 management:
