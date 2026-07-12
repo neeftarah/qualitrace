@@ -1,6 +1,6 @@
 plugins {
 	java
-	id("org.springframework.boot") version "4.0.5"
+	id("org.springframework.boot") version "4.1.0"
 	id("io.spring.dependency-management") version "1.1.7"
 }
 
@@ -10,7 +10,7 @@ description = "Pilotage de la conformité et traçabilité des flux industriels.
 
 java {
 	toolchain {
-            languageVersion = JavaLanguageVersion.of(25)
+        languageVersion = JavaLanguageVersion.of(25)
 	}
 }
 
@@ -35,10 +35,12 @@ dependencies {
 	// Data
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 	implementation("org.springframework.boot:spring-boot-starter-data-redis")
-	runtimeOnly("org.postgresql:postgresql")
-    implementation("org.flywaydb:flyway-core:12.8.1")
+    implementation("org.springframework.boot:spring-boot-starter-flyway")
+    implementation("org.flywaydb:flyway-database-postgresql")
+    runtimeOnly("org.postgresql:postgresql")
 
-	// Documentation (Swagger UI)
+
+    // Documentation (Swagger UI)
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.3")
 
 	// Outils
@@ -46,7 +48,11 @@ dependencies {
 
 	// Tests (Spring Boot centralise presque tout dans 'starter-test')
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
-	testImplementation("org.springframework.security:spring-security-test")
+    testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
+    testImplementation("org.springframework.security:spring-security-test")
+    testImplementation("org.springframework.boot:spring-boot-testcontainers")
+    testImplementation("org.testcontainers:testcontainers-junit-jupiter")
+    testImplementation("org.testcontainers:testcontainers-postgresql")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
