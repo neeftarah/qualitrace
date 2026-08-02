@@ -4,40 +4,78 @@ import com.qualitrace.backend.domain.model.User;
 import com.qualitrace.backend.domain.repository.UserRepository;
 import com.qualitrace.backend.domain.type.UserRole;
 import com.qualitrace.backend.domain.type.UserStatus;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.hateoas.MediaTypes;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.test.context.TestSecurityContextHolder;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.client.RestTestClient;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.context.WebApplicationContext;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 
 import java.util.Set;
 import java.util.UUID;
 
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@AutoConfigureRestTestClient
 @Transactional
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class UserControllerTest {
     @Container
     @ServiceConnection
     static PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:16-alpine");
 
     @Autowired
-    private RestTestClient restClient;
+    private WebApplicationContext webApplicationContext;
+
+    private static RestTestClient restClient;
+
+    @Autowired
+    private UserDetailsService userDetailsService;
 
     @Autowired
     private UserRepository userRepository; // le port du domaine, pas le JPA repository directement
 
+    @BeforeAll
+    void setUpClient() {
+        MockMvc mockMvc = MockMvcBuilders
+                .webAppContextSetup(webApplicationContext)
+                .apply(springSecurity())
+                .build();
+        restClient = RestTestClient.bindTo(mockMvc).build();
+    }
+
+    @AfterEach
+    void clearSecurityContext() {
+        TestSecurityContextHolder.clearContext(); // évite toute fuite de contexte entre tests
+    }
+
     @Test
+    @WithMockUser(username = "admin", roles = "ADMIN")
     public void create() {
         restClient.post().uri("/api/v1/users")
                 .contentType(MediaTypes.HAL_JSON)
@@ -74,6 +112,7 @@ class UserControllerTest {
      * Test la liste des utilisateurs.
      */
     @Test
+    @WithMockUser(username = "admin", roles = "ADMIN")
     public void list() {
         createTestUser("user1", "user1@test.com", "User1", "One", UserStatus.ACTIVE, UserRole.AQ);
         createTestUser("user2", "user2@test.com", "User2", "Two", UserStatus.ACTIVE, UserRole.CQ, UserRole.PRODUCTION);
@@ -94,6 +133,7 @@ class UserControllerTest {
      * Vérifie que le mot de passe n'est jamais renvoyé dans la réponse.
      */
     @Test
+    @WithMockUser(username = "admin", roles = "ADMIN")
     public void get() {
         String id = createTestUser("user1", "user1@test.com", "User", "One", UserStatus.ACTIVE, UserRole.AQ);
         restClient.get().uri("/api/v1/users/{id}", id)
@@ -114,6 +154,7 @@ class UserControllerTest {
     }
 
     @Test
+    @WithMockUser(username = "admin", roles = "ADMIN")
     public void getUnexistingUser() {
         String id = UUID.randomUUID().toString();
         restClient.get().uri("/api/v1/users/{id}", id)
@@ -129,6 +170,7 @@ class UserControllerTest {
      * Vérifie que le mot de passe n'est jamais renvoyé dans la réponse.
      */
     @Test
+    @WithMockUser(username = "admin", roles = "ADMIN")
     public void update() {
         String id = createTestUser("user1", "user1@test.com", "User1", "One", UserStatus.ACTIVE, UserRole.AQ);
         restClient.put().uri("/api/v1/users/{id}", id)
@@ -171,6 +213,7 @@ class UserControllerTest {
      * Vérifie que le mot de passe n'est jamais renvoyé dans la réponse.
      */
     @Test
+    @WithMockUser(username = "admin", roles = "ADMIN")
     public void unlock() {
         String id = createTestUser("user1", "user1@test.com", "User1", "One", UserStatus.LOCKED, UserRole.AQ);
         restClient.patch().uri("/api/v1/users/{id}/unlock", id)
@@ -194,6 +237,7 @@ class UserControllerTest {
     }
 
     @Test
+    @WithMockUser(username = "admin", roles = "ADMIN")
     public void unlockNotValidIfActive() {
         String id = createTestUser("user1", "user1@test.com", "User1", "One", UserStatus.ACTIVE, UserRole.AQ);
         restClient.patch().uri("/api/v1/users/{id}/unlock", id)
@@ -206,6 +250,7 @@ class UserControllerTest {
     }
 
     @Test
+    @WithMockUser(username = "admin", roles = "ADMIN")
     public void unlockNotValidIfArchive() {
         String id = createTestUser("user1", "user1@test.com", "User1", "One", UserStatus.ARCHIVED, UserRole.AQ);
         restClient.patch().uri("/api/v1/users/{id}/unlock", id)
@@ -218,6 +263,7 @@ class UserControllerTest {
     }
 
     @Test
+    @WithMockUser(username = "admin", roles = "ADMIN")
     public void activateNotValidIfActive() {
         String id = createTestUser("user1", "user1@test.com", "User1", "One", UserStatus.ACTIVE, UserRole.AQ);
         restClient.patch().uri("/api/v1/users/{id}/activate", id)
@@ -230,6 +276,7 @@ class UserControllerTest {
     }
 
     @Test
+    @WithMockUser(username = "admin", roles = "ADMIN")
     public void archiveNotValidIfArchive() {
         String id = createTestUser("user1", "user1@test.com", "User1", "One", UserStatus.ARCHIVED, UserRole.AQ);
         restClient.patch().uri("/api/v1/users/{id}/archive", id)
@@ -242,6 +289,7 @@ class UserControllerTest {
     }
 
     @Test
+    @WithMockUser(username = "admin", roles = "ADMIN")
     public void createUserLoginUnicity() {
         createTestUser("user1", "user1@test.com", "User1", "One", UserStatus.ACTIVE, UserRole.AQ);
         restClient.post().uri("/api/v1/users")
@@ -263,8 +311,110 @@ class UserControllerTest {
                 .jsonPath("$.detail").isEqualTo("Une ressource avec le même identifiant unique (uk_users_login) existe déjà !");
     }
 
+    /**
+     * Test les accès "non authentifiés → 401", sur toutes les routes protégées
+     * @param method La méthode d'appel
+     * @param uri L'URI d'appel
+     */
+    @ParameterizedTest
+    @CsvSource({
+            "GET, /api/v1/users",
+            "GET, /api/v1/users/00000000-0000-0000-0000-000000000000",
+            "POST, /api/v1/users",
+            "PUT, /api/v1/users/00000000-0000-0000-0000-000000000000",
+            "PATCH, /api/v1/users/00000000-0000-0000-0000-000000000000/lock",
+            "PATCH, /api/v1/users/00000000-0000-0000-0000-000000000000/unlock",
+            "PATCH, /api/v1/users/00000000-0000-0000-0000-000000000000/archive",
+            "PATCH, /api/v1/users/00000000-0000-0000-0000-000000000000/activate"
+    })
+    void shouldReturn401WhenNotAuthenticated(String method, String uri) {
+        restClient.method(HttpMethod.valueOf(method)).uri(uri)
+                .exchange()
+                .expectStatus().isUnauthorized()
+                .expectHeader().contentType(MediaType.APPLICATION_PROBLEM_JSON);
+    }
+
+    /**
+     * Test les accès "authentifiés mais rôle insuffisant → 403", sur toutes les routes protégées
+     * @param method La méthode d'appel
+     * @param uri L'URI d'appel
+     */
+    @ParameterizedTest
+    @CsvSource({
+            "POST, /api/v1/users",
+            "PATCH, /api/v1/users/00000000-0000-0000-0000-000000000000/unlock",
+            "PATCH, /api/v1/users/00000000-0000-0000-0000-000000000000/archive",
+            "PATCH, /api/v1/users/00000000-0000-0000-0000-000000000000/activate"
+    })
+    @WithMockUser(username = "simple-user", roles = "AQ") // n'importe quel rôle non-ADMIN
+    void shouldReturn403WhenInsufficientRole(String method, String uri) {
+        restClient.method(HttpMethod.valueOf(method)).uri(uri)
+                .contentType(MediaTypes.HAL_JSON)
+                .body("""
+                {"login": "test", "password": "SecurePass123!", "email": "test@qualitrace.com",
+                 "firstname": "Test", "surname": "User", "roles": ["AQ"]}
+                """)
+                .exchange()
+                .expectStatus().isForbidden()
+                .expectHeader().contentType(MediaType.APPLICATION_PROBLEM_JSON);
+    }
+
     @Test
-    public void search() {
+    @WithMockUser(username = "simple-user", roles = "AQ")
+    void getShouldSucceedForAnyAuthenticatedUser() {
+        String id = createTestUser("user1", "user1@test.com", "User1", "One", UserStatus.ACTIVE, UserRole.AQ);
+        restClient.get().uri("/api/v1/users/{id}", id)
+                .exchange()
+                .expectStatus().isOk();
+    }
+
+    @Test
+    @WithMockUser(username = "simple-user", roles = "AQ")
+    void listShouldSucceedForAnyAuthenticatedUser() {
+        restClient.get().uri("/api/v1/users")
+                .exchange()
+                .expectStatus().isOk();
+    }
+
+    @Test
+    void updateShouldSucceedForSelf() {
+        String id = createTestUser("user1", "user1@test.com", "User1", "One", UserStatus.ACTIVE, UserRole.AQ);
+        authenticateAs("user1"); // l'utilisateur existe déjà, on peut charger son principal
+        restClient.put().uri("/api/v1/users/{id}", id)
+                .contentType(MediaTypes.HAL_JSON)
+                .body("""
+                    {
+                        "firstname": "Jean",
+                        "surname": "Dupont",
+                        "roles": ["AQ"]
+                    }
+                    """)
+                .exchange()
+                .expectStatus().isOk();
+    }
+
+    @Test
+    void updateShouldFailForOtherNonAdminUser() {
+        String id = createTestUser("user1", "user1@test.com", "User1", "One", UserStatus.ACTIVE, UserRole.AQ);
+        createTestUser("user2", "user2@test.com", "User2", "Two", UserStatus.ACTIVE, UserRole.AQ);
+
+        authenticateAs("user2"); // pas ADMIN, et pas "user1"
+
+        restClient.put().uri("/api/v1/users/{id}", id)
+                .contentType(MediaTypes.HAL_JSON)
+                .body("""
+                {"firstname": "Jean", "surname": "Dupont", "roles": ["AQ"]}
+                """)
+                .exchange()
+                .expectStatus().isForbidden();
+    }
+
+    private void authenticateAs(String login) {
+        UserDetails principal = userDetailsService.loadUserByUsername(login);
+        Authentication auth = new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities());
+        SecurityContext context = SecurityContextHolder.createEmptyContext();
+        context.setAuthentication(auth);
+        TestSecurityContextHolder.setContext(context);
     }
 
     /**

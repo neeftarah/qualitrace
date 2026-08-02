@@ -10,6 +10,8 @@ import com.qualitrace.backend.domain.model.PageResult;
 import com.qualitrace.backend.domain.model.User;
 import com.qualitrace.backend.domain.model.UserFilter;
 import com.qualitrace.backend.domain.repository.UserRepository;
+import com.qualitrace.backend.infrastructure.security.LoginAttemptService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
@@ -18,10 +20,14 @@ import java.util.UUID;
 public class UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+    private final PasswordEncoder passwordEncoder;
+    private final LoginAttemptService loginAttemptService;
 
-    public UserService(UserRepository userRepository, UserMapper userMapper) {
+    public UserService(UserRepository userRepository, UserMapper userMapper, PasswordEncoder passwordEncoder, LoginAttemptService loginAttemptService) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
+        this.passwordEncoder = passwordEncoder;
+        this.loginAttemptService = loginAttemptService;
     }
 
     public UserResponse getOneById(UUID id) {
@@ -36,7 +42,16 @@ public class UserService {
     }
 
     public UserResponse save(UserCreateRequest request) {
-        User user = userMapper.toDomain(request);
+        UserCreateRequest hashedRequest = new UserCreateRequest(
+                request.login(),
+                passwordEncoder.encode(request.password()),
+                request.email(),
+                request.firstname(),
+                request.surname(),
+                request.roles()
+        );
+
+        User user = userMapper.toDomain(hashedRequest);
         User saved = userRepository.save(user);
         return userMapper.toResponse(saved);
     }
@@ -52,14 +67,13 @@ public class UserService {
         return userMapper.toResponse(userRepository.save(updated));
     }
 
-    public UserResponse lock(UUID id) {
-        User existing = findOrThrow(id);
-        return userMapper.toResponse(userRepository.save(existing.lock()));
-    }
-
     public UserResponse unlock(UUID id) {
         User existing = findOrThrow(id);
-        return userMapper.toResponse(userRepository.save(existing.unlock()));
+        User activated = existing.unlock(); // ta méthode dédiée, cf. discussion précédente
+        UserResponse response = userMapper.toResponse(userRepository.save(activated));
+        loginAttemptService.resetOnUnlock(existing.login());
+
+        return response;
     }
 
     public UserResponse archive(UUID id) {

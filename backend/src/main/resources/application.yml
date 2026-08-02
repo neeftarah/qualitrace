@@ -17,6 +17,7 @@ spring:
       properties:
           hibernate:
               format_sql: true
+      open-in-view: false
 
   # Configuration Redis
   data:
@@ -26,6 +27,10 @@ spring:
   web:
     error:
       include-stacktrace: never
+
+  session:
+    store-type: redis
+    timeout: 30m  # durée de vie d'une session inactive
 
 # Configuration Actuator pour le debug
 management:

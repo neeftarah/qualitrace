@@ -30,6 +30,7 @@ import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -60,6 +61,7 @@ public class UserController {
      * @return The list of all users
      */
     @GetMapping
+    @PreAuthorize("isAuthenticated()")
     public PagedModel<EntityModel<UserResponse>> list(
             @RequestParam(required = false) String login,
             @RequestParam(required = false) String email,
@@ -107,6 +109,7 @@ public class UserController {
                     content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
     @GetMapping("/{id}")
+    @PreAuthorize("isAuthenticated()")
     public EntityModel<UserResponse> get(@PathVariable UUID id) {
         UserResponse user = userService.getOneById(id);
 
@@ -130,6 +133,7 @@ public class UserController {
                     content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<EntityModel<UserResponse>> create(@Valid @RequestBody UserCreateRequest request) {
         UserResponse created = userService.save(request);
         EntityModel<UserResponse> model = assembler.toModel(created);
@@ -155,6 +159,7 @@ public class UserController {
                     content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or #id == authentication.principal.id")
     public EntityModel<UserResponse> update(@PathVariable UUID id, @Valid @RequestBody UserUpdateRequest request) {
         UserResponse updated = userService.update(id, request);
 
@@ -175,6 +180,7 @@ public class UserController {
     @ApiResponse(responseCode = "404", description = "Utilisateur introuvable")
     @ApiResponse(responseCode = "409", description = "Transition invalide depuis le statut actuel")
     @PatchMapping("/{id}/unlock")
+    @PreAuthorize("hasRole('ADMIN')")
     public EntityModel<UserResponse> unlock(@PathVariable UUID id) {
         UserResponse updated = userService.unlock(id);
 
@@ -195,6 +201,7 @@ public class UserController {
     @ApiResponse(responseCode = "404", description = "Utilisateur introuvable")
     @ApiResponse(responseCode = "409", description = "Transition invalide depuis le statut actuel")
     @PatchMapping("/{id}/activate")
+    @PreAuthorize("hasRole('ADMIN')")
     public EntityModel<UserResponse> activate(@PathVariable UUID id) {
         UserResponse updated = userService.reactivate(id);
 
@@ -215,6 +222,7 @@ public class UserController {
     @ApiResponse(responseCode = "404", description = "Utilisateur introuvable")
     @ApiResponse(responseCode = "409", description = "Transition invalide depuis le statut actuel")
     @PatchMapping("/{id}/archive")
+    @PreAuthorize("hasRole('ADMIN')")
     public EntityModel<UserResponse> archive(@PathVariable UUID id) {
         UserResponse updated = userService.archive(id);
 
