@@ -6,8 +6,11 @@ import org.hibernate.exception.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.expression.spel.SpelEvaluationException;
 import org.springframework.http.*;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.authorization.AuthorizationDeniedException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -106,6 +109,19 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ProblemDetail handleIllegalArgument(IllegalArgumentException ex, HttpServletRequest request) {
+        // Cas particulier : erreur d'évaluation SpEL d'une expression @PreAuthorize —
+        // à traiter comme un refus d'accès (403), pas une erreur de requête (400)
+        if (ex.getCause() instanceof SpelEvaluationException) {
+            log.error("SpEL evaluation error in @PreAuthorize expression on {}: {}", request.getRequestURI(), ex.getMessage());
+
+            ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, "Accès refusé");
+            problem.setType(URI.create("urn:qualitrace:errors:forbidden"));
+            problem.setTitle("Forbidden");
+            problem.setInstance(URI.create(request.getRequestURI()));
+            problem.setProperty("timestamp", Instant.now());
+            return problem;
+        }
+
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
         problem.setType(URI.create("urn:qualitrace:errors:invalid-argument"));
         problem.setTitle("Invalid Argument");
@@ -121,7 +137,7 @@ public class GlobalExceptionHandler {
                 .collect(Collectors.toMap(
                         FieldError::getField,
                         fieldError -> fieldError.getDefaultMessage() != null ? fieldError.getDefaultMessage() : "Invalid value",
-                        (existing, replacement) -> existing
+                        (existing, _) -> existing
                 ));
 
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Validation failed");
@@ -153,6 +169,28 @@ public class GlobalExceptionHandler {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, detail);
         problem.setType(URI.create("urn:qualitrace:errors:malformed-request-body"));
         problem.setTitle("Malformed Request Body");
+        problem.setInstance(URI.create(request.getRequestURI()));
+        problem.setProperty("timestamp", Instant.now());
+
+        return problem;
+    }
+
+    @ExceptionHandler(AuthenticationException.class)
+    public ProblemDetail handleAuthenticationException(AuthenticationException ex, HttpServletRequest request) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, "Login ou mot de passe incorrect");
+        problem.setType(URI.create("urn:qualitrace:errors:unauthorized"));
+        problem.setTitle("Unauthorized");
+        problem.setInstance(URI.create(request.getRequestURI()));
+        problem.setProperty("timestamp", Instant.now());
+
+        return problem;
+    }
+
+    @ExceptionHandler(AuthorizationDeniedException.class)
+    public ProblemDetail handleAuthorizationDenied(AuthorizationDeniedException ex, HttpServletRequest request) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, "Accès refusé : privilèges insuffisants");
+        problem.setType(URI.create("urn:qualitrace:errors:forbidden"));
+        problem.setTitle("Forbidden");
         problem.setInstance(URI.create(request.getRequestURI()));
         problem.setProperty("timestamp", Instant.now());
 
