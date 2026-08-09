@@ -11,6 +11,16 @@ import org.springframework.stereotype.Component;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
+/**
+ * Convertit un {@link UserResponse} en {@link EntityModel} enrichi de liens HATEOAS.
+ * <p>
+ * Les liens exposés dépendent du statut courant de l'utilisateur, pour refléter
+ * uniquement les transitions et actions réellement valides à cet instant
+ * (ex : pas de lien "archive" si l'utilisateur est déjà archivé).
+ * <p>
+ * Toujours présents : self, update (sauf si archivé).
+ * Conditionnels selon le statut : lock/unlock/archive/activate.
+ */
 @Component
 @NullMarked
 public class UserModelAssembler implements RepresentationModelAssembler<UserResponse, EntityModel<UserResponse>> {
@@ -19,7 +29,8 @@ public class UserModelAssembler implements RepresentationModelAssembler<UserResp
     public EntityModel<UserResponse> toModel(UserResponse user) {
         EntityModel<UserResponse> model = EntityModel.of(
                 user,
-                linkTo(methodOn(UserController.class).get(user.id())).withSelfRel()
+                linkTo(methodOn(UserController.class).get(user.id())).withSelfRel(),
+                linkTo(methodOn(UserController.class).list(null, null, null, null, null, null, null, null)).withRel("users")
         );
 
         // Lien de mise à jour : présent uniquement si l'utilisateur n'est pas archivé

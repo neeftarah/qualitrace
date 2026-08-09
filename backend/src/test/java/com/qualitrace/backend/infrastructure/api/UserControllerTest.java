@@ -74,6 +74,26 @@ class UserControllerTest {
         TestSecurityContextHolder.clearContext(); // évite toute fuite de contexte entre tests
     }
 
+    /**
+     * Test la liste des utilisateurs.
+     */
+    @Test
+    @WithMockUser(username = "admin", roles = "ADMIN")
+    public void list() {
+        createTestUser("user1", "user1@test.com", "User1", "One", UserStatus.ACTIVE, UserRole.AQ);
+        createTestUser("user2", "user2@test.com", "User2", "Two", UserStatus.ACTIVE, UserRole.CQ, UserRole.PRODUCTION);
+
+        restClient.get().uri("/api/v1/users")
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentType(MediaTypes.HAL_JSON)
+                .expectBody()
+                .jsonPath("$._embedded.users").isArray()
+                .jsonPath("$._embedded.users.length()").isEqualTo(2)
+                .jsonPath("$._embedded.users[?(@.login=='user1')]").exists()
+                .jsonPath("$._embedded.users[?(@.login=='user2')]").exists();
+    }
+
     @Test
     @WithMockUser(username = "admin", roles = "ADMIN")
     public void create() {
@@ -106,26 +126,6 @@ class UserControllerTest {
                 .jsonPath("$.roles[0]").isEqualTo("ADMIN")
                 .jsonPath("$.createdAt").exists()
                 .jsonPath("$.password").doesNotExist(); // sécurité : jamais renvoyé
-    }
-
-    /**
-     * Test la liste des utilisateurs.
-     */
-    @Test
-    @WithMockUser(username = "admin", roles = "ADMIN")
-    public void list() {
-        createTestUser("user1", "user1@test.com", "User1", "One", UserStatus.ACTIVE, UserRole.AQ);
-        createTestUser("user2", "user2@test.com", "User2", "Two", UserStatus.ACTIVE, UserRole.CQ, UserRole.PRODUCTION);
-
-        restClient.get().uri("/api/v1/users")
-                .exchange()
-                .expectStatus().isOk()
-                .expectHeader().contentType(MediaTypes.HAL_JSON)
-                .expectBody()
-                .jsonPath("$._embedded.users").isArray()
-                .jsonPath("$._embedded.users.length()").isEqualTo(2)
-                .jsonPath("$._embedded.users[?(@.login=='user1')]").exists()
-                .jsonPath("$._embedded.users[?(@.login=='user2')]").exists();
     }
 
     /**
