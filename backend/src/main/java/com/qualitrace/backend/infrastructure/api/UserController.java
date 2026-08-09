@@ -25,9 +25,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.IanaLinkRelations;
-import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -36,6 +36,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 /**
  * Infrastructure class that define the users API endpoints.
@@ -60,9 +63,18 @@ public class UserController {
      *
      * @return The list of all users
      */
+    @Operation(
+            summary = "Rechercher des utilisateurs",
+            description = "Retourne la liste des utilisateurs correspondant aux critères de recherche."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Liste des utilisateurs retournée"),
+            @ApiResponse(responseCode = "400", description = "Requête invalide",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+    })
     @GetMapping
     @PreAuthorize("isAuthenticated()")
-    public PagedModel<EntityModel<UserResponse>> list(
+    public CollectionModel<EntityModel<UserResponse>> list(
             @RequestParam(required = false) String login,
             @RequestParam(required = false) String email,
             @RequestParam(required = false) String firstname,
@@ -90,7 +102,8 @@ public class UserController {
                 result.totalElements()
         );
 
-        return pagedAssembler.toModel(page, assembler);
+        return pagedAssembler.toModel(page, assembler)
+                .add(linkTo(methodOn(UserController.class).create(null)).withRel("create"));
     }
 
     /**
