@@ -1,6 +1,7 @@
 package com.qualitrace.backend.application.assembler;
 
 import com.qualitrace.backend.application.dto.SupplierResponse;
+import com.qualitrace.backend.application.dto.SupplierUpdateRequest;
 import com.qualitrace.backend.domain.type.SupplierStatus;
 import com.qualitrace.backend.infrastructure.api.SupplierController;
 import org.jspecify.annotations.NullMarked;
@@ -37,7 +38,10 @@ public class SupplierModelAssembler implements RepresentationModelAssembler<Supp
 
         // Lien de mise à jour : présent uniquement si le fournisseur n'est pas archivé
         if (supplier.status() != SupplierStatus.ARCHIVED) {
-            model.add(linkTo(methodOn(SupplierController.class).update(supplier.id(), null)).withRel("update"));
+            model.add(linkTo(methodOn(SupplierController.class).update(
+                    supplier.id(),
+                    new SupplierUpdateRequest("", "")
+            )).withRel("update"));
             model.add(linkTo(methodOn(SupplierController.class).archive(supplier.id())).withRel("archive"));
         } else {
             model.add(linkTo(methodOn(SupplierController.class).activate(supplier.id())).withRel("activate"));

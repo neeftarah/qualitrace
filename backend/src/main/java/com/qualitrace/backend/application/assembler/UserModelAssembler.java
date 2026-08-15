@@ -1,6 +1,7 @@
 package com.qualitrace.backend.application.assembler;
 
 import com.qualitrace.backend.application.dto.UserResponse;
+import com.qualitrace.backend.application.dto.UserUpdateRequest;
 import com.qualitrace.backend.domain.type.UserRole;
 import com.qualitrace.backend.domain.type.UserStatus;
 import com.qualitrace.backend.infrastructure.api.UserController;
@@ -10,6 +11,8 @@ import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.server.RepresentationModelAssembler;
 import org.springframework.stereotype.Component;
+
+import java.util.Collections;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
@@ -47,8 +50,10 @@ public class UserModelAssembler implements RepresentationModelAssembler<UserResp
 
         // Lien de mise à jour : présent uniquement si l'utilisateur n'est pas archivé
         if (user.status() != UserStatus.ARCHIVED) {
-            model.add(linkTo(methodOn(UserController.class).update(user.id(), null))
-                    .withRel("update"));
+            model.add(linkTo(methodOn(UserController.class).update(
+                    user.id(),
+                    new UserUpdateRequest("", "", Collections.emptySet())
+            )).withRel("update"));
         }
 
         // Liens de transition de statut, selon les règles métier de User.isValidTransition()
