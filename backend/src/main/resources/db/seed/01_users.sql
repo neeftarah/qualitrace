@@ -1,0 +1,87 @@
+INSERT INTO "users"
+    ("id", "login", "password", "email", "firstname", "surname", "status", "roles", "version", "created_at")
+VALUES
+(
+    '8b289d81-8824-4554-8f16-7ba3f687abe1',
+    'root',
+    '$2y$10$TmcP7m6NXUz.5xI/tULCmeD3l9GynICd64WnY.5pCbOIN0sDzXb26',
+    'jmoreau.dev+root@gmail.com',
+    'Jérémy',
+    'MOREAU',
+    'ACTIVE',
+    '{ADMIN, SUPPLY, AQ, CQ, PLANNING, PRODUCTION}',
+    0,
+    NOW()
+),
+(
+    'c36f5ac1-69c2-4d88-a07a-9afe6046f5ce',
+    'admin',
+    '$2y$10$sz2GyEI3pGtyve29dLuU9eHlWznkaZNJ2QBsBVl4LVH0BdW5kZRYS',
+    'jmoreau.dev+admin@gmail.com',
+    'Test',
+    'ADMIN',
+    'ACTIVE',
+    '{ADMIN}',
+    0,
+    NOW()
+),
+(
+    '00bd0db5-e97a-4590-991d-9ceb82911acd',
+    'supply',
+    '$2y$10$.JaKVSAXUjHGpRQ1y2T5Y.1EgCP8dgV0vG6tAZ3X33Vlf0g/lS.8W',
+    'jmoreau.dev+supply@gmail.com',
+    'Test',
+    'SUPPLY',
+    'ACTIVE',
+    '{SUPPLY}',
+    0,
+    NOW()
+),
+(
+    '1097b08e-7ccb-46eb-b784-d29036e2860e',
+    'aq',
+    '$2y$10$I59K9S1MEQE3ixAIw0QdFuifqFxdsHbqylsyJ0Q95I1C.r9Re6huG',
+    'jmoreau.dev+aq@gmail.com',
+    'Test',
+    'AQ',
+    'ACTIVE',
+    '{AQ}',
+    0,
+    NOW()
+),
+(
+    'b9381ebf-114b-4127-a00f-763bded71eaf',
+    'cq',
+    '$2y$10$ZP.Dv462pJ3gJlkfyzDtY.7Pt6JtBHI0Bv3qtooFdM.ShQiiziUVm',
+    'jmoreau.dev+cq@gmail.com',
+    'Test',
+    'CQ',
+    'ACTIVE',
+    '{CQ}',
+    0,
+    NOW()
+),
+(
+    'db7918d0-d71e-4ac8-b28e-9dfd4e7eb075',
+    'planning',
+    '$2y$10$JGmntBq.ODPKCtG3bDdyzeY1Qoc64Ngt4qY6vtq8MxbVW.oZNww1a',
+    'jmoreau.dev+planning@gmail.com',
+    'Test',
+    'PLANNING',
+    'ACTIVE',
+    '{PLANNING}',
+    0,
+    NOW()
+),
+(
+    '184db067-8834-41f6-a719-37afad362760',
+    'prod',
+    '$2y$10$yckS2tx19SXGRCngAcv05u7PrP4jk7RO6W2aNmO03ruY/L0PcPuOu',
+    'jmoreau.dev+prod@gmail.com',
+    'Test',
+    'PRODUCTION',
+    'ACTIVE',
+    '{PRODUCTION}',
+    0,
+    NOW()
+);

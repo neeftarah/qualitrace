@@ -66,3 +66,25 @@ tasks.processResources {
         expand(project.properties)
     }
 }
+
+tasks.register<Exec>("seedDb") {
+    group = "database"
+    description = "Vide les tables et injecte les jeux de données de seed dans PostgreSQL."
+
+    // Configuration du conteneur Docker et BDD
+    val dbContainer = "qualitrace-db"
+    val dbUser = "root"
+    val dbName = "qualitrace"
+
+    val seedDir = file("src/main/resources/db/seed")
+
+    doFirst {
+        if (!seedDir.exists()) {
+            throw GradleException("Le dossier de seed ${seedDir.path} n'existe pas.")
+        }
+    }
+
+    // Exécution sous Windows CMD
+    val scriptPath = seedDir.absolutePath.replace('/', '\\')
+    commandLine("cmd", "/c", "for %f in (\"$scriptPath\\*.sql\") do (echo Exécution de %f... && docker exec -i $dbContainer psql -U $dbUser -d $dbName < \"%f\")")
+}

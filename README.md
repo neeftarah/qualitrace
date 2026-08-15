@@ -74,6 +74,11 @@ docker-compose up -d
 .\backend\gradlew.bat -p backend bootRun
 ```
 
+### [OPTIONNEL] Peupler la base de données avec des données de test
+```bash
+.\backend\gradlew.bat -p backend seedDb
+```
+
 ### Accéder à l'application
 - **Frontend :** [http://localhost:8080](http://localhost:8080)
 - **API Swagger :** [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html)
