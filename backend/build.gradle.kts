@@ -27,6 +27,10 @@ repositories {
 	mavenCentral()
 }
 
+dependencyLocking {
+    lockAllConfigurations()
+}
+
 // === DÉCLARATION DES DÉPENDANCES ===
 dependencies {
 	// Core & Web
