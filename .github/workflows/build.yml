@@ -54,3 +54,15 @@
             SPRING_DATASOURCE_PASSWORD: P@ssw0rd
             SPRING_DATA_REDIS_HOST: localhost
             SPRING_DATA_REDIS_PORT: 6379
+            SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+            SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+            SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+
+        -   name: Analyze with SonarCloud
+            env:
+                if: ${{ secrets.SONAR_TOKEN != '' && secrets.SONAR_ORGANIZATION != '' && secrets.SONAR_PROJECT_KEY != '' }}
+                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+                SONAR_ORGANIZATION: ${{ secrets.SONAR_ORGANIZATION }}
+                SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
+            run: ./gradlew sonar

@@ -3,6 +3,7 @@ plugins {
 	id("org.springframework.boot") version "4.1.0"
 	id("io.spring.dependency-management") version "1.1.7"
     id("io.sentry.jvm.gradle") version "6.19.0"
+    id("org.sonarqube") version "5.1.0.4882"
 }
 
 group = "com.qualitrace"
@@ -25,6 +26,7 @@ repositories {
 	mavenCentral()
 }
 
+// === DÉCLARATION DES DÉPENDANCES ===
 dependencies {
 	// Core & Web
 	implementation("org.springframework.boot:spring-boot-starter-hateoas")
@@ -58,27 +60,29 @@ dependencies {
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
+// === SENTRY ===
 sentry {
     includeSourceContext.set(true)
     projectName.set("qualitrace")
     // Récupère les valeurs depuis gradle.properties ou variable d'environnement
-    org.set(
-        providers.gradleProperty("SENTRY_ORG")
-            .orElse(providers.environmentVariable("SENTRY_ORG"))
-            .orNull
-    )
-    authToken.set(
-        providers.gradleProperty("SENTRY_AUTH_TOKEN")
-            .orElse(providers.environmentVariable("SENTRY_AUTH_TOKEN"))
-            .orNull
-    )
+    val sentry_org = providers.gradleProperty("SENTRY_ORG")
+        .orElse(providers.environmentVariable("SENTRY_ORG"))
+        .orNull
+    val sentry_auth_token = providers.gradleProperty("SENTRY_AUTH_TOKEN")
+        .orElse(providers.environmentVariable("SENTRY_AUTH_TOKEN"))
+        .orNull
+
+    // Défini les valeurs pour Sentry
+    // Désactive la remontée automatique Sentry pendant le build si aucun token n'est fourni
+    if (sentry_auth_token != null && sentry_org != null) {
+        org.set(sentry_org)
+        authToken.set(sentry_auth_token)
+    } else {
+        autoUploadSourceContext.set(false)
+    }
 }
 
-tasks.withType<Test> {
-	useJUnitPlatform()
-    jvmArgs("-XX:+EnableDynamicAgentLoading", "-Xshare:off")
-}
-
+// Configuration de la tâche Sentry
 tasks.named<org.springframework.boot.gradle.tasks.run.BootRun>("bootRun") {
     val sentryDsn = providers.gradleProperty("SENTRY_DSN")
         .orElse(providers.environmentVariable("SENTRY_DSN"))
@@ -89,6 +93,37 @@ tasks.named<org.springframework.boot.gradle.tasks.run.BootRun>("bootRun") {
     }
 }
 
+// === SONARQUBE ===
+// Récupère les valeurs depuis gradle.properties ou variable d'environnement
+val sonarOrg = providers.gradleProperty("SONAR_ORGANIZATION")
+    .orElse(providers.environmentVariable("SONAR_ORGANIZATION"))
+    .orNull
+val sonarProjectKey = providers.gradleProperty("SONAR_PROJECT_KEY")
+    .orElse(providers.environmentVariable("SONAR_PROJECT_KEY"))
+    .orNull
+
+if (sonarOrg != null && sonarProjectKey != null) {
+    sonar {
+        properties {
+            property("sonar.organization", sonarOrg)
+            property("sonar.projectKey", sonarProjectKey)
+            property("sonar.host.url", "https://sonarcloud.io")
+        }
+    }
+} else {
+    // Si la configuration est absente, on désactive la tâche sonar
+    tasks.matching { it.name == "sonar" }.configureEach {
+        enabled = false
+    }
+}
+
+// === TESTS ===
+tasks.withType<Test> {
+	useJUnitPlatform()
+    jvmArgs("-XX:+EnableDynamicAgentLoading", "-Xshare:off")
+}
+
+// === TÂCHE DE SEED DE LA BASE DE DONNÉES ===
 tasks.register<Exec>("seedDb") {
     group = "database"
     description = "Vide les tables et injecte les jeux de données de seed dans PostgreSQL."
