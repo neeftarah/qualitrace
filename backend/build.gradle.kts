@@ -1,9 +1,10 @@
 plugins {
 	java
+    jacoco
 	id("org.springframework.boot") version "4.1.0"
 	id("io.spring.dependency-management") version "1.1.7"
     id("io.sentry.jvm.gradle") version "6.19.0"
-    id("org.sonarqube") version "5.1.0.4882"
+    id("org.sonarqube") version "7.3.1.8318"
 }
 
 group = "com.qualitrace"
@@ -144,4 +145,16 @@ tasks.register<Exec>("seedDb") {
     // Exécution sous Windows CMD
     val scriptPath = seedDir.absolutePath.replace('/', '\\')
     commandLine("cmd", "/c", "for %f in (\"$scriptPath\\*.sql\") do (echo Exécution de %f... && docker exec -i $dbContainer psql -U $dbUser -d $dbName < \"%f\")")
+}
+
+tasks.test {
+    finalizedBy(tasks.jacocoTestReport) // Exécute le rapport de couverture automatiquement après les tests
+}
+
+tasks.jacocoTestReport {
+    dependsOn(tasks.test)
+    reports {
+        xml.required.set(true) // Requis par SonarCloud
+        html.required.set(true)
+    }
 }
