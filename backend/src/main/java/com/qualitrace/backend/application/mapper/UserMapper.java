@@ -3,9 +3,9 @@ package com.qualitrace.backend.application.mapper;
 import com.qualitrace.backend.application.dto.UserCreateRequest;
 import com.qualitrace.backend.application.dto.UserResponse;
 import com.qualitrace.backend.domain.model.User;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
-@Component
+@Service
 public class UserMapper {
 
     public UserResponse toResponse(User user) {
