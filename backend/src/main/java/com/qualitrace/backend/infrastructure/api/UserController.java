@@ -33,6 +33,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -103,7 +104,9 @@ public class UserController {
         );
 
         return pagedAssembler.toModel(page, assembler)
-                .add(linkTo(methodOn(UserController.class).create(null)).withRel("create"));
+                .add(linkTo(methodOn(UserController.class).create(
+                        new UserCreateRequest("", "", "", "", "", Collections.emptySet())
+                )).withRel("create"));
     }
 
     /**

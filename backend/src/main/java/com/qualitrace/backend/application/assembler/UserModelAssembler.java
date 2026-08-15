@@ -1,9 +1,12 @@
 package com.qualitrace.backend.application.assembler;
 
 import com.qualitrace.backend.application.dto.UserResponse;
+import com.qualitrace.backend.domain.type.UserRole;
 import com.qualitrace.backend.domain.type.UserStatus;
 import com.qualitrace.backend.infrastructure.api.UserController;
 import org.jspecify.annotations.NullMarked;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.server.RepresentationModelAssembler;
 import org.springframework.stereotype.Component;
@@ -30,7 +33,16 @@ public class UserModelAssembler implements RepresentationModelAssembler<UserResp
         EntityModel<UserResponse> model = EntityModel.of(
                 user,
                 linkTo(methodOn(UserController.class).get(user.id())).withSelfRel(),
-                linkTo(methodOn(UserController.class).list(null, null, null, null, null, null, null, null)).withRel("users")
+                linkTo(methodOn(UserController.class).list(
+                        "",
+                        "",
+                        "",
+                        "",
+                        UserStatus.ACTIVE,
+                        UserRole.ADMIN,
+                        Pageable.unpaged(),
+                        new PagedResourcesAssembler<>(null, null)
+                )).withRel("users")
         );
 
         // Lien de mise à jour : présent uniquement si l'utilisateur n'est pas archivé
