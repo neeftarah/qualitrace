@@ -56,3 +56,10 @@ info:
         name: Qualitrace API
         description: API de gestion et traçabilité pharmaceutique (GxP)
         version: '${version}'
+
+sentry:
+    dsn: '${SENTRY_DSN:}'
+    send-default-pii: true
+    traces-sample-rate: 1.0 # 100% des erreurs et traces capturées en dev
+    logging:
+        minimum-event-level: error # Capture automatiquement les logs ERROR

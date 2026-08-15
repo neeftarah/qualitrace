@@ -2,6 +2,7 @@ plugins {
 	java
 	id("org.springframework.boot") version "4.1.0"
 	id("io.spring.dependency-management") version "1.1.7"
+    id("io.sentry.jvm.gradle") version "6.19.0"
 }
 
 group = "com.qualitrace"
@@ -57,13 +58,34 @@ dependencies {
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
+sentry {
+    includeSourceContext.set(true)
+    projectName.set("qualitrace")
+    // Récupère les valeurs depuis gradle.properties ou variable d'environnement
+    org.set(
+        providers.gradleProperty("SENTRY_ORG")
+            .orElse(providers.environmentVariable("SENTRY_ORG"))
+            .orNull
+    )
+    authToken.set(
+        providers.gradleProperty("SENTRY_AUTH_TOKEN")
+            .orElse(providers.environmentVariable("SENTRY_AUTH_TOKEN"))
+            .orNull
+    )
+}
+
 tasks.withType<Test> {
 	useJUnitPlatform()
     jvmArgs("-XX:+EnableDynamicAgentLoading", "-Xshare:off")
 }
-tasks.processResources {
-    filesMatching("application.yml") {
-        expand(project.properties)
+
+tasks.named<org.springframework.boot.gradle.tasks.run.BootRun>("bootRun") {
+    val sentryDsn = providers.gradleProperty("SENTRY_DSN")
+        .orElse(providers.environmentVariable("SENTRY_DSN"))
+        .orNull
+
+    if (sentryDsn != null) {
+        environment("SENTRY_DSN", sentryDsn)
     }
 }
 

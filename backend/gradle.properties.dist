@@ -1,0 +1,3 @@
+SENTRY_ORG=your_sentry_organization
+SENTRY_AUTH_TOKEN=your_sentry_token
+SENTRY_DSN=your_sentry_dsn
