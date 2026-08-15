@@ -4,6 +4,8 @@ import com.qualitrace.backend.application.dto.SupplierResponse;
 import com.qualitrace.backend.domain.type.SupplierStatus;
 import com.qualitrace.backend.infrastructure.api.SupplierController;
 import org.jspecify.annotations.NullMarked;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.server.RepresentationModelAssembler;
 import org.springframework.stereotype.Component;
@@ -24,7 +26,13 @@ public class SupplierModelAssembler implements RepresentationModelAssembler<Supp
         EntityModel<SupplierResponse> model = EntityModel.of(
                 supplier,
                 linkTo(methodOn(SupplierController.class).get(supplier.id())).withSelfRel(),
-                linkTo(methodOn(SupplierController.class).list(null, null, null, null, null)).withRel("suppliers")
+                linkTo(methodOn(SupplierController.class).list(
+                        "",
+                        "",
+                        SupplierStatus.ACTIVE,
+                        Pageable.unpaged(),
+                        new PagedResourcesAssembler<>(null, null)
+                )).withRel("suppliers")
         );
 
         // Lien de mise à jour : présent uniquement si le fournisseur n'est pas archivé

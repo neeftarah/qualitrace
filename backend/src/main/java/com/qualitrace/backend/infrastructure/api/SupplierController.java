@@ -99,7 +99,9 @@ public class SupplierController {
         );
 
         return pagedAssembler.toModel(page, assembler)
-                .add(linkTo(methodOn(SupplierController.class).create(null)).withRel("create"));
+                .add(linkTo(methodOn(SupplierController.class).create(
+                        new SupplierCreateRequest("", "", "")
+                )).withRel("create"));
     }
 
     /**
@@ -114,6 +116,8 @@ public class SupplierController {
     )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Fournisseur trouvé"),
+            @ApiResponse(responseCode = "400", description = "Requête invalide",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
             @ApiResponse(responseCode = "404", description = "Fournisseur introuvable",
                     content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
@@ -136,7 +140,7 @@ public class SupplierController {
     )
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Fournisseur créé"),
-            @ApiResponse(responseCode = "400", description = "Requête invalide (validation, rôle manquant)",
+            @ApiResponse(responseCode = "400", description = "Requête invalide",
                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
             @ApiResponse(responseCode = "409", description = "Code déjà utilisé",
                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
@@ -164,7 +168,7 @@ public class SupplierController {
     )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Fournisseur mis à jour"),
-            @ApiResponse(responseCode = "400", description = "Requête invalide (validation, rôle manquant)",
+            @ApiResponse(responseCode = "400", description = "Requête invalide",
                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
             @ApiResponse(responseCode = "404", description = "Fournisseur introuvable",
                     content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
