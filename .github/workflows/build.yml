@@ -70,7 +70,7 @@
           run: ./gradlew build jacocoTestReport
 
         - name: Analyze with SonarCloud
-          if: secrets.SONAR_TOKEN != '' && secrets.SONAR_ORGANIZATION != '' && secrets.SONAR_PROJECT_KEY != ''
+          if: env.SONAR_TOKEN != '' && env.SONAR_ORGANIZATION != '' && env.SONAR_PROJECT_KEY != ''
           working-directory: backend
           env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
