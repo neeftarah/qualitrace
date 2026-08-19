@@ -5,6 +5,8 @@ import com.qualitrace.backend.domain.repository.ComponentRepository;
 import com.qualitrace.backend.infrastructure.persistence.entity.ComponentEntity;
 import com.qualitrace.backend.infrastructure.persistence.entity.SupplierEntity;
 import com.qualitrace.backend.infrastructure.persistence.repository.ComponentJpaRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -18,8 +20,12 @@ public class ComponentRepositoryAdapter implements ComponentRepository {
 
     private final ComponentJpaRepository jpaRepository;
 
-    public ComponentRepositoryAdapter(ComponentJpaRepository jpaRepository) {
+    @PersistenceContext
+    private final EntityManager entityManager;
+
+    public ComponentRepositoryAdapter(ComponentJpaRepository jpaRepository, EntityManager entityManager) {
         this.jpaRepository = jpaRepository;
+        this.entityManager = entityManager;
     }
 
     @Override
@@ -46,11 +52,16 @@ public class ComponentRepositoryAdapter implements ComponentRepository {
                 .toList());
         Pageable pageable = PageRequest.of(pageQuery.page(), pageQuery.size(), sort);
 
+        String typeFilter = filter.type() != null ? "%" + filter.type().name().toLowerCase() + "%" : null;
+        String refFilter = filter.reference() != null && !filter.reference().isBlank() ? "%" + filter.reference().toLowerCase() + "%" : null;
+        String nameFilter = filter.name() != null && !filter.name().isBlank() ? "%" + filter.name().toLowerCase() + "%" : null;
+        String statusFilter = filter.status() != null ? "%" + filter.status().name().toLowerCase() + "%" : null;
+
         Page<ComponentEntity> page = jpaRepository.search(
-                filter.type() != null ? filter.type().toString() : null,
-                filter.reference(),
-                filter.name(),
-                filter.status() != null ? filter.status().name() : null,
+                typeFilter,
+                refFilter,
+                nameFilter,
+                statusFilter,
                 filter.supplierId() != null ? filter.supplierId() : null,
                 pageable
         );
@@ -112,18 +123,18 @@ public class ComponentRepositoryAdapter implements ComponentRepository {
     }
 
     private ComponentEntity toNewEntity(Component component) {
+        // entityManager.getReference() crée un proxy JPA léger rattaché au contexte de persistance
+        SupplierEntity supplierRef = entityManager.getReference(
+                SupplierEntity.class,
+                component.supplier().id()
+        );
+
         return new ComponentEntity(
                 component.id(),
                 component.type(),
                 component.reference(),
                 component.name(),
-                new SupplierEntity(
-                        component.supplier().id(),
-                        component.supplier().code(),
-                        component.supplier().name(),
-                        component.supplier().address(),
-                        component.supplier().status()
-                ),
+                supplierRef,
                 component.status()
         );
     }
