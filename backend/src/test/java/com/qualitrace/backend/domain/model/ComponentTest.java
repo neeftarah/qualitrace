@@ -154,6 +154,31 @@ class ComponentTest {
         assertThat(reactivatedComponent2.status()).isEqualTo(ComponentStatus.ACTIVE);
     }
 
+    @Test
+    void setDraftIfActiveWhenActive() {
+        Component component = createComponent().activate(); // DRAFT -> ACTIVE
+        Component result = component.setDraftIfActive();
+
+        assertThat(result.status()).isEqualTo(ComponentStatus.DRAFT);
+    }
+
+    @Test
+    void setDraftIfActiveWhenAlreadyDraft() {
+        Component component = createComponent(); // déjà DRAFT
+        Component result = component.setDraftIfActive();
+
+        assertThat(result.status()).isEqualTo(ComponentStatus.DRAFT);
+        assertThat(result).isEqualTo(component); // no-op : même instance/valeurs, pas de nouvel objet muté
+    }
+
+    @Test
+    void setDraftIfActiveWhenArchived() {
+        Component component = createComponent().archive(); // DRAFT -> ARCHIVED
+        Component result = component.setDraftIfActive();
+
+        assertThat(result.status()).isEqualTo(ComponentStatus.ARCHIVED); // inchangé, pas d'exception
+    }
+
     private Component createComponent() {
         return Component.createNew(
                 ComponentType.RAW_MATERIAL,

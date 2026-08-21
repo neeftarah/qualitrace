@@ -1,8 +1,10 @@
 package com.qualitrace.backend.infrastructure.api;
 
 import com.qualitrace.backend.domain.model.Component;
+import com.qualitrace.backend.domain.model.ControlRangeSpecification;
 import com.qualitrace.backend.domain.model.Supplier;
 import com.qualitrace.backend.domain.repository.ComponentRepository;
+import com.qualitrace.backend.domain.repository.ControlRangeSpecificationRepository;
 import com.qualitrace.backend.domain.type.ComponentStatus;
 import com.qualitrace.backend.domain.type.ComponentType;
 import com.qualitrace.backend.domain.type.SupplierStatus;
@@ -49,6 +51,9 @@ class ComponentControllerTest {
 
     @Autowired
     private ComponentRepository componentRepository; // le port du domaine, pas le JPA repository directement
+
+    @Autowired
+    private ControlRangeSpecificationRepository controlRepository;
 
     private static final Supplier TEST_SUPPLIER = new Supplier(
             1L,
@@ -159,10 +164,10 @@ class ComponentControllerTest {
         restClient.put().uri("/api/v1/components/{id}", id)
                 .contentType(MediaTypes.HAL_JSON)
                 .body("""
-                {
-                    "name": "Test Component 1 MODIFIED"
-                }
-                """)
+                        {
+                            "name": "Test Component 1 MODIFIED"
+                        }
+                        """)
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().contentType(MediaTypes.HAL_JSON)
@@ -236,13 +241,13 @@ class ComponentControllerTest {
         restClient.post().uri("/api/v1/components")
                 .contentType(MediaTypes.HAL_JSON)
                 .body("""
-                {
-                    "type": "RAW_MATERIAL",
-                    "reference": "COMP-001",
-                    "name": "Matériau de haute qualité V2",
-                    "supplierId": 1
-                }
-                """)
+                        {
+                            "type": "RAW_MATERIAL",
+                            "reference": "COMP-001",
+                            "name": "Matériau de haute qualité V2",
+                            "supplierId": 1
+                        }
+                        """)
                 .exchange()
                 .expectStatus().isEqualTo(HttpStatus.CONFLICT)
                 .expectHeader().contentType(MediaType.APPLICATION_PROBLEM_JSON);
@@ -290,8 +295,8 @@ class ComponentControllerTest {
         restClient.post().uri("/api/v1/components")
                 .contentType(MediaTypes.HAL_JSON)
                 .body("""
-                {"type": "RAW_MATERIAL", "reference": "SUP999", "name": "Test", "supplierId": 1}
-                """)
+                        {"type": "RAW_MATERIAL", "reference": "SUP999", "name": "Test", "supplierId": 1}
+                        """)
                 .exchange()
                 .expectStatus().isForbidden();
     }
@@ -303,8 +308,8 @@ class ComponentControllerTest {
         restClient.put().uri("/api/v1/components/{id}", id)
                 .contentType(MediaTypes.HAL_JSON)
                 .body("""
-                {"name": "Hacked"}
-                """)
+                        {"name": "Hacked"}
+                        """)
                 .exchange()
                 .expectStatus().isForbidden();
     }
@@ -325,6 +330,30 @@ class ComponentControllerTest {
     @WithMockUser(username = "simple-user", roles = "AQ")
     void listShouldSucceedForAnyAuthenticatedUser() {
         restClient.get().uri("/api/v1/components")
+                .exchange()
+                .expectStatus().isOk();
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = "ADMIN")
+    void activateShouldFailWithoutAnySpecification() {
+        String id = createTestComponent(ComponentType.COMPONENT, "COMP-001", "Test Component 1", ComponentStatus.DRAFT); // aucune gamme créée
+
+        restClient.patch().uri("/api/v1/components/{id}/activate", id)
+                .contentType(MediaTypes.HAL_JSON)
+                .exchange()
+                .expectStatus().isEqualTo(HttpStatus.CONFLICT)
+                .expectHeader().contentType(MediaType.APPLICATION_PROBLEM_JSON);
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = "ADMIN")
+    void activateShouldSucceedWithAtLeastOneActiveSpecification() {
+        String id = createTestComponent(ComponentType.COMPONENT, "COMP-001", "Test Component 1", ComponentStatus.DRAFT);
+        createTestControl(Long.valueOf(id), "pH", "Titration", "pH", 6.5, 7.5);
+
+        restClient.patch().uri("/api/v1/components/{id}/activate", id)
+                .contentType(MediaTypes.HAL_JSON)
                 .exchange()
                 .expectStatus().isOk();
     }
@@ -350,5 +379,10 @@ class ComponentControllerTest {
         Component saved = componentRepository.save(component);
 
         return saved.id().toString();
+    }
+
+    private Long createTestControl(Long componentId, String name, String method, String unit, double min, double max) {
+        ControlRangeSpecification spec = ControlRangeSpecification.createNew(name, method, unit, min, max, componentId);
+        return controlRepository.save(spec).id();
     }
 }

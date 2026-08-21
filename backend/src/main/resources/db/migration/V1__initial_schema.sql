@@ -63,7 +63,8 @@ CREATE TABLE "control_range_specifications" (
     "method" VARCHAR(255) NOT NULL,
     "unit" VARCHAR(255) NOT NULL,
     "min" DOUBLE PRECISION NOT NULL,
-    "max" DOUBLE PRECISION NOT NULL
+    "max" DOUBLE PRECISION NOT NULL,
+    "status" VARCHAR(15) NOT NULL CHECK (status IN ('ACTIVE', 'DELETED'))
 );
 
 CREATE TABLE "orders" (

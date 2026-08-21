@@ -4,7 +4,9 @@ import com.qualitrace.backend.domain.model.Component;
 import com.qualitrace.backend.domain.model.ComponentFilter;
 import com.qualitrace.backend.domain.model.PageQuery;
 import com.qualitrace.backend.domain.model.PageResult;
+import com.qualitrace.backend.domain.type.ComponentStatus;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface ComponentRepository {
@@ -15,6 +17,8 @@ public interface ComponentRepository {
     Optional<Component> findByReference(String reference);
 
     Optional<Component> findByName(String name);
+
+    List<Component> findBySupplierIdAndStatusNot(Long supplierId, ComponentStatus status);
 
     Component save(Component component);
 

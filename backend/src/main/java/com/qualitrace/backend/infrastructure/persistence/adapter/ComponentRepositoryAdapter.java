@@ -2,6 +2,7 @@ package com.qualitrace.backend.infrastructure.persistence.adapter;
 
 import com.qualitrace.backend.domain.model.*;
 import com.qualitrace.backend.domain.repository.ComponentRepository;
+import com.qualitrace.backend.domain.type.ComponentStatus;
 import com.qualitrace.backend.infrastructure.persistence.entity.ComponentEntity;
 import com.qualitrace.backend.infrastructure.persistence.entity.SupplierEntity;
 import com.qualitrace.backend.infrastructure.persistence.repository.ComponentJpaRepository;
@@ -13,6 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -41,6 +43,13 @@ public class ComponentRepositoryAdapter implements ComponentRepository {
     @Override
     public Optional<Component> findByName(String name) {
         return jpaRepository.findByName(name).map(this::toDomain);
+    }
+
+
+    @Override
+    public List<Component> findBySupplierIdAndStatusNot(Long supplierId, ComponentStatus status) {
+        return jpaRepository.findBySupplierIdAndStatusNot(supplierId, status)
+                .stream().map(this::toDomain).toList();
     }
 
     @Override
