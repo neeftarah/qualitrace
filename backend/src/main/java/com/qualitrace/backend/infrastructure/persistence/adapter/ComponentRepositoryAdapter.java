@@ -113,6 +113,7 @@ public class ComponentRepositoryAdapter implements ComponentRepository {
                 entity.getType(),
                 entity.getReference(),
                 entity.getName(),
+                entity.getAvailableFrom(),
                 entity.getStatus(),
                 entity.getSupplier() != null ? new Supplier(
                         entity.getSupplier().getId(),
@@ -127,6 +128,7 @@ public class ComponentRepositoryAdapter implements ComponentRepository {
     private ComponentEntity applyChanges(ComponentEntity entity, Component component) {
         entity.setName(component.name());
         entity.setStatus(component.status());
+        entity.setAvailableFrom(component.availableFrom());
 
         return entity;
     }
@@ -143,6 +145,7 @@ public class ComponentRepositoryAdapter implements ComponentRepository {
                 component.type(),
                 component.reference(),
                 component.name(),
+                component.availableFrom(),
                 supplierRef,
                 component.status()
         );

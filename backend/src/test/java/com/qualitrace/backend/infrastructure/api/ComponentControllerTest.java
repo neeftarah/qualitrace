@@ -190,7 +190,8 @@ class ComponentControllerTest {
                 .expectStatus().isOk()
                 .expectHeader().contentType(MediaTypes.HAL_JSON)
                 .expectBody()
-                .jsonPath("$.status").isEqualTo("ARCHIVED");
+                .jsonPath("$.status").isEqualTo("ARCHIVED")
+                .jsonPath("$.availableFrom").isEqualTo(null);
     }
 
     @Test
@@ -204,21 +205,6 @@ class ComponentControllerTest {
                 .expectHeader().contentType(MediaType.APPLICATION_PROBLEM_JSON);
     }
 
-    /**
-     * Test de la réactivation d'un composant archivé.
-     */
-    @Test
-    @WithMockUser(username = "admin", roles = "ADMIN")
-    public void activate() {
-        String id = createTestComponent(ComponentType.RAW_MATERIAL, "COMP-001", "Test Component 1", ComponentStatus.ARCHIVED);
-        restClient.patch().uri("/api/v1/components/{id}/activate", id)
-                .contentType(MediaTypes.HAL_JSON)
-                .exchange()
-                .expectStatus().isOk()
-                .expectHeader().contentType(MediaTypes.HAL_JSON)
-                .expectBody()
-                .jsonPath("$.status").isEqualTo("ACTIVE");
-    }
 
     @Test
     @WithMockUser(username = "admin", roles = "ADMIN")
@@ -355,7 +341,11 @@ class ComponentControllerTest {
         restClient.patch().uri("/api/v1/components/{id}/activate", id)
                 .contentType(MediaTypes.HAL_JSON)
                 .exchange()
-                .expectStatus().isOk();
+                .expectStatus().isOk()
+                .expectHeader().contentType(MediaTypes.HAL_JSON)
+                .expectBody()
+                .jsonPath("$.status").isEqualTo("ACTIVE")
+                .jsonPath("$.availableFrom").isNotEmpty();
     }
 
     /**
