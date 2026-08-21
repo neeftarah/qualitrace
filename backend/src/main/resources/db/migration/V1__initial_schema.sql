@@ -51,6 +51,7 @@ CREATE TABLE "components" (
     "reference" VARCHAR(255) NOT NULL,
     "name" VARCHAR(255) NOT NULL,
     "status" VARCHAR(15) NOT NULL CHECK (status IN ('DRAFT', 'ACTIVE', 'ARCHIVED')),
+    "available_from" TIMESTAMPTZ,
     "supplier_id" BIGINT NOT NULL,
     CONSTRAINT "uk_components_reference" UNIQUE ("reference"),
     CONSTRAINT "uk_components_name" UNIQUE ("name")

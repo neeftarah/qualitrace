@@ -4,6 +4,8 @@ import com.qualitrace.backend.domain.type.ComponentStatus;
 import com.qualitrace.backend.domain.type.ComponentType;
 import jakarta.persistence.*;
 
+import java.time.Instant;
+
 @Entity
 @Table(name = "components")
 public class ComponentEntity {
@@ -25,6 +27,9 @@ public class ComponentEntity {
     @Column(name = "status", nullable = false, length = 15)
     private ComponentStatus status;
 
+    @Column(name = "available_from")
+    private Instant availableFrom;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "supplier_id", nullable = false)
     private SupplierEntity supplier;
@@ -33,11 +38,20 @@ public class ComponentEntity {
         // requis par JPA/Hibernate
     }
 
-    public ComponentEntity(Long id, ComponentType type, String reference, String name, SupplierEntity supplier, ComponentStatus status) {
+    public ComponentEntity(
+            Long id,
+            ComponentType type,
+            String reference,
+            String name,
+            Instant availableFrom,
+            SupplierEntity supplier,
+            ComponentStatus status
+    ) {
         this.id = id;
         this.type = type;
         this.reference = reference;
         this.name = name;
+        this.availableFrom = availableFrom;
         this.status = status;
         this.supplier = supplier;
     }
@@ -72,6 +86,14 @@ public class ComponentEntity {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public Instant getAvailableFrom() {
+        return availableFrom;
+    }
+
+    public void setAvailableFrom(Instant availableFrom) {
+        this.availableFrom = availableFrom;
     }
 
     public SupplierEntity getSupplier() {

@@ -15,6 +15,7 @@ public class ComponentMapper {
                 component.type(),
                 component.reference(),
                 component.name(),
+                component.availableFrom(),
                 component.status(),
                 component.supplier()
         );
