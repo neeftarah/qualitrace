@@ -1,5 +1,6 @@
 package com.qualitrace.backend.infrastructure.persistence.repository;
 
+import com.qualitrace.backend.domain.type.ComponentStatus;
 import com.qualitrace.backend.infrastructure.persistence.entity.ComponentEntity;
 import org.jspecify.annotations.NullMarked;
 import org.springframework.data.domain.Page;
@@ -9,6 +10,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface ComponentJpaRepository extends JpaRepository<ComponentEntity, Long> {
@@ -22,6 +24,8 @@ public interface ComponentJpaRepository extends JpaRepository<ComponentEntity, L
 
     @EntityGraph(attributePaths = {"supplier"})
     Optional<ComponentEntity> findByName(String name);
+
+    List<ComponentEntity> findBySupplierIdAndStatusNot(Long supplierId, ComponentStatus status);
 
     @EntityGraph(attributePaths = {"supplier"})
     @Query("""

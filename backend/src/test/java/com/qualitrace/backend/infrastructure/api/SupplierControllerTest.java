@@ -1,7 +1,10 @@
 package com.qualitrace.backend.infrastructure.api;
 
+import com.qualitrace.backend.domain.model.Component;
 import com.qualitrace.backend.domain.model.Supplier;
+import com.qualitrace.backend.domain.repository.ComponentRepository;
 import com.qualitrace.backend.domain.repository.SupplierRepository;
+import com.qualitrace.backend.domain.type.ComponentType;
 import com.qualitrace.backend.domain.type.SupplierStatus;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -45,6 +48,9 @@ class SupplierControllerTest {
     @Autowired
     private SupplierRepository supplierRepository; // le port du domaine, pas le JPA repository directement
 
+    @Autowired
+    private ComponentRepository componentRepository; // le port du domaine, pas le JPA repository directement
+
     @BeforeAll
     void setUpClient() {
         MockMvc mockMvc = MockMvcBuilders
@@ -60,12 +66,12 @@ class SupplierControllerTest {
         restClient.post().uri("/api/v1/suppliers")
                 .contentType(MediaTypes.HAL_JSON)
                 .body("""
-                {
-                    "code": "SUP001",
-                    "name": "Acme Corporation",
-                    "address": "123 Main Street"
-                }
-                """)
+                        {
+                            "code": "SUP001",
+                            "name": "Acme Corporation",
+                            "address": "123 Main Street"
+                        }
+                        """)
                 .exchange()
                 .expectStatus().isCreated()
                 .expectHeader().contentType(MediaTypes.HAL_JSON)
@@ -138,11 +144,11 @@ class SupplierControllerTest {
         restClient.put().uri("/api/v1/suppliers/{id}", id)
                 .contentType(MediaTypes.HAL_JSON)
                 .body("""
-                {
-                    "name": "Acme Corp Renamed",
-                    "address": "789 New Street"
-                }
-                """)
+                        {
+                            "name": "Acme Corp Renamed",
+                            "address": "789 New Street"
+                        }
+                        """)
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().contentType(MediaTypes.HAL_JSON)
@@ -217,12 +223,12 @@ class SupplierControllerTest {
         restClient.post().uri("/api/v1/suppliers")
                 .contentType(MediaTypes.HAL_JSON)
                 .body("""
-                {
-                    "code": "SUP001",
-                    "name": "Another Corp",
-                    "address": "999 Other Street"
-                }
-                """)
+                        {
+                            "code": "SUP001",
+                            "name": "Another Corp",
+                            "address": "999 Other Street"
+                        }
+                        """)
                 .exchange()
                 .expectStatus().isEqualTo(HttpStatus.CONFLICT)
                 .expectHeader().contentType(MediaType.APPLICATION_PROBLEM_JSON);
@@ -270,8 +276,8 @@ class SupplierControllerTest {
         restClient.post().uri("/api/v1/suppliers")
                 .contentType(MediaTypes.HAL_JSON)
                 .body("""
-                {"code": "SUP999", "name": "Test", "address": "Test address"}
-                """)
+                        {"code": "SUP999", "name": "Test", "address": "Test address"}
+                        """)
                 .exchange()
                 .expectStatus().isForbidden();
     }
@@ -283,8 +289,8 @@ class SupplierControllerTest {
         restClient.put().uri("/api/v1/suppliers/{id}", id)
                 .contentType(MediaTypes.HAL_JSON)
                 .body("""
-                {"name": "Hacked", "address": "Nowhere"}
-                """)
+                        {"name": "Hacked", "address": "Nowhere"}
+                        """)
                 .exchange()
                 .expectStatus().isForbidden();
     }
@@ -310,6 +316,39 @@ class SupplierControllerTest {
     }
 
     /**
+     * Teste que l'archivage d'un fournisseur entraîne l'archivage de ses composants associés.
+     * Vérifie également que l'audit est correctement écrit.
+     *
+     * RG-REF-02 : L'archivage d'un fournisseur entraîne automatiquement l'archivage de toutes les matières premières qui lui sont rattachées.
+     */
+    @Test
+    @WithMockUser(username = "admin", roles = "ADMIN")
+    void archivingSupplierCascadesToComponentsAndWritesAudit() {
+        Supplier supplier = supplierRepository.save(
+                Supplier.createNew("SUP001", "Acme Corporation", "123 Main Street")
+        );
+        String componentId = createTestComponent(supplier);
+
+        restClient.patch().uri("/api/v1/suppliers/{id}/archive", supplier.id())
+                .contentType(MediaTypes.HAL_JSON)
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentType(MediaTypes.HAL_JSON)
+                .expectBody()
+                .jsonPath("$.status").isEqualTo("ARCHIVED");
+
+        restClient.get().uri("/api/v1/components/{id}", componentId)
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentType(MediaTypes.HAL_JSON)
+                .expectBody()
+                .jsonPath("$.id").exists()
+                .jsonPath("$.id").isEqualTo(componentId)
+                .jsonPath("$.status").isEqualTo("ARCHIVED");
+    }
+
+
+    /**
      * Méthode générique de création d'un fournisseur pour simplifier les autres tests.
      *
      * @param code    Le code du fournisseur
@@ -326,6 +365,19 @@ class SupplierControllerTest {
         }
 
         Supplier saved = supplierRepository.save(supplier);
+
+        return saved.id().toString();
+    }
+
+    private String createTestComponent(Supplier supplier) {
+        Component component = Component.createNew(
+                ComponentType.RAW_MATERIAL,
+                "COMP-001",
+                "Test Component 1",
+                supplier
+        );
+
+        Component saved = componentRepository.save(component);
 
         return saved.id().toString();
     }

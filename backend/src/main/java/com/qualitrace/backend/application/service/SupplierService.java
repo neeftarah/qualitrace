@@ -9,17 +9,26 @@ import com.qualitrace.backend.domain.model.PageQuery;
 import com.qualitrace.backend.domain.model.PageResult;
 import com.qualitrace.backend.domain.model.Supplier;
 import com.qualitrace.backend.domain.model.SupplierFilter;
+import com.qualitrace.backend.domain.repository.ComponentRepository;
 import com.qualitrace.backend.domain.repository.SupplierRepository;
+import com.qualitrace.backend.domain.type.ComponentStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class SupplierService {
     private final SupplierRepository supplierRepository;
     private final SupplierMapper supplierMapper;
+    private final ComponentRepository componentRepository;
 
-    public SupplierService(SupplierRepository supplierRepository, SupplierMapper supplierMapper) {
+    public SupplierService(
+            SupplierRepository supplierRepository,
+            SupplierMapper supplierMapper,
+            ComponentRepository componentRepository
+    ) {
         this.supplierRepository = supplierRepository;
         this.supplierMapper = supplierMapper;
+        this.componentRepository = componentRepository;
     }
 
     public SupplierResponse getOneById(Long id) {
@@ -49,9 +58,18 @@ public class SupplierService {
         return supplierMapper.toResponse(supplierRepository.save(updated));
     }
 
+    @Transactional
     public SupplierResponse archive(Long id) {
         Supplier existing = findOrThrow(id);
-        return supplierMapper.toResponse(supplierRepository.save(existing.archive()));
+
+        Supplier archived = supplierRepository.save(existing.archive());
+
+        // RG-REF-02 : L'archivage d'un fournisseur entraîne automatiquement l'archivage de toutes les matières premières qui lui sont rattachées.
+        componentRepository
+                .findBySupplierIdAndStatusNot(id, ComponentStatus.ARCHIVED)
+                .forEach(component -> componentRepository.save(component.archive()));
+
+        return supplierMapper.toResponse(archived);
     }
 
     public SupplierResponse reactivate(Long id) {

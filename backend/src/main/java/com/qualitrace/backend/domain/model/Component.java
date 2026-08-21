@@ -60,6 +60,14 @@ public record Component(Long id, ComponentType type, String reference, String na
         return withStatus(ComponentStatus.DRAFT);
     }
 
+    public Component setDraftIfActive() {
+        if (this.status != ComponentStatus.ACTIVE) {
+            return this;
+        }
+
+        return withStatus(ComponentStatus.DRAFT);
+    }
+
     public Component activate() {
         if (this.status != ComponentStatus.ARCHIVED && this.status != ComponentStatus.DRAFT) {
             throw new IllegalStateException(

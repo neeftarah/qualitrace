@@ -5,9 +5,11 @@ import com.qualitrace.backend.application.dto.ComponentResponse;
 import com.qualitrace.backend.application.dto.ComponentUpdateRequest;
 import com.qualitrace.backend.application.mapper.ComponentMapper;
 import com.qualitrace.backend.domain.exception.ComponentNotFoundException;
+import com.qualitrace.backend.domain.exception.ComponentRequiresSpecificationException;
 import com.qualitrace.backend.domain.exception.SupplierNotFoundException;
 import com.qualitrace.backend.domain.model.*;
 import com.qualitrace.backend.domain.repository.ComponentRepository;
+import com.qualitrace.backend.domain.repository.ControlRangeSpecificationRepository;
 import com.qualitrace.backend.domain.repository.SupplierRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,11 +23,19 @@ public class ComponentService {
 
     private final ComponentRepository componentRepository;
     private final ComponentMapper componentMapper;
+    private final ControlRangeSpecificationRepository controlRangeSpecificationRepository;
 
-    public ComponentService(SupplierRepository supplierRepository, ComponentRepository componentRepository, ComponentMapper componentMapper) {
+
+    public ComponentService(
+            SupplierRepository supplierRepository,
+            ComponentRepository componentRepository,
+            ComponentMapper componentMapper,
+            ControlRangeSpecificationRepository controlRangeSpecificationRepository
+    ) {
         this.supplierRepository = supplierRepository;
         this.componentRepository = componentRepository;
         this.componentMapper = componentMapper;
+        this.controlRangeSpecificationRepository = controlRangeSpecificationRepository;
     }
 
     @Transactional(readOnly = true)
@@ -71,6 +81,11 @@ public class ComponentService {
 
     public ComponentResponse activate(Long id) {
         Component existing = findOrThrow(id);
+
+        if (!controlRangeSpecificationRepository.existsActiveSpecForComponent(id)) {
+            throw new ComponentRequiresSpecificationException(id);
+        }
+
         return componentMapper.toResponse(componentRepository.save(existing.activate()));
     }
 
