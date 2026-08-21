@@ -30,7 +30,7 @@ spring:
 
   session:
     store-type: redis
-    timeout: 30m  # durée de vie d'une session inactive
+    timeout: 15m  # RG-AUTH-05 : Suite à une inactivité d’une durée supérieure à 15 minutes, l’utilisateur est déconnecté automatiquement.
 
 # Configuration Actuator pour le debug
 management:
