@@ -43,7 +43,8 @@ public class AuditEventListener implements
         write(
             (EventSource) event.getSession(),
             "UPDATE",
-            entityType(event), entityId(event.getId()),
+            entityType(event),
+            entityId(event.getId()),
             sanitize(diff[0]),
             sanitize(diff[1])
         );

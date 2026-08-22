@@ -88,7 +88,7 @@ class AuditTrailTest {
 
     @Test
     void shouldRecordAuthorIdWhenAuthenticated() {
-        // Pas de contexte de sécurité positionné ici → author_id doit être null (action système)
+        // Pas de contexte de sécurité positionné ici → author doit être null (action système)
         User user = User.createNew("audituser3", "hashed-pwd", "audit3@test.com", "Test", "User", Set.of(UserRole.AQ));
         User saved = userRepository.save(user);
 
@@ -97,7 +97,7 @@ class AuditTrailTest {
                 .findFirst()
                 .orElseThrow();
 
-        assertThat(entry.getAuthorId()).isNull();
+        assertThat(entry.getAuthor()).isNull();
     }
 
     /**
