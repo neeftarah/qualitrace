@@ -1,16 +1,10 @@
 package com.qualitrace.backend.infrastructure.persistence.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 import java.time.Instant;
-import java.util.UUID;
 
 @Entity
 @Table(name = "audit_trail")
@@ -19,9 +13,6 @@ public class AuditTrailEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @Column(name = "author_id")
-    private UUID authorId;
 
     @Column(name = "event", nullable = false)
     private String event;
@@ -43,13 +34,17 @@ public class AuditTrailEntity {
     @Column(name = "changed_data", nullable = false)
     private String changedData;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "author_id", nullable = false)
+    private UserEntity author;
+
     protected AuditTrailEntity() {
         // requis par JPA/Hibernate
     }
 
-    public AuditTrailEntity(UUID authorId, String event, String entityType, String entityId,
+    public AuditTrailEntity(UserEntity author, String event, String entityType, String entityId,
                             Instant timestamp, String previousData, String changedData) {
-        this.authorId = authorId;
+        this.author = author;
         this.event = event;
         this.entityType = entityType;
         this.entityId = entityId;
@@ -62,8 +57,8 @@ public class AuditTrailEntity {
         return id;
     }
 
-    public UUID getAuthorId() {
-        return authorId;
+    public UserEntity getAuthor() {
+        return author;
     }
 
     public String getEvent() {
