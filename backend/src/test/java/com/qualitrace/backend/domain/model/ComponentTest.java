@@ -1,7 +1,9 @@
 package com.qualitrace.backend.domain.model;
 
-import com.qualitrace.backend.domain.type.ComponentStatus;
-import com.qualitrace.backend.domain.type.ComponentType;
+import com.qualitrace.backend.component.domain.model.Component;
+import com.qualitrace.backend.component.domain.type.ComponentStatus;
+import com.qualitrace.backend.component.domain.type.ComponentType;
+import com.qualitrace.backend.supplier.domain.model.Supplier;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;

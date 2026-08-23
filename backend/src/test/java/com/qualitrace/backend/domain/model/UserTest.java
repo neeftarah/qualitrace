@@ -1,7 +1,8 @@
 package com.qualitrace.backend.domain.model;
 
-import com.qualitrace.backend.domain.type.UserRole;
-import com.qualitrace.backend.domain.type.UserStatus;
+import com.qualitrace.backend.user.domain.type.UserRole;
+import com.qualitrace.backend.user.domain.type.UserStatus;
+import com.qualitrace.backend.user.domain.model.User;
 import org.junit.jupiter.api.Test;
 
 import java.util.Set;

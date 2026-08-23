@@ -1,6 +1,7 @@
 package com.qualitrace.backend.domain.model;
 
-import com.qualitrace.backend.domain.type.ControlRangeSpecificationStatus;
+import com.qualitrace.backend.controls.domain.model.ControlRangeSpecification;
+import com.qualitrace.backend.controls.domain.type.ControlRangeSpecificationStatus;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;

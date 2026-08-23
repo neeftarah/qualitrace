@@ -1,6 +1,7 @@
 package com.qualitrace.backend.infrastructure.exception;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.qualitrace.backend.shared.infrastructure.exception.GlobalExceptionHandler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.support.StaticApplicationContext;
