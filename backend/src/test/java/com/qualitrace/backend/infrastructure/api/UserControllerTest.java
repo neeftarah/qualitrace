@@ -1,9 +1,9 @@
 package com.qualitrace.backend.infrastructure.api;
 
-import com.qualitrace.backend.domain.model.User;
-import com.qualitrace.backend.domain.repository.UserRepository;
-import com.qualitrace.backend.domain.type.UserRole;
-import com.qualitrace.backend.domain.type.UserStatus;
+import com.qualitrace.backend.user.domain.model.User;
+import com.qualitrace.backend.user.domain.repository.UserRepository;
+import com.qualitrace.backend.user.domain.type.UserRole;
+import com.qualitrace.backend.user.domain.type.UserStatus;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;

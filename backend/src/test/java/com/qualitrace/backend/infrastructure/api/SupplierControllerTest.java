@@ -1,11 +1,11 @@
 package com.qualitrace.backend.infrastructure.api;
 
-import com.qualitrace.backend.domain.model.Component;
-import com.qualitrace.backend.domain.model.Supplier;
-import com.qualitrace.backend.domain.repository.ComponentRepository;
-import com.qualitrace.backend.domain.repository.SupplierRepository;
-import com.qualitrace.backend.domain.type.ComponentType;
-import com.qualitrace.backend.domain.type.SupplierStatus;
+import com.qualitrace.backend.component.domain.model.Component;
+import com.qualitrace.backend.supplier.domain.model.Supplier;
+import com.qualitrace.backend.component.domain.repository.ComponentRepository;
+import com.qualitrace.backend.supplier.domain.repository.SupplierRepository;
+import com.qualitrace.backend.component.domain.type.ComponentType;
+import com.qualitrace.backend.supplier.domain.type.SupplierStatus;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;

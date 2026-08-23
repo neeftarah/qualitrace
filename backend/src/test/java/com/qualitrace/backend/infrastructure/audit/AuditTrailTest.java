@@ -1,10 +1,10 @@
 package com.qualitrace.backend.infrastructure.audit;
 
-import com.qualitrace.backend.domain.model.User;
-import com.qualitrace.backend.domain.repository.UserRepository;
-import com.qualitrace.backend.domain.type.UserRole;
-import com.qualitrace.backend.infrastructure.persistence.entity.AuditTrailEntity;
-import com.qualitrace.backend.infrastructure.persistence.repository.AuditTrailJpaRepository;
+import com.qualitrace.backend.user.domain.model.User;
+import com.qualitrace.backend.user.domain.repository.UserRepository;
+import com.qualitrace.backend.user.domain.type.UserRole;
+import com.qualitrace.backend.audittrail.infrastructure.persistence.entity.AuditTrailEntity;
+import com.qualitrace.backend.audittrail.infrastructure.persistence.repository.AuditTrailJpaRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

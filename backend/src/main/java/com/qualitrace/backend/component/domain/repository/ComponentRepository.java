@@ -1,0 +1,26 @@
+package com.qualitrace.backend.component.domain.repository;
+
+import com.qualitrace.backend.component.domain.model.Component;
+import com.qualitrace.backend.component.domain.model.ComponentFilter;
+import com.qualitrace.backend.shared.domain.model.PageQuery;
+import com.qualitrace.backend.shared.domain.model.PageResult;
+import com.qualitrace.backend.component.domain.type.ComponentStatus;
+
+import java.util.List;
+import java.util.Optional;
+
+public interface ComponentRepository {
+    Optional<Component> findById(Long id);
+
+    PageResult<Component> findAll(PageQuery pageQuery, ComponentFilter filter);
+
+    Optional<Component> findByReference(String reference);
+
+    Optional<Component> findByName(String name);
+
+    List<Component> findBySupplierIdAndStatusNot(Long supplierId, ComponentStatus status);
+
+    Component save(Component component);
+
+    boolean existsById(Long id);
+}
