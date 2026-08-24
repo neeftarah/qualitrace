@@ -1,17 +1,17 @@
 package com.qualitrace.backend.controls.application.service;
 
+import com.qualitrace.backend.component.domain.exception.ComponentDisabledException;
+import com.qualitrace.backend.component.domain.exception.ComponentNotFoundException;
+import com.qualitrace.backend.component.domain.model.Component;
+import com.qualitrace.backend.component.domain.repository.ComponentRepository;
+import com.qualitrace.backend.component.domain.type.ComponentStatus;
 import com.qualitrace.backend.controls.application.dto.ControlRangeSpecificationCreateRequest;
 import com.qualitrace.backend.controls.application.dto.ControlRangeSpecificationResponse;
 import com.qualitrace.backend.controls.application.dto.ControlRangeSpecificationUpdateRequest;
 import com.qualitrace.backend.controls.application.mapper.ControlRangeSpecificationMapper;
-import com.qualitrace.backend.component.domain.exception.ComponentDisabledException;
-import com.qualitrace.backend.component.domain.exception.ComponentNotFoundException;
 import com.qualitrace.backend.controls.domain.exception.ControlRangeSpecificationNotFoundException;
-import com.qualitrace.backend.component.domain.model.Component;
 import com.qualitrace.backend.controls.domain.model.ControlRangeSpecification;
-import com.qualitrace.backend.component.domain.repository.ComponentRepository;
 import com.qualitrace.backend.controls.domain.repository.ControlRangeSpecificationRepository;
-import com.qualitrace.backend.component.domain.type.ComponentStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,33 +43,31 @@ public class ControlRangeSpecificationService {
     }
 
     public ControlRangeSpecificationResponse save(Long componentId, ControlRangeSpecificationCreateRequest request) {
-        Component component = getEditableComponent(componentId);
-        ControlRangeSpecification controlRangeSpecification = controlRangeSpecificationMapper.toDomain(componentId, request);
+        getEditableComponent(componentId);
+        ControlRangeSpecification controlRangeSpecification = controlRangeSpecificationMapper.toDomain(componentId, request, componentRepository);
         ControlRangeSpecification saved = controlRangeSpecificationRepository.save(controlRangeSpecification);
-        setComponentToDraft(component);
 
         return controlRangeSpecificationMapper.toResponse(saved);
     }
 
-    public ControlRangeSpecificationResponse update(Long componentId, Long id, ControlRangeSpecificationUpdateRequest request) {
-        Component component = getEditableComponent(componentId);
+    public ControlRangeSpecificationResponse update(Long id, ControlRangeSpecificationUpdateRequest request) {
         ControlRangeSpecification existing = findOrThrow(id);
+        getEditableComponent(existing.componentId());
         ControlRangeSpecification updated = existing.update(
                 request.method(),
                 request.min(),
-                request.max()
+                request.max(),
+                componentRepository
         );
-        setComponentToDraft(component);
 
         return controlRangeSpecificationMapper.toResponse(controlRangeSpecificationRepository.save(updated));
     }
 
-    public ControlRangeSpecificationResponse delete(Long componentId, Long id) {
-        Component component = getEditableComponent(componentId);
+    public void delete(Long id) {
         ControlRangeSpecification existing = findOrThrow(id);
-        setComponentToDraft(component);
+        getEditableComponent(existing.componentId());
 
-        return controlRangeSpecificationMapper.toResponse(controlRangeSpecificationRepository.save(existing.delete()));
+        controlRangeSpecificationRepository.save(existing.delete(componentRepository));
     }
 
     private ControlRangeSpecification findOrThrow(Long id) {
@@ -84,11 +82,5 @@ public class ControlRangeSpecificationService {
             throw new ComponentDisabledException(componentId);
         }
         return component;
-    }
-
-    private void setComponentToDraft(Component component) {
-        if (component.status() == ComponentStatus.ACTIVE) {
-            componentRepository.save(component.setDraftIfActive());
-        }
     }
 }

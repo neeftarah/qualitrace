@@ -1,14 +1,22 @@
 package com.qualitrace.backend.domain.model;
 
-import com.qualitrace.backend.supplier.domain.type.SupplierStatus;
+import com.qualitrace.backend.component.domain.repository.ComponentRepository;
 import com.qualitrace.backend.supplier.domain.model.Supplier;
+import com.qualitrace.backend.supplier.domain.type.SupplierStatus;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatException;
+import static org.mockito.Mockito.verify;
 
-
+@ExtendWith(MockitoExtension.class)
 class SupplierTest {
+    @Mock
+    private ComponentRepository componentRepository;
+
     @Test
     void createNewSupplier() {
         Supplier supplier = createSupplier();
@@ -127,10 +135,11 @@ class SupplierTest {
                 .withMessage("Seul un fournisseur archivé peut être réactivé (statut actuel : ACTIVE)");
 
         // ACTIVE ==> ARCHIVED
-        Supplier archivedSupplier = supplier.archive();
+        Supplier archivedSupplier = supplier.archive(componentRepository);
         assertThat(archivedSupplier.status()).isEqualTo(SupplierStatus.ARCHIVED);
+        verify(componentRepository).archiveAllBySupplierId(supplier.id());
 
-        assertThatException().isThrownBy(archivedSupplier::archive).isInstanceOf(IllegalStateException.class)
+        assertThatException().isThrownBy(() -> archivedSupplier.archive(componentRepository)).isInstanceOf(IllegalStateException.class)
                 .withMessage("Le fournisseur est déjà archivé");
 
         // ARCHIVED ==> ACTIVE

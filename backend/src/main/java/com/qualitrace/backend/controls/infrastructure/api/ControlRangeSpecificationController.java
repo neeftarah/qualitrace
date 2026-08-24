@@ -116,7 +116,7 @@ public class ControlRangeSpecificationController {
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public EntityModel<ControlRangeSpecificationResponse> update(@PathVariable Long componentId, @PathVariable Long id, @Valid @RequestBody ControlRangeSpecificationUpdateRequest request) {
-        ControlRangeSpecificationResponse updated = controlRangeSpecificationService.update(componentId, id, request);
+        ControlRangeSpecificationResponse updated = controlRangeSpecificationService.update(id, request);
 
         return assembler.toModel(updated);
     }
@@ -138,7 +138,7 @@ public class ControlRangeSpecificationController {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable Long componentId, @PathVariable Long id) {
-        controlRangeSpecificationService.delete(componentId, id);
+        controlRangeSpecificationService.delete(id);
         return ResponseEntity.noContent().build();
     }
 }

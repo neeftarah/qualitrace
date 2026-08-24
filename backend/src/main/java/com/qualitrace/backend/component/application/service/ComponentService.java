@@ -86,11 +86,9 @@ public class ComponentService {
     public ComponentResponse activate(Long id) {
         Component existing = findOrThrow(id);
 
-        if (!controlRangeSpecificationRepository.existsActiveSpecForComponent(id)) {
-            throw new ComponentRequiresSpecificationException(id);
-        }
-
-        return componentMapper.toResponse(componentRepository.save(existing.activate()));
+        return componentMapper.toResponse(
+                componentRepository.save(existing.activate(controlRangeSpecificationRepository))
+        );
     }
 
     private Component findOrThrow(Long id) {

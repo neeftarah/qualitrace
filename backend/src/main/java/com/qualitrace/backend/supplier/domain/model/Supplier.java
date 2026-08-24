@@ -1,5 +1,8 @@
 package com.qualitrace.backend.supplier.domain.model;
 
+import com.qualitrace.backend.component.domain.model.Component;
+import com.qualitrace.backend.component.domain.repository.ComponentRepository;
+import com.qualitrace.backend.component.domain.type.ComponentStatus;
 import com.qualitrace.backend.supplier.domain.type.SupplierStatus;
 
 public record Supplier(Long id, String code, String name, String address, SupplierStatus status) {
@@ -41,10 +44,13 @@ public record Supplier(Long id, String code, String name, String address, Suppli
         );
     }
 
-    public Supplier archive() {
+    public Supplier archive(ComponentRepository componentRepository) {
         if (this.status == SupplierStatus.ARCHIVED) {
             throw new IllegalStateException("Le fournisseur est déjà archivé");
         }
+
+        // RG-REF-02 : L'archivage d'un fournisseur entraîne automatiquement l'archivage de toutes les matières premières qui lui sont rattachées.
+        componentRepository.archiveAllBySupplierId(this.id);
 
         return withStatus(SupplierStatus.ARCHIVED);
     }

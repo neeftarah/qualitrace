@@ -1,5 +1,7 @@
 package com.qualitrace.backend.component.domain.model;
 
+import com.qualitrace.backend.component.domain.exception.ComponentRequiresSpecificationException;
+import com.qualitrace.backend.controls.domain.repository.ControlRangeSpecificationRepository;
 import com.qualitrace.backend.supplier.domain.model.Supplier;
 import com.qualitrace.backend.component.domain.type.ComponentStatus;
 import com.qualitrace.backend.component.domain.type.ComponentType;
@@ -79,10 +81,14 @@ public record Component(Long id, ComponentType type, String reference, String na
      * RG-REF-05 : Le passage à l'état « Disponible » d'une matière première ou d’un produit fini est manuel et déclenche l'enregistrement de la date de mise à disposition.
      * Cette action n’est disponible que si la gamme de contrôle a été complétée.
      */
-    public Component activate() {
+    public Component activate(ControlRangeSpecificationRepository controlRangeSpecificationRepository) {
         if (this.status != ComponentStatus.ARCHIVED && this.status != ComponentStatus.DRAFT) {
             throw new IllegalStateException(
                     "Seul un composant archivé ou en brouillon peut être réactivé (statut actuel : %s)".formatted(this.status));
+        }
+
+        if (!controlRangeSpecificationRepository.existsActiveSpecForComponent(id)) {
+            throw new ComponentRequiresSpecificationException(id);
         }
 
         return new Component(

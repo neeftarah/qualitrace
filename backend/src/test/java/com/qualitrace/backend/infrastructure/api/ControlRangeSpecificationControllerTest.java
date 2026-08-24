@@ -1,12 +1,12 @@
 package com.qualitrace.backend.infrastructure.api;
 
 import com.qualitrace.backend.component.domain.model.Component;
-import com.qualitrace.backend.controls.domain.model.ControlRangeSpecification;
-import com.qualitrace.backend.supplier.domain.model.Supplier;
 import com.qualitrace.backend.component.domain.repository.ComponentRepository;
-import com.qualitrace.backend.controls.domain.repository.ControlRangeSpecificationRepository;
 import com.qualitrace.backend.component.domain.type.ComponentStatus;
 import com.qualitrace.backend.component.domain.type.ComponentType;
+import com.qualitrace.backend.controls.domain.model.ControlRangeSpecification;
+import com.qualitrace.backend.controls.domain.repository.ControlRangeSpecificationRepository;
+import com.qualitrace.backend.supplier.domain.model.Supplier;
 import com.qualitrace.backend.supplier.domain.type.SupplierStatus;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -203,7 +203,7 @@ class ControlRangeSpecificationControllerTest {
     void deleteAlreadyDeletedShouldFail() {
         Long componentId = createTestComponent(ComponentStatus.DRAFT);
         Long specId = createTestControl(componentId, "pH", "pH-3215", "pH", 6.5, 7.5);
-        controlRepository.save(controlRepository.findById(specId).orElseThrow().delete());
+        controlRepository.save(controlRepository.findById(specId).orElseThrow().delete(componentRepository));
 
         restClient.method(HttpMethod.DELETE)
                 .uri("/api/v1/components/{componentId}/controls/{id}", componentId, specId)
@@ -236,7 +236,7 @@ class ControlRangeSpecificationControllerTest {
         Long componentId = createTestComponent(ComponentStatus.DRAFT);
         createTestControl(componentId, "pH", "pH-3215", "pH", 6.5, 7.5);
         Long deletedId = createTestControl(componentId, "Humidity", "Karl Fischer", "%", 0.0, 5.0);
-        controlRepository.save(controlRepository.findById(deletedId).orElseThrow().delete());
+        controlRepository.save(controlRepository.findById(deletedId).orElseThrow().delete(componentRepository));
 
         restClient.get().uri("/api/v1/components/{componentId}/controls", componentId)
                 .exchange()
@@ -332,26 +332,38 @@ class ControlRangeSpecificationControllerTest {
     private Long createTestComponent(ComponentStatus status) {
         Component component = Component.createNew(
                 ComponentType.RAW_MATERIAL, "REF-" + System.nanoTime(), "Test Component", TEST_SUPPLIER);
+        Component saved = componentRepository.save(component);
 
-        if (status == ComponentStatus.ARCHIVED) {
-            component = component.activate().archive();
-        } else if (status == ComponentStatus.ACTIVE) {
-            component = component.activate();
+        if (status != ComponentStatus.DRAFT) {
+            saved = componentRepository.save(new Component(
+                    saved.id(),
+                    saved.type(),
+                    saved.reference(),
+                    saved.name(),
+                    saved.availableFrom(),
+                    status,
+                    saved.supplier()
+            ));
         }
 
-        return componentRepository.save(component).id();
+        return saved.id();
     }
 
     private void archiveComponent(Long componentId) {
         Component component = componentRepository.findById(componentId).orElseThrow();
-        if (component.status() == ComponentStatus.DRAFT) {
-            component = component.activate();
-        }
-        componentRepository.save(component.archive());
+        componentRepository.save(new Component(
+                component.id(),
+                component.type(),
+                component.reference(),
+                component.name(),
+                component.availableFrom(),
+                ComponentStatus.ARCHIVED,
+                component.supplier()
+        ));
     }
 
     private Long createTestControl(Long componentId, String name, String method, String unit, double min, double max) {
-        ControlRangeSpecification spec = ControlRangeSpecification.createNew(name, method, unit, min, max, componentId);
+        ControlRangeSpecification spec = ControlRangeSpecification.createNew(name, method, unit, min, max, componentId, componentRepository);
         return controlRepository.save(spec).id();
     }
 }
