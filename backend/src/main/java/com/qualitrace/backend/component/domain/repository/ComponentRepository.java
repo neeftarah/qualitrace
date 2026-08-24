@@ -5,6 +5,7 @@ import com.qualitrace.backend.component.domain.model.ComponentFilter;
 import com.qualitrace.backend.shared.domain.model.PageQuery;
 import com.qualitrace.backend.shared.domain.model.PageResult;
 import com.qualitrace.backend.component.domain.type.ComponentStatus;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -21,6 +22,10 @@ public interface ComponentRepository {
     List<Component> findBySupplierIdAndStatusNot(Long supplierId, ComponentStatus status);
 
     Component save(Component component);
+
+    void archiveAllBySupplierId(Long supplierId);
+
+    void setToDraft(Long id);
 
     boolean existsById(Long id);
 }

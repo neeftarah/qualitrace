@@ -1,5 +1,6 @@
 package com.qualitrace.backend.controls.application.mapper;
 
+import com.qualitrace.backend.component.domain.repository.ComponentRepository;
 import com.qualitrace.backend.controls.application.dto.ControlRangeSpecificationCreateRequest;
 import com.qualitrace.backend.controls.application.dto.ControlRangeSpecificationResponse;
 import com.qualitrace.backend.controls.domain.model.ControlRangeSpecification;
@@ -20,14 +21,19 @@ public class ControlRangeSpecificationMapper {
         );
     }
 
-    public ControlRangeSpecification toDomain(Long componentId, ControlRangeSpecificationCreateRequest request) {
+    public ControlRangeSpecification toDomain(
+            Long componentId,
+            ControlRangeSpecificationCreateRequest request,
+            ComponentRepository componentRepository
+    ) {
         return ControlRangeSpecification.createNew(
                 request.name(),
                 request.method(),
                 request.unit(),
                 request.min(),
                 request.max(),
-                componentId
+                componentId,
+                componentRepository
         );
     }
 }

@@ -62,14 +62,7 @@ public class SupplierService {
     public SupplierResponse archive(Long id) {
         Supplier existing = findOrThrow(id);
 
-        Supplier archived = supplierRepository.save(existing.archive());
-
-        // RG-REF-02 : L'archivage d'un fournisseur entraîne automatiquement l'archivage de toutes les matières premières qui lui sont rattachées.
-        componentRepository
-                .findBySupplierIdAndStatusNot(id, ComponentStatus.ARCHIVED)
-                .forEach(component -> componentRepository.save(component.archive()));
-
-        return supplierMapper.toResponse(archived);
+        return supplierMapper.toResponse(supplierRepository.save(existing.archive(componentRepository)));
     }
 
     public SupplierResponse reactivate(Long id) {

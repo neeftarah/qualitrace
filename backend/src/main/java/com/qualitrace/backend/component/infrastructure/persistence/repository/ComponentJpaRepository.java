@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -27,6 +28,12 @@ public interface ComponentJpaRepository extends JpaRepository<ComponentEntity, L
 
     List<ComponentEntity> findBySupplierIdAndStatusNot(Long supplierId, ComponentStatus status);
 
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("UPDATE ComponentEntity c SET c.status = 'DRAFT' WHERE c.id = :id AND c.status = 'ACTIVE'")
+    void setToDraft(
+            @Param("id") Long id
+    );
+
     @EntityGraph(attributePaths = {"supplier"})
     @Query("""
             SELECT c FROM ComponentEntity c
@@ -44,4 +51,8 @@ public interface ComponentJpaRepository extends JpaRepository<ComponentEntity, L
             @Param("supplierId") Long supplierId,
             Pageable pageable
     );
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("UPDATE ComponentEntity c SET c.status = 'ARCHIVED' WHERE c.supplier.id = :supplierId AND c.status != 'ARCHIVED'")
+    void archiveAllBySupplierId(Long supplierId);
 }

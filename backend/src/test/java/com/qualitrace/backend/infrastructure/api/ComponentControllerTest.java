@@ -1,12 +1,12 @@
 package com.qualitrace.backend.infrastructure.api;
 
 import com.qualitrace.backend.component.domain.model.Component;
-import com.qualitrace.backend.controls.domain.model.ControlRangeSpecification;
-import com.qualitrace.backend.supplier.domain.model.Supplier;
 import com.qualitrace.backend.component.domain.repository.ComponentRepository;
-import com.qualitrace.backend.controls.domain.repository.ControlRangeSpecificationRepository;
 import com.qualitrace.backend.component.domain.type.ComponentStatus;
 import com.qualitrace.backend.component.domain.type.ComponentType;
+import com.qualitrace.backend.controls.domain.model.ControlRangeSpecification;
+import com.qualitrace.backend.controls.domain.repository.ControlRangeSpecificationRepository;
+import com.qualitrace.backend.supplier.domain.model.Supplier;
 import com.qualitrace.backend.supplier.domain.type.SupplierStatus;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -359,20 +359,25 @@ class ComponentControllerTest {
      */
     private String createTestComponent(ComponentType type, String reference, String name, ComponentStatus status) {
         Component component = Component.createNew(type, reference, name, TEST_SUPPLIER);
-
-        if (status == ComponentStatus.ARCHIVED) {
-            component = component.archive();
-        } else if (status == ComponentStatus.ACTIVE) {
-            component = component.activate();
-        }
-
         Component saved = componentRepository.save(component);
+
+        if (status != ComponentStatus.DRAFT) {
+            saved = componentRepository.save(new Component(
+                    saved.id(),
+                    saved.type(),
+                    saved.reference(),
+                    saved.name(),
+                    saved.availableFrom(),
+                    status,
+                    saved.supplier()
+            ));
+        }
 
         return saved.id().toString();
     }
 
     private Long createTestControl(Long componentId, String name, String method, String unit, double min, double max) {
-        ControlRangeSpecification spec = ControlRangeSpecification.createNew(name, method, unit, min, max, componentId);
+        ControlRangeSpecification spec = ControlRangeSpecification.createNew(name, method, unit, min, max, componentId, componentRepository);
         return controlRepository.save(spec).id();
     }
 }

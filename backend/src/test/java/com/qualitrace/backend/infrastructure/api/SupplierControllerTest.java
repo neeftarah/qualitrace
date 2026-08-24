@@ -361,7 +361,7 @@ class SupplierControllerTest {
         Supplier supplier = Supplier.createNew(code, name, address);
 
         if (status == SupplierStatus.ARCHIVED) {
-            supplier = supplier.archive();
+            supplier = supplier.archive(componentRepository);
         }
 
         Supplier saved = supplierRepository.save(supplier);

@@ -1,16 +1,26 @@
 package com.qualitrace.backend.domain.model;
 
+import com.qualitrace.backend.component.domain.exception.ComponentRequiresSpecificationException;
 import com.qualitrace.backend.component.domain.model.Component;
 import com.qualitrace.backend.component.domain.type.ComponentStatus;
 import com.qualitrace.backend.component.domain.type.ComponentType;
+import com.qualitrace.backend.controls.domain.repository.ControlRangeSpecificationRepository;
 import com.qualitrace.backend.supplier.domain.model.Supplier;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatException;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
-
+@ExtendWith(MockitoExtension.class)
 class ComponentTest {
+    @Mock
+    private ControlRangeSpecificationRepository controlRepository;
+
     @Test
     void createNewComponent() {
         Component component = createComponent();
@@ -117,6 +127,8 @@ class ComponentTest {
 
     @Test
     void changeStatuses() {
+        when(controlRepository.existsActiveSpecForComponent(any())).thenReturn(true);
+
         Component component = createComponent();
         assertThat(component.status()).isEqualTo(ComponentStatus.DRAFT);
 
@@ -131,10 +143,10 @@ class ComponentTest {
                 .withMessage("Le composant est déjà archivé");
 
         // ARCHIVED ==> ACTIVE
-        Component reactivatedComponent = archivedComponent.activate();
+        Component reactivatedComponent = archivedComponent.activate(controlRepository);
         assertThat(reactivatedComponent.status()).isEqualTo(ComponentStatus.ACTIVE);
 
-        assertThatException().isThrownBy(reactivatedComponent::activate).isInstanceOf(IllegalStateException.class)
+        assertThatException().isThrownBy(() -> reactivatedComponent.activate(controlRepository)).isInstanceOf(IllegalStateException.class)
                 .withMessage("Seul un composant archivé ou en brouillon peut être réactivé (statut actuel : ACTIVE)");
 
         // ACTIVE ==> DRAFT
@@ -152,13 +164,24 @@ class ComponentTest {
                 .withMessage("Le composant est déjà en brouillon");
 
         // DRAFT ==> ACTIVE
-        Component reactivatedComponent2 = draftComponent.activate();
+        Component reactivatedComponent2 = draftComponent.activate(controlRepository);
         assertThat(reactivatedComponent2.status()).isEqualTo(ComponentStatus.ACTIVE);
     }
 
     @Test
+    void activateWithoutSpecificationShouldThrowException() {
+        when(controlRepository.existsActiveSpecForComponent(any())).thenReturn(false);
+
+        Component component = createComponent();
+        assertThatException().isThrownBy(() -> component.activate(controlRepository))
+                .isInstanceOf(ComponentRequiresSpecificationException.class);
+    }
+
+    @Test
     void setDraftIfActiveWhenActive() {
-        Component component = createComponent().activate(); // DRAFT -> ACTIVE
+        when(controlRepository.existsActiveSpecForComponent(any())).thenReturn(true);
+
+        Component component = createComponent().activate(controlRepository); // DRAFT -> ACTIVE
         Component result = component.setDraftIfActive();
 
         assertThat(result.status()).isEqualTo(ComponentStatus.DRAFT);

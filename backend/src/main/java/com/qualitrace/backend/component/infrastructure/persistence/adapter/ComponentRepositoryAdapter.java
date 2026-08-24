@@ -102,6 +102,18 @@ public class ComponentRepositoryAdapter implements ComponentRepository {
     }
 
     @Override
+    public void archiveAllBySupplierId(Long supplierId) {
+        // 1 seule requête SQL exécutée en BDD :
+        // UPDATE components SET status = 'ARCHIVED' WHERE supplier_id = ? AND status != 'ARCHIVED'
+        jpaRepository.archiveAllBySupplierId(supplierId);
+    }
+
+    @Override
+    public void setToDraft(Long id) {
+        jpaRepository.setToDraft(id);
+    }
+
+    @Override
     public boolean existsById(Long id) {
         return jpaRepository.existsById(id);
     }
