@@ -30,4 +30,34 @@ public record Deviation(
                 comment != null ? comment : ""
         );
     }
+
+    public Deviation update(String comment) {
+        return new Deviation(
+                this.id,
+                this.batchId,
+                this.code,
+                this.status,
+                comment
+        );
+    }
+
+    public Deviation open() {
+        if (this.status == DeviationStatus.OPENED) {
+            throw new IllegalStateException("La déviation est déjà ouverte");
+        }
+
+        return withStatus(DeviationStatus.OPENED);
+    }
+
+    public Deviation close() {
+        if (this.status == DeviationStatus.CLOSED) {
+            throw new IllegalStateException("La déviation est déjà fermée");
+        }
+
+        return withStatus(DeviationStatus.CLOSED);
+    }
+
+    private Deviation withStatus(DeviationStatus newStatus) {
+        return new Deviation(this.id, this.batchId, this.code, newStatus, this.comment);
+    }
 }
