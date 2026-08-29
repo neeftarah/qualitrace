@@ -18,19 +18,4 @@ public record BatchFilter(
         LocalDate validationFromDate,
         LocalDate validationToDate
 ) {
-    public static BatchFilter empty() {
-        return new BatchFilter(
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null
-        );
-    }
 }

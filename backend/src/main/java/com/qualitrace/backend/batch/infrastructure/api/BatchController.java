@@ -53,14 +53,11 @@ public class BatchController {
             "internalReferenceNumber",
             "supplierId",
             "supplierReferenceNumber",
-            "expiryFromDate",
-            "expiryToDate",
-            "receptionFromDate",
-            "receptionToDate",
+            "expiryDate",
+            "receptionDate",
             "status",
             "validatedBy",
-            "validationFromDate",
-            "validationToDate"
+            "validationDate"
     );
     private final BatchService batchService;
     private final BatchModelAssembler assembler;
@@ -98,7 +95,7 @@ public class BatchController {
             @RequestParam(required = false) UUID validatedBy,
             @RequestParam(required = false) LocalDate validationFromDate,
             @RequestParam(required = false) LocalDate validationToDate,
-            @ParameterObject @PageableDefault(size = 10, sort = "reception_date") Pageable pageable,
+            @ParameterObject @PageableDefault(size = 10, sort = "receptionDate") Pageable pageable,
             PagedResourcesAssembler<BatchResponse> pagedAssembler
     ) {
         validateSortFields(pageable.getSort());

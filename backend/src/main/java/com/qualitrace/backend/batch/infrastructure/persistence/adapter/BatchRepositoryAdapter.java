@@ -193,8 +193,6 @@ public class BatchRepositoryAdapter implements BatchRepository {
                 batch.expiryDate(),
                 batch.receptionDate(),
                 batch.status(),
-                Instant.now(),
-                null,
                 true
         );
     }

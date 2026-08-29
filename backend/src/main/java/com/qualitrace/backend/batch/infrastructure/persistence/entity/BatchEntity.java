@@ -39,12 +39,6 @@ public class BatchEntity {
     @Column(name = "status", nullable = false, length = 15)
     private BatchStatus status;
 
-    @Column(name = "created_at", nullable = false)
-    private Instant createdAt;
-
-    @Column(name = "updated_at")
-    private Instant updatedAt;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "validated_by")
     private UserEntity validatedBy;
@@ -74,8 +68,6 @@ public class BatchEntity {
             Instant expiryDate,
             Instant receptionDate,
             BatchStatus status,
-            Instant createdAt,
-            Instant updatedAt,
             boolean isNew
     ) {
         this.id = id;
@@ -86,8 +78,6 @@ public class BatchEntity {
         this.expiryDate = expiryDate;
         this.receptionDate = receptionDate;
         this.status = status;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
         this.isNew = isNew;
     }
 
@@ -153,22 +143,6 @@ public class BatchEntity {
 
     public void setStatus(BatchStatus status) {
         this.status = status;
-    }
-
-    public Instant getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(Instant createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public Instant getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(Instant updatedAt) {
-        this.updatedAt = updatedAt;
     }
 
     public UserEntity getValidatedBy() {

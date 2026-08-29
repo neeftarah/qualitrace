@@ -12,15 +12,4 @@ public record AuditTrailFilter(
         LocalDate fromDate,
         LocalDate toDate
 ) {
-    public static AuditTrailFilter empty() {
-        return new AuditTrailFilter(
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null
-        );
-    }
 }

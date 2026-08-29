@@ -11,7 +11,4 @@ public record UserFilter(
         UserStatus status, // exact
         UserRole role       // exact — présence de ce rôle dans le tableau
 ) {
-    public static UserFilter empty() {
-        return new UserFilter(null, null, null, null, null, null);
-    }
 }

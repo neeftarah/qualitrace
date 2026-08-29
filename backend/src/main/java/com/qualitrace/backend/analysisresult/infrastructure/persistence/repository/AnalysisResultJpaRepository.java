@@ -11,9 +11,9 @@ import java.util.Optional;
 public interface AnalysisResultJpaRepository extends JpaRepository<AnalysisResultEntity, Long> {
     @Override
     @NullMarked
-    @EntityGraph(attributePaths = {"users"})
+    @EntityGraph(attributePaths = {"createdBy"})
     Optional<AnalysisResultEntity> findById(Long id);
 
-    @EntityGraph(attributePaths = {"users"})
+    @EntityGraph(attributePaths = {"createdBy"})
     List<AnalysisResultEntity> findAllByBatchId(Long componentId);
 }
