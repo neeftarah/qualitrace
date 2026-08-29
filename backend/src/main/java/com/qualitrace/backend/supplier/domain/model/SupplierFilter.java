@@ -7,7 +7,4 @@ public record SupplierFilter(
         String name,
         SupplierStatus status
 ) {
-    public static SupplierFilter empty() {
-        return new SupplierFilter(null, null, null);
-    }
 }

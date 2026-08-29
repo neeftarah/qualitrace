@@ -10,7 +10,4 @@ public record ComponentFilter(
         ComponentStatus status,
         Long supplierId
 ) {
-    public static ComponentFilter empty() {
-        return new ComponentFilter(null, null, null, null, null);
-    }
 }
