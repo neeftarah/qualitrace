@@ -1,13 +1,34 @@
 package com.qualitrace.backend.domain.model;
 
+import com.qualitrace.backend.batch.domain.model.Batch;
+import com.qualitrace.backend.batch.domain.repository.BatchRepository;
+import com.qualitrace.backend.batch.domain.type.BatchStatus;
 import com.qualitrace.backend.deviation.domain.model.Deviation;
 import com.qualitrace.backend.deviation.domain.type.DeviationStatus;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
+
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatException;
+import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class DeviationTest {
+    @Mock
+    private BatchRepository batchRepository;
+
+    @BeforeEach
+    void setUpBatch() {
+        when(batchRepository.findById(1L)).thenReturn(Optional.of(new Batch(1L, null, null, null, null, null, BatchStatus.QUARANTINE)));
+    }
 
     @Test
     void createNewDeviationWithAllParameters() {
@@ -15,7 +36,8 @@ class DeviationTest {
                 1L,
                 "DEV-001",
                 DeviationStatus.CLOSED,
-                "Température hors limite corrigée"
+                "Température hors limite corrigée",
+                batchRepository
         );
 
         assertThat(deviation.id()).isNull();
@@ -31,7 +53,8 @@ class DeviationTest {
                 1L,
                 "DEV-001",
                 null,
-                null
+                null,
+                batchRepository
         );
 
         assertThat(deviation.id()).isNull();
@@ -47,7 +70,8 @@ class DeviationTest {
                         null,
                         "DEV-001",
                         DeviationStatus.OPENED,
-                        "Comment"
+                        "Comment",
+                        batchRepository
                 )).isInstanceOf(IllegalArgumentException.class)
                 .withMessage("Batch ID cannot be null");
     }
@@ -58,7 +82,8 @@ class DeviationTest {
                         1L,
                         null,
                         DeviationStatus.OPENED,
-                        "Comment"
+                        "Comment",
+                        batchRepository
                 )).isInstanceOf(IllegalArgumentException.class)
                 .withMessage("Code cannot be null");
     }
@@ -66,7 +91,10 @@ class DeviationTest {
     @Test
     void updateDeviation() {
         Deviation deviation = createDeviation();
-        Deviation updated = deviation.update("Updated comment");
+        Deviation updated = deviation.update(
+                "Updated comment",
+                batchRepository
+        );
 
         assertThat(updated.id()).isNull();
         assertThat(updated.batchId()).isEqualTo(1L);
@@ -78,7 +106,10 @@ class DeviationTest {
     @Test
     void updateDeviationWithoutCommentIsOK() {
         Deviation deviation = createDeviation();
-        Deviation updated = deviation.update(null);
+        Deviation updated = deviation.update(
+                null,
+                batchRepository
+        );
 
         assertThat(updated.id()).isNull();
         assertThat(updated.batchId()).isEqualTo(1L);
@@ -109,12 +140,32 @@ class DeviationTest {
         assertThat(reopenedDeviation.status()).isEqualTo(DeviationStatus.OPENED);
     }
 
+    @Test
+    void createShouldBeRejectedWhenBatchIsNotInQuarantine() {
+        when(batchRepository.findById(1L)).thenReturn(Optional.of(new Batch(1L, null, null, null, null, null, BatchStatus.RECEIVED)));
+
+        assertThatException().isThrownBy(() -> Deviation.createNew(1L, "DEV-001", DeviationStatus.OPENED, "Comment", batchRepository))
+                .isInstanceOf(IllegalArgumentException.class)
+                .withMessage("The batch must not have been validated");
+    }
+
+    @Test
+    void updateShouldBeRejectedWhenBatchIsNotInQuarantine() {
+        Deviation deviation = createDeviation();
+        when(batchRepository.findById(1L)).thenReturn(Optional.of(new Batch(1L, null, null, null, null, null, BatchStatus.RECEIVED)));
+
+        assertThatException().isThrownBy(() -> deviation.update("Updated", batchRepository))
+                .isInstanceOf(IllegalArgumentException.class)
+                .withMessage("The batch must not have been validated");
+    }
+
     private Deviation createDeviation() {
         return Deviation.createNew(
                 1L,
                 "DEV-202608-003",
                 DeviationStatus.OPENED,
-                "This is a test deviation."
+                "This is a test deviation.",
+                batchRepository
         );
     }
 }

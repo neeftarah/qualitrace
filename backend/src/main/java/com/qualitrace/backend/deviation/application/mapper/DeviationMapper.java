@@ -1,8 +1,9 @@
 package com.qualitrace.backend.deviation.application.mapper;
 
-import com.qualitrace.backend.deviation.domain.model.Deviation;
+import com.qualitrace.backend.batch.domain.repository.BatchRepository;
 import com.qualitrace.backend.deviation.application.dto.DeviationCreateRequest;
 import com.qualitrace.backend.deviation.application.dto.DeviationResponse;
+import com.qualitrace.backend.deviation.domain.model.Deviation;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -20,13 +21,15 @@ public class DeviationMapper {
 
     public Deviation toDomain(
             Long batchId,
-            DeviationCreateRequest request
+            DeviationCreateRequest request,
+            BatchRepository batchRepository
     ) {
         return Deviation.createNew(
                 batchId,
                 request.code(),
                 request.status(),
-                request.comment()
+                request.comment(),
+                batchRepository
         );
     }
 }
