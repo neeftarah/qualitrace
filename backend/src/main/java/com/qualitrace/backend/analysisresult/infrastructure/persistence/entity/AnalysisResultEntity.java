@@ -52,24 +52,12 @@ public class AnalysisResultEntity {
         return id;
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
     public Long getBatchId() {
         return batchId;
     }
 
-    public void setBatchId(Long batchId) {
-        this.batchId = batchId;
-    }
-
     public Long getSpecificationId() {
         return specificationId;
-    }
-
-    public void setSpecificationId(Long specificationId) {
-        this.specificationId = specificationId;
     }
 
     public Double getValue() {
@@ -84,15 +72,7 @@ public class AnalysisResultEntity {
         return createdAt;
     }
 
-    public void setCreatedAt(Instant createdAt) {
-        this.createdAt = createdAt;
-    }
-
     public UserEntity getCreatedBy() {
         return createdBy;
-    }
-
-    public void setCreatedBy(UserEntity createdBy) {
-        this.createdBy = createdBy;
     }
 }

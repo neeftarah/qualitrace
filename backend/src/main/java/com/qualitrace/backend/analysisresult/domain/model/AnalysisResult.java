@@ -40,4 +40,15 @@ public record AnalysisResult(
                 createdBy
         );
     }
+
+    public AnalysisResult update(Double value) {
+        return new AnalysisResult(
+                this.id,
+                this.batchId,
+                this.specificationId,
+                value,
+                this.createdAt,
+                this.createdBy
+        );
+    }
 }

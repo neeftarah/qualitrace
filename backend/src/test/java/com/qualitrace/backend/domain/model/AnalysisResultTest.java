@@ -75,4 +75,18 @@ class AnalysisResultTest {
                 )).isInstanceOf(IllegalArgumentException.class)
                 .withMessage("Creator user cannot be null");
     }
+
+    @Test
+    void updateShouldChangeValueAndPreserveIdentityAndCreator() {
+        AnalysisResult result = AnalysisResult.createNew(1L, 2L, 7.5, user);
+
+        AnalysisResult updated = result.update(8.25);
+
+        assertThat(updated.id()).isEqualTo(result.id());
+        assertThat(updated.batchId()).isEqualTo(result.batchId());
+        assertThat(updated.specificationId()).isEqualTo(result.specificationId());
+        assertThat(updated.value()).isEqualTo(8.25);
+        assertThat(updated.createdAt()).isEqualTo(result.createdAt());
+        assertThat(updated.createdBy()).isEqualTo(user);
+    }
 }

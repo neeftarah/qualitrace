@@ -50,6 +50,7 @@ public class AnalysisResultRepositoryAdapter implements AnalysisResultRepository
     }
 
     private AnalysisResultEntity applyChanges(AnalysisResultEntity entity, AnalysisResult analysisResult) {
+        entity.setValue(analysisResult.value());
         return entity;
     }
 
