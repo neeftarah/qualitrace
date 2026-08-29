@@ -45,16 +45,8 @@ public class DeviationEntity {
         return id;
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
     public Long getBatchId() {
         return batchId;
-    }
-
-    public void setBatchId(Long batchId) {
-        this.batchId = batchId;
     }
 
     public String getCode() {

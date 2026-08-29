@@ -1,5 +1,8 @@
 package com.qualitrace.backend.deviation.application.service;
 
+import com.qualitrace.backend.batch.domain.exception.BatchNotFoundException;
+import com.qualitrace.backend.batch.domain.model.Batch;
+import com.qualitrace.backend.batch.domain.repository.BatchRepository;
 import com.qualitrace.backend.deviation.application.dto.DeviationCreateRequest;
 import com.qualitrace.backend.deviation.application.dto.DeviationResponse;
 import com.qualitrace.backend.deviation.application.dto.DeviationUpdateRequest;
@@ -7,6 +10,8 @@ import com.qualitrace.backend.deviation.application.mapper.DeviationMapper;
 import com.qualitrace.backend.deviation.domain.exception.DeviationNotFoundException;
 import com.qualitrace.backend.deviation.domain.model.Deviation;
 import com.qualitrace.backend.deviation.domain.repository.DeviationRepository;
+import com.qualitrace.backend.supplier.domain.exception.SupplierNotFoundException;
+import com.qualitrace.backend.supplier.domain.model.Supplier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,13 +22,15 @@ import java.util.List;
 public class DeviationService {
     private final DeviationRepository deviationRepository;
     private final DeviationMapper deviationMapper;
+    private final BatchRepository batchRepository;
 
     public DeviationService(
             DeviationRepository deviationRepository,
-            DeviationMapper DeviationMapper
+            DeviationMapper DeviationMapper, BatchRepository batchRepository
     ) {
         this.deviationRepository = deviationRepository;
         this.deviationMapper = DeviationMapper;
+        this.batchRepository = batchRepository;
     }
 
     @Transactional(readOnly = true)
@@ -35,6 +42,9 @@ public class DeviationService {
     }
 
     public DeviationResponse save(Long batchId, DeviationCreateRequest request) {
+        batchRepository.findById(batchId)
+                .orElseThrow(() -> new BatchNotFoundException(batchId));
+
         Deviation saved = deviationRepository.save(deviationMapper.toDomain(batchId, request));
 
         return deviationMapper.toResponse(saved);
