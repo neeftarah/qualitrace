@@ -97,8 +97,6 @@ CREATE TABLE "batches" (
     "reception_date" TIMESTAMPTZ NOT NULL,
     "status" VARCHAR(15) NOT NULL CHECK (status IN ('QUARANTINE', 'RECEIVED', 'REFUSED', 'USED', 'DESTROYED')),
     "version" BIGINT NOT NULL DEFAULT 0,
-    "created_at" TIMESTAMPTZ NOT NULL,
-    "updated_at" TIMESTAMPTZ,
     "validated_by" UUID,
     "validated_at" TIMESTAMPTZ,
     CONSTRAINT "uk_batches_internal_reference_number" UNIQUE ("internal_reference_number"),

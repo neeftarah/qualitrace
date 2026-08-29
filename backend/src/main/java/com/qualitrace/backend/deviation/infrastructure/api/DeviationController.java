@@ -132,8 +132,8 @@ public class DeviationController {
     @ApiResponse(responseCode = "204", description = "Déviation close")
     @ApiResponse(responseCode = "404", description = "Déviation introuvable")
     @ApiResponse(responseCode = "409", description = "Transition invalide depuis le statut actuel")
-    @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PatchMapping("/{id}/close")
+    @PreAuthorize("hasRole('AQ')")
     public EntityModel<DeviationResponse> close(@PathVariable Long batchId, @PathVariable Long id) {
         DeviationResponse updated = deviationService.close(id);
 
@@ -154,8 +154,8 @@ public class DeviationController {
     @ApiResponse(responseCode = "204", description = "Déviation ouverte")
     @ApiResponse(responseCode = "404", description = "Déviation introuvable")
     @ApiResponse(responseCode = "409", description = "Transition invalide depuis le statut actuel")
-    @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PatchMapping("/{id}/open")
+    @PreAuthorize("hasRole('AQ')")
     public EntityModel<DeviationResponse> open(@PathVariable Long batchId, @PathVariable Long id) {
         DeviationResponse updated = deviationService.open(id);
 
