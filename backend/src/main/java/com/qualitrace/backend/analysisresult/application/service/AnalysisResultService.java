@@ -61,7 +61,8 @@ public class AnalysisResultService {
     public AnalysisResultResponse update(Long id, AnalysisResultUpdateRequest request) {
         AnalysisResult existing = findOrThrow(id);
         AnalysisResult updated = existing.update(
-                request.value()
+                request.value(),
+                batchRepository
         );
 
         return analysisResultMapper.toResponse(analysisResultRepository.save(updated));

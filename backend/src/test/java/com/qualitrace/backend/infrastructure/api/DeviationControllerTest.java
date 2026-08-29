@@ -1,13 +1,11 @@
 package com.qualitrace.backend.infrastructure.api;
 
 import com.qualitrace.backend.batch.domain.model.Batch;
+import com.qualitrace.backend.batch.domain.repository.BatchRepository;
 import com.qualitrace.backend.batch.domain.type.BatchStatus;
 import com.qualitrace.backend.component.domain.model.Component;
-import com.qualitrace.backend.component.domain.repository.ComponentRepository;
 import com.qualitrace.backend.component.domain.type.ComponentStatus;
 import com.qualitrace.backend.component.domain.type.ComponentType;
-import com.qualitrace.backend.controls.domain.model.ControlRangeSpecification;
-import com.qualitrace.backend.controls.domain.repository.ControlRangeSpecificationRepository;
 import com.qualitrace.backend.deviation.domain.model.Deviation;
 import com.qualitrace.backend.deviation.domain.repository.DeviationRepository;
 import com.qualitrace.backend.deviation.domain.type.DeviationStatus;
@@ -16,14 +14,11 @@ import com.qualitrace.backend.supplier.domain.type.SupplierStatus;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.hateoas.MediaTypes;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -59,6 +54,8 @@ class DeviationControllerTest {
 
     @Autowired
     private DeviationRepository deviationRepository;
+    @Autowired
+    private BatchRepository batchRepository;
 //
 //    @Autowired
 //    private ControlRangeSpecificationRepository controlRepository;
@@ -309,7 +306,7 @@ class DeviationControllerTest {
     }
 
     private Long createTestDeviation(Long batchId, String code, DeviationStatus status, String comment) {
-        Deviation deviation = Deviation.createNew(batchId, code, status, comment);
+        Deviation deviation = Deviation.createNew(batchId, code, status, comment, batchRepository);
         return deviationRepository.save(deviation).id();
     }
 }
