@@ -107,8 +107,8 @@ public class BatchService {
 
         return new BatchDetailResponse(
                 batch.id(),
-                batch.internalReferenceNumber(),
-                batch.supplierReferenceNumber(),
+                batch.internalBatchNumber(),
+                batch.supplierBatchNumber(),
                 batch.expiryDate(),
                 batch.receptionDate(),
                 batch.status(),

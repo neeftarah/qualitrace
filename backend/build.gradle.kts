@@ -63,6 +63,14 @@ dependencies {
     testImplementation("org.testcontainers:testcontainers-junit-jupiter")
     testImplementation("org.testcontainers:testcontainers-postgresql")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+
+    // Génération de PDF : JasperReports & polices spécifiques
+    implementation("net.sf.jasperreports:jasperreports:7.0.8")
+    implementation("net.sf.jasperreports:jasperreports-pdf:7.0.8") {
+        exclude(group = "com.github.librepdf", module = "openpdf")
+    }
+    implementation("com.github.librepdf:openpdf:1.3.43")
+    implementation("net.sf.jasperreports:jasperreports-fonts:7.0.8")
 }
 
 // === SENTRY ===

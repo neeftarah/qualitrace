@@ -54,8 +54,8 @@ public class BatchRepositoryAdapter implements BatchRepository {
                 .toList());
         Pageable pageable = PageRequest.of(pageQuery.page(), pageQuery.size(), sort);
 
-        String internalRefFilter = filter.internalReferenceNumber() != null && !filter.internalReferenceNumber().isBlank() ? "%" + filter.internalReferenceNumber().toLowerCase() + "%" : null;
-        String supplierRefFilter = filter.supplierReferenceNumber() != null && !filter.supplierReferenceNumber().isBlank() ? "%" + filter.supplierReferenceNumber().toLowerCase() + "%" : null;
+        String internalRefFilter = filter.internalBatchNumber() != null && !filter.internalBatchNumber().isBlank() ? "%" + filter.internalBatchNumber().toLowerCase() + "%" : null;
+        String supplierRefFilter = filter.supplierBatchNumber() != null && !filter.supplierBatchNumber().isBlank() ? "%" + filter.supplierBatchNumber().toLowerCase() + "%" : null;
 
         Instant validationFrom = filter.validationFromDate() != null
                 ? filter.validationFromDate().atStartOfDay(ZoneOffset.UTC).toInstant()
@@ -188,8 +188,8 @@ public class BatchRepositoryAdapter implements BatchRepository {
                 batch.id(),
                 componentRef,
                 supplierRef,
-                batch.internalReferenceNumber(),
-                batch.supplierReferenceNumber(),
+                batch.internalBatchNumber(),
+                batch.supplierBatchNumber(),
                 batch.expiryDate(),
                 batch.receptionDate(),
                 batch.status(),

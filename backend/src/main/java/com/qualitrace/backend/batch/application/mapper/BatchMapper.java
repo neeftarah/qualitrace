@@ -14,8 +14,8 @@ public class BatchMapper {
         return new BatchResponse(
                 batch.id(),
                 batch.component(),
-                batch.internalReferenceNumber(),
-                batch.supplierReferenceNumber(),
+                batch.internalBatchNumber(),
+                batch.supplierBatchNumber(),
                 batch.expiryDate(),
                 batch.receptionDate(),
                 batch.status()
@@ -25,7 +25,7 @@ public class BatchMapper {
     public Batch toDomain(BatchCreateRequest request, Component component, BatchRepository batchRepository) {
         return Batch.createNew(
                 component,
-                request.supplierReferenceNumber(),
+                request.supplierBatchNumber(),
                 request.expiryDate(),
                 batchRepository
         );

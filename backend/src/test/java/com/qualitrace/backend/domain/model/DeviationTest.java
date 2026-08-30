@@ -142,7 +142,7 @@ class DeviationTest {
 
     @Test
     void createShouldBeRejectedWhenBatchIsNotInQuarantine() {
-        when(batchRepository.findById(1L)).thenReturn(Optional.of(new Batch(1L, null, null, null, null, null, BatchStatus.RECEIVED)));
+        when(batchRepository.findById(1L)).thenReturn(Optional.of(new Batch(1L, null, null, null, null, null, BatchStatus.RELEASED)));
 
         assertThatException().isThrownBy(() -> Deviation.createNew(1L, "DEV-001", DeviationStatus.OPENED, "Comment", batchRepository))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -152,7 +152,7 @@ class DeviationTest {
     @Test
     void updateShouldBeRejectedWhenBatchIsNotInQuarantine() {
         Deviation deviation = createDeviation();
-        when(batchRepository.findById(1L)).thenReturn(Optional.of(new Batch(1L, null, null, null, null, null, BatchStatus.RECEIVED)));
+        when(batchRepository.findById(1L)).thenReturn(Optional.of(new Batch(1L, null, null, null, null, null, BatchStatus.RELEASED)));
 
         assertThatException().isThrownBy(() -> deviation.update("Updated", batchRepository))
                 .isInstanceOf(IllegalArgumentException.class)

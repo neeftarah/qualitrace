@@ -111,7 +111,7 @@ class AnalysisResultTest {
 
     @Test
     void createShouldBeRejectedWhenBatchIsNotInQuarantine() {
-        when(batchRepository.findById(1L)).thenReturn(Optional.of(new Batch(1L, null, null, null, null, null, BatchStatus.RECEIVED)));
+        when(batchRepository.findById(1L)).thenReturn(Optional.of(new Batch(1L, null, null, null, null, null, BatchStatus.RELEASED)));
 
         assertThatException().isThrownBy(() -> AnalysisResult.createNew(1L, 2L, 7.5, user, batchRepository))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -121,7 +121,7 @@ class AnalysisResultTest {
     @Test
     void updateShouldBeRejectedWhenBatchIsNotInQuarantine() {
         AnalysisResult result = AnalysisResult.createNew(1L, 2L, 7.5, user, batchRepository);
-        when(batchRepository.findById(1L)).thenReturn(Optional.of(new Batch(1L, null, null, null, null, null, BatchStatus.RECEIVED)));
+        when(batchRepository.findById(1L)).thenReturn(Optional.of(new Batch(1L, null, null, null, null, null, BatchStatus.RELEASED)));
 
         assertThatException().isThrownBy(() -> result.update(8.25, batchRepository))
                 .isInstanceOf(IllegalArgumentException.class)

@@ -10,8 +10,8 @@ import java.time.Instant;
 public record BatchResponse(
         Long id,
         Component component,
-        String internalReferenceNumber,
-        String supplierReferenceNumber,
+        String internalBatchNumber,
+        String supplierBatchNumber,
         Instant expiryDate,
         Instant receptionDate,
         BatchStatus status

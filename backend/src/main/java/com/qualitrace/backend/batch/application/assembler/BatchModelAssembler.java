@@ -30,7 +30,7 @@ public class BatchModelAssembler implements RepresentationModelAssembler<BatchRe
 
         if (batch.status() == BatchStatus.QUARANTINE) {
             model.add(linkTo(methodOn(BatchController.class).validate(batch.id(), null)).withRel("validate"));
-        } else if (batch.status() == BatchStatus.RECEIVED) {
+        } else if (batch.status() == BatchStatus.RELEASED) {
             model.add(linkTo(methodOn(BatchController.class).use(batch.id())).withRel("use"));
         }
 

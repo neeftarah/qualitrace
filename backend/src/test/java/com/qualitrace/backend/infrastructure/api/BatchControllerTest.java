@@ -100,7 +100,7 @@ class BatchControllerTest {
                 .body("""
                         {
                           "componentId": %d,
-                          "supplierReferenceNumber": "SUP-LOT-001",
+                          "supplierBatchNumber": "SUP-LOT-001",
                           "expiryDate": "2030-12-31T00:00:00Z"
                         }
                         """.formatted(component.id()))
@@ -111,8 +111,8 @@ class BatchControllerTest {
                 .expectBody()
                 .jsonPath("$.id").exists()
                 .jsonPath("$.component.id").isEqualTo(component.id())
-                .jsonPath("$.supplierReferenceNumber").isEqualTo("SUP-LOT-001")
-                .jsonPath("$.internalReferenceNumber").value(value -> org.junit.jupiter.api.Assertions.assertTrue(value.toString().startsWith("LOT-MP-")))
+                .jsonPath("$.supplierBatchNumber").isEqualTo("SUP-LOT-001")
+                .jsonPath("$.internalBatchNumber").value(value -> org.junit.jupiter.api.Assertions.assertTrue(value.toString().startsWith("LOT-MP-")))
                 .jsonPath("$.status").isEqualTo("QUARANTINE");
     }
 
@@ -121,7 +121,7 @@ class BatchControllerTest {
     void listShouldReturnBatches() {
         Component component = createActiveComponent("CMP-001");
         createBatch(component, "SUP-LOT-001", BatchStatus.QUARANTINE);
-        createBatch(component, "SUP-LOT-002", BatchStatus.RECEIVED);
+        createBatch(component, "SUP-LOT-002", BatchStatus.RELEASED);
 
         restClient.get().uri("/api/v1/batches")
                 .exchange()
@@ -130,8 +130,8 @@ class BatchControllerTest {
                 .expectBody()
                 .jsonPath("$._embedded.batches").isArray()
                 .jsonPath("$._embedded.batches.length()").isEqualTo(2)
-                .jsonPath("$._embedded.batches[?(@.supplierReferenceNumber=='SUP-LOT-001')]").exists()
-                .jsonPath("$._embedded.batches[?(@.supplierReferenceNumber=='SUP-LOT-002')]").exists();
+                .jsonPath("$._embedded.batches[?(@.supplierBatchNumber=='SUP-LOT-001')]").exists()
+                .jsonPath("$._embedded.batches[?(@.supplierBatchNumber=='SUP-LOT-002')]").exists();
     }
 
     @Test
@@ -145,7 +145,7 @@ class BatchControllerTest {
                 .expectHeader().contentType(MediaTypes.HAL_JSON)
                 .expectBody()
                 .jsonPath("$.id").isEqualTo(batch.id())
-                .jsonPath("$.supplierReferenceNumber").isEqualTo("SUP-LOT-001")
+                .jsonPath("$.supplierBatchNumber").isEqualTo("SUP-LOT-001")
                 .jsonPath("$.status").isEqualTo("QUARANTINE");
     }
 
@@ -174,7 +174,7 @@ class BatchControllerTest {
     @Test
     @WithMockUser(username = "prod", roles = "PROD")
     void useShouldChangeReceivedBatchStatus() {
-        Batch batch = createBatch(createActiveComponent("CMP-001"), "SUP-LOT-001", BatchStatus.RECEIVED);
+        Batch batch = createBatch(createActiveComponent("CMP-001"), "SUP-LOT-001", BatchStatus.RELEASED);
 
         restClient.patch().uri("/api/v1/batches/{id}/use", batch.id())
                 .exchange()
@@ -187,7 +187,7 @@ class BatchControllerTest {
     @Test
     @WithMockUser(username = "supply", roles = "SUPPLY")
     void destroyShouldChangeRefusedBatchStatus() {
-        Batch batch = createBatch(createActiveComponent("CMP-001"), "SUP-LOT-001", BatchStatus.REFUSED);
+        Batch batch = createBatch(createActiveComponent("CMP-001"), "SUP-LOT-001", BatchStatus.REJECTED);
 
         restClient.patch().uri("/api/v1/batches/{id}/destroy", batch.id())
                 .exchange()
@@ -199,7 +199,7 @@ class BatchControllerTest {
 
     @ParameterizedTest
     @CsvSource({
-            "GET, /api/v1/batches?sort=internalReferenceNumber,asc",
+            "GET, /api/v1/batches?sort=internalBatchNumber,asc",
             "GET, /api/v1/batches/1",
             "POST, /api/v1/batches",
             "PATCH, /api/v1/batches/1/validate",
@@ -219,7 +219,7 @@ class BatchControllerTest {
         restClient.post().uri("/api/v1/batches")
                 .contentType(MediaTypes.HAL_JSON)
                 .body("""
-                        {"componentId": 1, "supplierReferenceNumber": "SUP-LOT-001", "expiryDate": "2030-12-31T00:00:00Z"}
+                        {"componentId": 1, "supplierBatchNumber": "SUP-LOT-001", "expiryDate": "2030-12-31T00:00:00Z"}
                         """)
                 .exchange()
                 .expectStatus().isForbidden()
@@ -279,8 +279,8 @@ class BatchControllerTest {
                 .expectHeader().contentType(MediaTypes.HAL_JSON)
                 .expectBody()
                 .jsonPath("$.id").isEqualTo(batch.id())
-                .jsonPath("$.internalReferenceNumber").isEqualTo(batch.internalReferenceNumber())
-                .jsonPath("$.supplierReferenceNumber").isEqualTo(batch.supplierReferenceNumber())
+                .jsonPath("$.internalBatchNumber").isEqualTo(batch.internalBatchNumber())
+                .jsonPath("$.supplierBatchNumber").isEqualTo(batch.supplierBatchNumber())
                 .jsonPath("$.expiryDate").isNotEmpty()
                 .jsonPath("$.receptionDate").isNotEmpty()
                 .jsonPath("$.status").isEqualTo("QUARANTINE")

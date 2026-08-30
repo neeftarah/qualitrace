@@ -17,7 +17,7 @@ public record BatchCreateRequest(
         @Schema(description = "Référence fournisseur du lot", example = "SUP-LOT-999")
         @NotBlank
         @Size(min = 1, max = 255)
-        String supplierReferenceNumber,
+        String supplierBatchNumber,
 
         @Schema(description = "Date de péremption")
         @NotNull(message = "La date de péremption est obligatoire")
