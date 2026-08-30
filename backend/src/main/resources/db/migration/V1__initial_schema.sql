@@ -92,14 +92,14 @@ CREATE TABLE "batches" (
     "component_id" BIGINT NOT NULL,
     "supplier_id" BIGINT NOT NULL,
     "supplier_batch_number" VARCHAR(255) NOT NULL,
-    "internal_reference_number" VARCHAR(255) NOT NULL,
+    "internal_batch_number" VARCHAR(255) NOT NULL,
     "expiry_date" TIMESTAMPTZ NOT NULL,
     "reception_date" TIMESTAMPTZ NOT NULL,
     "status" VARCHAR(15) NOT NULL CHECK (status IN ('QUARANTINE', 'RELEASED', 'REJECTED', 'USED', 'DESTROYED')),
     "version" BIGINT NOT NULL DEFAULT 0,
     "validated_by" UUID,
     "validated_at" TIMESTAMPTZ,
-    CONSTRAINT "uk_batches_internal_reference_number" UNIQUE ("internal_reference_number"),
+    CONSTRAINT "uk_batches_internal_batch_number" UNIQUE ("internal_batch_number"),
     CONSTRAINT "uk_batches_supplier_batch_number" UNIQUE ("supplier_id", "supplier_batch_number")
 );
 

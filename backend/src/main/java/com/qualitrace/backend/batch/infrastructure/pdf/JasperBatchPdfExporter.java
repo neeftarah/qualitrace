@@ -45,6 +45,7 @@ public class JasperBatchPdfExporter {
         // 3. Préparation des paramètres pour le rapport principal
         try {
             Map<String, Object> parameters = new HashMap<>();
+            parameters.put("LOGO_PATH", new ClassPathResource("static/images/logo.png"));
             parameters.put("BATCH_ID", batch.id());
             parameters.put("INTERNAL_REF", batch.internalBatchNumber());
             parameters.put("SUPPLIER_REF", batch.supplierBatchNumber());

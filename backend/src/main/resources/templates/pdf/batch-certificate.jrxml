@@ -11,6 +11,7 @@
               uuid="a1b2c3d4-e5f6-7890-abcd-ef1234567890">
 
     <!-- Déclaration des paramètres passés depuis Java -->
+    <parameter name="LOGO_PATH" class="java.lang.String"/>
     <parameter name="BATCH_ID" class="java.lang.Long"/>
     <parameter name="INTERNAL_REF" class="java.lang.String"/>
     <parameter name="SUPPLIER_REF" class="java.lang.String"/>
@@ -31,6 +32,14 @@
 
     <!-- Informations Générales du Lot -->
     <pageHeader height="110" splitType="Stretch">
+        <image hAlign="Center" vAlign="Middle">
+            <reportElement x="227" y="0" width="100" height="50" uuid="img-logo-001"/>
+            <!-- scaleImage="RetainShape" préserve le ratio sans déformer -->
+            <graphicElement scaleImage="RetainShape"/>
+            <imageExpression><![CDATA[$P{LOGO_PATH} != null ? $P{LOGO_PATH} : "static/images/logo.png"]]></imageExpression>
+        </image>
+
+
             <!-- Reference Interne -->
             <element kind="staticText" x="0" y="0" width="130" height="20"><text><![CDATA[Réf. Interne :]]></text></element>
             <element kind="textField" x="130" y="0" width="150" height="20"><expression><![CDATA[$P{INTERNAL_REF}]]></expression></element>

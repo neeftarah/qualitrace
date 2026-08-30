@@ -19,7 +19,7 @@ public class BatchEntity {
     @JoinColumn(name = "component_id", nullable = false)
     private ComponentEntity component;
 
-    @Column(name = "internal_reference_number", nullable = false, unique = true)
+    @Column(name = "internal_batch_number", nullable = false, unique = true)
     private String internalBatchNumber;
 
     @ManyToOne(fetch = FetchType.LAZY)
