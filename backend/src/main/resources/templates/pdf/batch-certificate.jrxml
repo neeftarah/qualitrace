@@ -119,7 +119,7 @@
 
         <!-- === LOT ===-->
         <element kind="staticText" x="0" y="30" width="95" height="15" style="label">
-            <text><![CDATA[Type de lot :]]></text>
+            <text><![CDATA[Catégorie :]]></text>
         </element>
         <element kind="textField" x="95" y="30" width="140" height="15" style="text">
             <expression><![CDATA[$P{COMPONENT_TYPE}]]></expression>
@@ -405,7 +405,7 @@
     <pageFooter height="100" splitType="Stretch">
         <element kind="staticText" x="0" y="5" width="555" height="18"
                  fontName="DejaVu Sans" fontSize="12.0" bold="true" forecolor="#0C3267">
-            <text><![CDATA[Décision]]></text>
+            <text><![CDATA[Décision : ]]></text>
         </element>
 
         <element kind="textField" x="0" y="30" width="170" height="30"
@@ -424,14 +424,24 @@
             ]]></expression>
         </element>
 
-        <element kind="staticText" x="275" y="30" width="355" height="15" style="label">
-            <text><![CDATA[Libéré le :]]></text>
+        <element kind="textField" x="275" y="30" width="355" height="15" style="label">
+            <expression><![CDATA[
+                ("RELEASED".equals($P{STATUS}) || "USED".equals($P{STATUS}))
+                    ? "Libéré le :"
+                    : (("REJECTED".equals($P{STATUS}) || "DESTROYED".equals($P{STATUS}))
+                        ? "Rejeté le :" : "")
+            ]]></expression>
         </element>
         <element kind="textField" x="350" y="30" width="280" height="15" style="text">
             <expression><![CDATA[$P{VALIDATED_AT}]]></expression>
         </element>
-        <element kind="staticText" x="275" y="48" width="355" height="15" style="label">
-            <text><![CDATA[Libéré par :]]></text>
+        <element kind="textField" x="275" y="48" width="355" height="15" style="label">
+            <expression><![CDATA[
+                ("RELEASED".equals($P{STATUS}) || "USED".equals($P{STATUS}))
+                    ? "Libéré par :"
+                    : (("REJECTED".equals($P{STATUS}) || "DESTROYED".equals($P{STATUS}))
+                        ? "Rejeté par :" : "")
+            ]]></expression>
         </element>
         <element kind="textField" x="350" y="48" width="280" height="15" style="text">
             <expression><![CDATA[$P{VALIDATED_BY}]]></expression>
