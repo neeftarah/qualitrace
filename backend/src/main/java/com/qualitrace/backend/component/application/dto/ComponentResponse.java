@@ -1,8 +1,8 @@
 package com.qualitrace.backend.component.application.dto;
 
-import com.qualitrace.backend.supplier.domain.model.Supplier;
 import com.qualitrace.backend.component.domain.type.ComponentStatus;
 import com.qualitrace.backend.component.domain.type.ComponentType;
+import com.qualitrace.backend.supplier.application.dto.SupplierResponse;
 import org.springframework.hateoas.server.core.Relation;
 
 import java.time.Instant;
@@ -15,6 +15,6 @@ public record ComponentResponse(
         String name,
         Instant availableFrom,
         ComponentStatus status,
-        Supplier supplier
+        SupplierResponse supplier
 ) {
 }

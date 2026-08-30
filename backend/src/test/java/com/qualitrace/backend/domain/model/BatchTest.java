@@ -9,9 +9,9 @@ import com.qualitrace.backend.batch.domain.type.BatchStatus;
 import com.qualitrace.backend.component.domain.model.Component;
 import com.qualitrace.backend.component.domain.type.ComponentStatus;
 import com.qualitrace.backend.component.domain.type.ComponentType;
-import com.qualitrace.backend.controls.domain.model.ControlRangeSpecification;
-import com.qualitrace.backend.controls.domain.repository.ControlRangeSpecificationRepository;
-import com.qualitrace.backend.controls.domain.type.ControlRangeSpecificationStatus;
+import com.qualitrace.backend.specification.domain.model.Specification;
+import com.qualitrace.backend.specification.domain.repository.SpecificationRepository;
+import com.qualitrace.backend.specification.domain.type.SpecificationStatus;
 import com.qualitrace.backend.deviation.domain.repository.DeviationRepository;
 import com.qualitrace.backend.deviation.domain.type.DeviationStatus;
 import com.qualitrace.backend.supplier.domain.model.Supplier;
@@ -44,7 +44,7 @@ class BatchTest {
     private AnalysisResultRepository analysisRepository;
 
     @Mock
-    private ControlRangeSpecificationRepository controlRepository;
+    private SpecificationRepository controlRepository;
 
     private Supplier supplier;
     private Component activeComponent;
@@ -288,7 +288,7 @@ class BatchTest {
         assertThatException().isThrownBy(() -> receivedBatch.validate(
                         true, deviationRepository, analysisRepository, controlRepository
                 )).isInstanceOf(IllegalStateException.class)
-                .withMessage("Seul un composant en quarantaine peut \u00eatre valid\u00e9");
+                .withMessage("Seul un composant en quarantaine peut être validé");
     }
 
     @Test
@@ -303,7 +303,7 @@ class BatchTest {
         assertThatException().isThrownBy(() -> batch.validate(
                         true, deviationRepository, analysisRepository, controlRepository
                 )).isInstanceOf(IllegalStateException.class)
-                .withMessage("Tous les r\u00e9sultats d'analyses doivent avoir \u00e9t\u00e9 saisis pour valider un lot");
+                .withMessage("Tous les résultats d'analyses doivent avoir été saisis pour valider un lot");
     }
 
     @Test
@@ -321,7 +321,7 @@ class BatchTest {
         assertThatException().isThrownBy(() -> batch.validate(
                         true, deviationRepository, analysisRepository, controlRepository
                 )).isInstanceOf(IllegalStateException.class)
-                .withMessage("Toutes les d\u00e9viations doivent \u00eatre cl\u00f4tur\u00e9es avant de pouvoir valider un lot");
+                .withMessage("Toutes les déviations doivent être clôturées avant de pouvoir valider un lot");
     }
 
     @Test
@@ -338,7 +338,7 @@ class BatchTest {
 
         assertThatException().isThrownBy(batch::use)
                 .isInstanceOf(IllegalStateException.class)
-                .withMessage("Seul un lot valid\u00e9 peu \u00eatre utilis\u00e9");
+                .withMessage("Seul un lot validé peu être utilisé");
     }
 
     @Test
@@ -355,7 +355,7 @@ class BatchTest {
 
         assertThatException().isThrownBy(batch::destroy)
                 .isInstanceOf(IllegalStateException.class)
-                .withMessage("Le composant est d\u00e9j\u00e0 d\u00e9truit");
+                .withMessage("Le composant est déjà détruit");
     }
 
     @Test
@@ -395,15 +395,15 @@ class BatchTest {
         );
     }
 
-    private ControlRangeSpecification createSpecification(Long id, String name) {
-        return new ControlRangeSpecification(
+    private Specification createSpecification(Long id, String name) {
+        return new Specification(
                 id,
                 name,
                 "METHOD-01",
                 "unit",
                 5.0,
                 10.0,
-                ControlRangeSpecificationStatus.ACTIVE,
+                SpecificationStatus.ACTIVE,
                 1L
         );
     }

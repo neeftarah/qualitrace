@@ -54,35 +54,9 @@ class DeviationControllerTest {
 
     @Autowired
     private DeviationRepository deviationRepository;
+
     @Autowired
     private BatchRepository batchRepository;
-//
-//    @Autowired
-//    private ControlRangeSpecificationRepository controlRepository;
-
-    private static final Batch TEST_BATCH = new Batch(
-            123456789L,
-            new Component(
-                    123456789L,
-                    ComponentType.RAW_MATERIAL,
-                    "COMP-001",
-                    "Test Component 1",
-                    Instant.now(),
-                    ComponentStatus.ACTIVE,
-                    new Supplier(
-                            123456789L,
-                            "SUP001",
-                            "Supplier 1",
-                            "123 Main St, City, Country",
-                            SupplierStatus.ACTIVE
-                    )
-            ),
-            "LOT-2026-001",
-            "SUP-LOT-999",
-            Instant.now().plusSeconds(36000),
-            Instant.now(),
-            BatchStatus.QUARANTINE
-    );
 
     @BeforeAll
     void setUpClient() {

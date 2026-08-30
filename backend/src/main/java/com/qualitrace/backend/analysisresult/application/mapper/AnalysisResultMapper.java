@@ -1,6 +1,7 @@
 package com.qualitrace.backend.analysisresult.application.mapper;
 
 import com.qualitrace.backend.analysisresult.application.dto.AnalysisResultCreateRequest;
+import com.qualitrace.backend.analysisresult.application.dto.AnalysisResultMinimalResponse;
 import com.qualitrace.backend.analysisresult.application.dto.AnalysisResultResponse;
 import com.qualitrace.backend.analysisresult.domain.model.AnalysisResult;
 import com.qualitrace.backend.batch.domain.repository.BatchRepository;
@@ -23,6 +24,15 @@ public class AnalysisResultMapper {
                 AnalysisResult.id(),
                 AnalysisResult.batchId(),
                 AnalysisResult.specificationId(),
+                AnalysisResult.value(),
+                AnalysisResult.createdAt(),
+                userMapper.toResponse(AnalysisResult.createdBy())
+        );
+    }
+
+    public AnalysisResultMinimalResponse toMinimalResponse(AnalysisResult AnalysisResult) {
+        return new AnalysisResultMinimalResponse(
+                AnalysisResult.id(),
                 AnalysisResult.value(),
                 AnalysisResult.createdAt(),
                 userMapper.toResponse(AnalysisResult.createdBy())

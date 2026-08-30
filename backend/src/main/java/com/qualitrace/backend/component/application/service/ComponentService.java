@@ -5,12 +5,11 @@ import com.qualitrace.backend.component.application.dto.ComponentResponse;
 import com.qualitrace.backend.component.application.dto.ComponentUpdateRequest;
 import com.qualitrace.backend.component.application.mapper.ComponentMapper;
 import com.qualitrace.backend.component.domain.exception.ComponentNotFoundException;
-import com.qualitrace.backend.component.domain.exception.ComponentRequiresSpecificationException;
 import com.qualitrace.backend.component.domain.model.Component;
 import com.qualitrace.backend.component.domain.model.ComponentFilter;
 import com.qualitrace.backend.supplier.domain.exception.SupplierNotFoundException;
 import com.qualitrace.backend.component.domain.repository.ComponentRepository;
-import com.qualitrace.backend.controls.domain.repository.ControlRangeSpecificationRepository;
+import com.qualitrace.backend.specification.domain.repository.SpecificationRepository;
 import com.qualitrace.backend.supplier.domain.repository.SupplierRepository;
 import com.qualitrace.backend.shared.domain.model.PageQuery;
 import com.qualitrace.backend.shared.domain.model.PageResult;
@@ -27,19 +26,19 @@ public class ComponentService {
 
     private final ComponentRepository componentRepository;
     private final ComponentMapper componentMapper;
-    private final ControlRangeSpecificationRepository controlRangeSpecificationRepository;
+    private final SpecificationRepository specificationRepository;
 
 
     public ComponentService(
             SupplierRepository supplierRepository,
             ComponentRepository componentRepository,
             ComponentMapper componentMapper,
-            ControlRangeSpecificationRepository controlRangeSpecificationRepository
+            SpecificationRepository specificationRepository
     ) {
         this.supplierRepository = supplierRepository;
         this.componentRepository = componentRepository;
         this.componentMapper = componentMapper;
-        this.controlRangeSpecificationRepository = controlRangeSpecificationRepository;
+        this.specificationRepository = specificationRepository;
     }
 
     @Transactional(readOnly = true)
@@ -87,7 +86,7 @@ public class ComponentService {
         Component existing = findOrThrow(id);
 
         return componentMapper.toResponse(
-                componentRepository.save(existing.activate(controlRangeSpecificationRepository))
+                componentRepository.save(existing.activate(specificationRepository))
         );
     }
 

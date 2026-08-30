@@ -1,7 +1,10 @@
 package com.qualitrace.backend.batch.application.service;
 
+import com.qualitrace.backend.analysisresult.application.mapper.AnalysisResultMapper;
+import com.qualitrace.backend.analysisresult.domain.model.AnalysisResult;
 import com.qualitrace.backend.analysisresult.domain.repository.AnalysisResultRepository;
 import com.qualitrace.backend.batch.application.dto.BatchCreateRequest;
+import com.qualitrace.backend.batch.application.dto.BatchDetailResponse;
 import com.qualitrace.backend.batch.application.dto.BatchResponse;
 import com.qualitrace.backend.batch.application.dto.BatchValidationRequest;
 import com.qualitrace.backend.batch.application.mapper.BatchMapper;
@@ -9,15 +12,25 @@ import com.qualitrace.backend.batch.domain.exception.BatchNotFoundException;
 import com.qualitrace.backend.batch.domain.model.Batch;
 import com.qualitrace.backend.batch.domain.model.BatchFilter;
 import com.qualitrace.backend.batch.domain.repository.BatchRepository;
+import com.qualitrace.backend.component.application.mapper.ComponentMapper;
 import com.qualitrace.backend.component.domain.exception.ComponentNotFoundException;
 import com.qualitrace.backend.component.domain.model.Component;
 import com.qualitrace.backend.component.domain.repository.ComponentRepository;
-import com.qualitrace.backend.controls.domain.repository.ControlRangeSpecificationRepository;
+import com.qualitrace.backend.deviation.application.dto.DeviationResponse;
+import com.qualitrace.backend.deviation.application.mapper.DeviationMapper;
 import com.qualitrace.backend.deviation.domain.repository.DeviationRepository;
 import com.qualitrace.backend.shared.domain.model.PageQuery;
 import com.qualitrace.backend.shared.domain.model.PageResult;
+import com.qualitrace.backend.specification.application.dto.SpecificationWithResultResponse;
+import com.qualitrace.backend.specification.domain.model.Specification;
+import com.qualitrace.backend.specification.domain.repository.SpecificationRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -25,9 +38,14 @@ public class BatchService {
     private final ComponentRepository componentRepository;
     private final DeviationRepository deviationRepository;
     private final AnalysisResultRepository analysisRepository;
-    private final ControlRangeSpecificationRepository controlRepository;
+    private final SpecificationRepository controlRepository;
     private final BatchRepository batchRepository;
     private final BatchMapper batchMapper;
+    private final AnalysisResultMapper analysisResultMapper;
+    private final DeviationMapper deviationMapper;
+    private final SpecificationRepository specificationRepository;
+    private final AnalysisResultRepository analysisResultRepository;
+    private final ComponentMapper componentMapper;
 
     public BatchService(
             ComponentRepository componentRepository,
@@ -35,7 +53,12 @@ public class BatchService {
             BatchMapper batchMapper,
             DeviationRepository deviationRepository,
             AnalysisResultRepository analysisRepository,
-            ControlRangeSpecificationRepository controlRepository
+            SpecificationRepository controlRepository,
+            AnalysisResultMapper analysisResultMapper,
+            DeviationMapper deviationMapper,
+            SpecificationRepository specificationRepository,
+            AnalysisResultRepository analysisResultRepository,
+            ComponentMapper componentMapper
     ) {
         this.componentRepository = componentRepository;
         this.batchRepository = batchRepository;
@@ -43,13 +66,56 @@ public class BatchService {
         this.deviationRepository = deviationRepository;
         this.analysisRepository = analysisRepository;
         this.controlRepository = controlRepository;
+        this.analysisResultMapper = analysisResultMapper;
+        this.deviationMapper = deviationMapper;
+        this.specificationRepository = specificationRepository;
+        this.analysisResultRepository = analysisResultRepository;
+        this.componentMapper = componentMapper;
     }
 
     @Transactional(readOnly = true)
-    public BatchResponse getOneById(Long id) {
-        Batch batch = batchRepository.findById(id)
-                .orElseThrow(() -> new BatchNotFoundException(id));
-        return batchMapper.toResponse(batch);
+    public BatchDetailResponse getOneById(Long id) {
+//        Batch batch = batchRepository.findById(id)
+//                .orElseThrow(() -> new BatchNotFoundException(id));
+//        return batchMapper.toResponse(batch);
+
+        Batch batch = findOrThrow(id);
+
+        List<Specification> specs =
+                specificationRepository.findByComponent(batch.component().id());
+
+        Map<Long, AnalysisResult> resultsBySpec = analysisResultRepository.findAllByBatchId(id).stream()
+                .collect(Collectors.toMap(AnalysisResult::specificationId, r -> r));
+
+        List<SpecificationWithResultResponse> specResponses = specs.stream()
+                .map(spec -> new SpecificationWithResultResponse(
+                        spec.id(),
+                        spec.name(),
+                        spec.method(),
+                        spec.unit(),
+                        spec.min(),
+                        spec.max(),
+                        Optional.ofNullable(resultsBySpec.get(spec.id()))
+                                .map(analysisResultMapper::toMinimalResponse)
+                                .orElse(null)
+                ))
+                .toList();
+
+        List<DeviationResponse> deviations = deviationRepository.findAllByBatchId(id).stream()
+                .map(deviationMapper::toResponse)
+                .toList();
+
+        return new BatchDetailResponse(
+                batch.id(),
+                batch.internalReferenceNumber(),
+                batch.supplierReferenceNumber(),
+                batch.expiryDate(),
+                batch.receptionDate(),
+                batch.status(),
+                componentMapper.toResponse(batch.component()),
+                specResponses,
+                deviations
+        );
     }
 
     @Transactional(readOnly = true)

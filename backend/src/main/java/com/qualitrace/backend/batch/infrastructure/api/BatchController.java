@@ -1,7 +1,9 @@
 package com.qualitrace.backend.batch.infrastructure.api;
 
+import com.qualitrace.backend.batch.application.assembler.BatchDetailModelAssembler;
 import com.qualitrace.backend.batch.application.assembler.BatchModelAssembler;
 import com.qualitrace.backend.batch.application.dto.BatchCreateRequest;
+import com.qualitrace.backend.batch.application.dto.BatchDetailResponse;
 import com.qualitrace.backend.batch.application.dto.BatchResponse;
 import com.qualitrace.backend.batch.application.dto.BatchValidationRequest;
 import com.qualitrace.backend.batch.application.service.BatchService;
@@ -61,10 +63,12 @@ public class BatchController {
     );
     private final BatchService batchService;
     private final BatchModelAssembler assembler;
+    private final BatchDetailModelAssembler detailAssembler;
 
-    public BatchController(BatchService batchService, BatchModelAssembler assembler) {
+    public BatchController(BatchService batchService, BatchModelAssembler assembler, BatchDetailModelAssembler detailAssembler) {
         this.batchService = batchService;
         this.assembler = assembler;
+        this.detailAssembler = detailAssembler;
     }
 
     /**
@@ -151,10 +155,10 @@ public class BatchController {
     })
     @GetMapping("/{id}")
     @PreAuthorize("isAuthenticated()")
-    public EntityModel<BatchResponse> get(@PathVariable Long id) {
-        BatchResponse batch = batchService.getOneById(id);
+    public EntityModel<BatchDetailResponse> get(@PathVariable Long id) {
+        BatchDetailResponse batchDetail = batchService.getOneById(id);
 
-        return assembler.toModel(batch);
+        return detailAssembler.toModel(batchDetail);
     }
 
     /**

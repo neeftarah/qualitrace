@@ -4,8 +4,8 @@ import com.qualitrace.backend.component.domain.model.Component;
 import com.qualitrace.backend.component.domain.repository.ComponentRepository;
 import com.qualitrace.backend.component.domain.type.ComponentStatus;
 import com.qualitrace.backend.component.domain.type.ComponentType;
-import com.qualitrace.backend.controls.domain.model.ControlRangeSpecification;
-import com.qualitrace.backend.controls.domain.repository.ControlRangeSpecificationRepository;
+import com.qualitrace.backend.specification.domain.model.Specification;
+import com.qualitrace.backend.specification.domain.repository.SpecificationRepository;
 import com.qualitrace.backend.supplier.domain.model.Supplier;
 import com.qualitrace.backend.supplier.domain.type.SupplierStatus;
 import org.junit.jupiter.api.BeforeAll;
@@ -53,7 +53,7 @@ class ComponentControllerTest {
     private ComponentRepository componentRepository; // le port du domaine, pas le JPA repository directement
 
     @Autowired
-    private ControlRangeSpecificationRepository controlRepository;
+    private SpecificationRepository controlRepository;
 
     private static final Supplier TEST_SUPPLIER = new Supplier(
             1L,
@@ -377,7 +377,7 @@ class ComponentControllerTest {
     }
 
     private Long createTestControl(Long componentId, String name, String method, String unit, double min, double max) {
-        ControlRangeSpecification spec = ControlRangeSpecification.createNew(name, method, unit, min, max, componentId, componentRepository);
+        Specification spec = Specification.createNew(name, method, unit, min, max, componentId, componentRepository);
         return controlRepository.save(spec).id();
     }
 }
