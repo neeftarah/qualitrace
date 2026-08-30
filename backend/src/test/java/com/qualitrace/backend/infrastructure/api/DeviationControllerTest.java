@@ -41,7 +41,7 @@ import static org.springframework.security.test.web.servlet.setup.SecurityMockMv
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @Sql(statements = "INSERT INTO suppliers (id, code, name, address, status) VALUES (123456789, 'SUPP01', 'Fournisseur Test', '123 Main Street', 'ACTIVE') ON CONFLICT DO NOTHING;")
 @Sql(statements = "INSERT INTO components (id, type, reference, name, status, available_from, supplier_id) VALUES (123456789, 'RAW_MATERIAL', 'CMP-001', 'Test Component 1', 'ACTIVE', '2026-08-26 20:02:42.768537 +00:00', 123456789) ON CONFLICT DO NOTHING;")
-@Sql(statements = "INSERT INTO batches (id, component_id, supplier_id, supplier_reference_number, internal_reference_number, expiry_date, reception_date, status, version) VALUES (123456789, 123456789, 123456789, 'REF-SUPP-LOT-01', 'REF-INT-LOT-01', '2028-08-26 20:02:42.768537 +00:00', '2026-08-26 20:02:42.768537 +00:00', 'QUARANTINE', 1) ON CONFLICT DO NOTHING;")
+@Sql(statements = "INSERT INTO batches (id, component_id, supplier_id, supplier_batch_number, internal_reference_number, expiry_date, reception_date, status, version) VALUES (123456789, 123456789, 123456789, 'REF-SUPP-LOT-01', 'REF-INT-LOT-01', '2028-08-26 20:02:42.768537 +00:00', '2026-08-26 20:02:42.768537 +00:00', 'QUARANTINE', 1) ON CONFLICT DO NOTHING;")
 class DeviationControllerTest {
     @Container
     @ServiceConnection

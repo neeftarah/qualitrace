@@ -6,9 +6,9 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 public record BatchFilter(
-        String internalReferenceNumber,
+        String internalBatchNumber,
         Long supplierId,
-        String supplierReferenceNumber,
+        String supplierBatchNumber,
         LocalDate expiryFromDate,
         LocalDate expiryToDate,
         LocalDate receptionFromDate,

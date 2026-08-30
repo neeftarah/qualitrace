@@ -19,22 +19,22 @@ import java.util.List;
 public record Batch(
         Long id,
         Component component,
-        String internalReferenceNumber,
-        String supplierReferenceNumber,
+        String internalBatchNumber,
+        String supplierBatchNumber,
         Instant expiryDate,
         Instant receptionDate,
         BatchStatus status
 ) {
     public static Batch createNew(
             Component component,
-            String supplierReferenceNumber,
+            String supplierBatchNumber,
             Instant expiryDate,
             BatchRepository batchRepository
     ) {
         if (component == null) {
             throw new IllegalArgumentException("Component cannot be null");
         }
-        if (supplierReferenceNumber == null || supplierReferenceNumber.trim().isEmpty()) {
+        if (supplierBatchNumber == null || supplierBatchNumber.trim().isEmpty()) {
             throw new IllegalArgumentException("Supplier reference number cannot be null or empty");
         }
         if (expiryDate == null) {
@@ -57,7 +57,7 @@ public record Batch(
                 null, // Placeholder ID, will be replaced by the repository
                 component,
                 internalRef,
-                supplierReferenceNumber,
+                supplierBatchNumber,
                 expiryDate,
                 receptionDate,
                 BatchStatus.QUARANTINE // RG-STK-01 : Tout lot créé lors d'une réception est obligatoirement en statut « Quarantaine ».
@@ -84,7 +84,7 @@ public record Batch(
             throw new IllegalStateException("Toutes les déviations doivent être clôturées avant de pouvoir valider un lot");
         }
 
-        return withStatus(accept ? BatchStatus.RECEIVED : BatchStatus.REFUSED);
+        return withStatus(accept ? BatchStatus.RELEASED : BatchStatus.REJECTED);
     }
 
     public AnalysisResultStatus getAnalysisStatus(
@@ -108,7 +108,7 @@ public record Batch(
     }
 
     public Batch use() {
-        if (this.status != BatchStatus.RECEIVED) {
+        if (this.status != BatchStatus.RELEASED) {
             throw new IllegalStateException("Seul un lot validé peu être utilisé");
         }
 
@@ -131,8 +131,8 @@ public record Batch(
         return new Batch(
                 this.id,
                 this.component,
-                this.internalReferenceNumber,
-                this.supplierReferenceNumber,
+                this.internalBatchNumber,
+                this.supplierBatchNumber,
                 this.expiryDate,
                 this.receptionDate,
                 newStatus

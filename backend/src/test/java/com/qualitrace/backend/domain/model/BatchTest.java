@@ -73,8 +73,8 @@ class BatchTest {
 
         assertThat(batch.id()).isNull();
         assertThat(batch.component()).isEqualTo(activeComponent);
-        assertThat(batch.internalReferenceNumber()).isEqualTo("LOT-2026-001");
-        assertThat(batch.supplierReferenceNumber()).isEqualTo("SUP-LOT-999");
+        assertThat(batch.internalBatchNumber()).isEqualTo("LOT-2026-001");
+        assertThat(batch.supplierBatchNumber()).isEqualTo("SUP-LOT-999");
         assertThat(batch.expiryDate()).isEqualTo(expiryDate);
         assertThat(batch.receptionDate()).isNotNull();
         assertThat(batch.status()).isEqualTo(BatchStatus.QUARANTINE);
@@ -259,7 +259,7 @@ class BatchTest {
 
         Batch validated = batch.validate(true, deviationRepository, analysisRepository, controlRepository);
 
-        assertThat(validated.status()).isEqualTo(BatchStatus.RECEIVED);
+        assertThat(validated.status()).isEqualTo(BatchStatus.RELEASED);
         assertThat(validated.id()).isEqualTo(1L);
         assertThat(validated.component()).isEqualTo(activeComponent);
     }
@@ -278,12 +278,12 @@ class BatchTest {
 
         Batch validated = batch.validate(false, deviationRepository, analysisRepository, controlRepository);
 
-        assertThat(validated.status()).isEqualTo(BatchStatus.REFUSED);
+        assertThat(validated.status()).isEqualTo(BatchStatus.REJECTED);
     }
 
     @Test
     void validateWhenNotQuarantineShouldFail() {
-        Batch receivedBatch = createBatch(1L, BatchStatus.RECEIVED);
+        Batch receivedBatch = createBatch(1L, BatchStatus.RELEASED);
 
         assertThatException().isThrownBy(() -> receivedBatch.validate(
                         true, deviationRepository, analysisRepository, controlRepository
@@ -326,7 +326,7 @@ class BatchTest {
 
     @Test
     void useBatch() {
-        Batch batch = createBatch(1L, BatchStatus.RECEIVED);
+        Batch batch = createBatch(1L, BatchStatus.RELEASED);
         Batch usedBatch = batch.use();
 
         assertThat(usedBatch.status()).isEqualTo(BatchStatus.USED);
@@ -367,7 +367,7 @@ class BatchTest {
                 "SUP-LOT-001",
                 Instant.now().minus(2, ChronoUnit.DAYS),
                 Instant.now().minus(5, ChronoUnit.DAYS),
-                BatchStatus.RECEIVED
+                BatchStatus.RELEASED
         );
         assertThat(expiredBatch.isExpired()).isTrue();
 
@@ -378,7 +378,7 @@ class BatchTest {
                 "SUP-LOT-002",
                 Instant.now().plus(2, ChronoUnit.DAYS),
                 Instant.now(),
-                BatchStatus.RECEIVED
+                BatchStatus.RELEASED
         );
         assertThat(validBatch.isExpired()).isFalse();
     }

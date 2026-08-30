@@ -9,6 +9,7 @@ import com.qualitrace.backend.batch.application.dto.BatchValidationRequest;
 import com.qualitrace.backend.batch.application.service.BatchService;
 import com.qualitrace.backend.batch.domain.model.BatchFilter;
 import com.qualitrace.backend.batch.domain.type.BatchStatus;
+import com.qualitrace.backend.batch.infrastructure.pdf.JasperBatchPdfExporter;
 import com.qualitrace.backend.shared.domain.model.PageQuery;
 import com.qualitrace.backend.shared.domain.model.PageResult;
 import com.qualitrace.backend.shared.domain.model.SortQuery;
@@ -29,6 +30,8 @@ import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.IanaLinkRelations;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -52,9 +55,9 @@ public class BatchController {
     private static final Set<String> ALLOWED_SORT_FIELDS = Set.of(
             "code",
             "name",
-            "internalReferenceNumber",
+            "internalBatchNumber",
             "supplierId",
-            "supplierReferenceNumber",
+            "supplierBatchNumber",
             "expiryDate",
             "receptionDate",
             "status",
@@ -64,11 +67,18 @@ public class BatchController {
     private final BatchService batchService;
     private final BatchModelAssembler assembler;
     private final BatchDetailModelAssembler detailAssembler;
+    private final JasperBatchPdfExporter pdfExporter;
 
-    public BatchController(BatchService batchService, BatchModelAssembler assembler, BatchDetailModelAssembler detailAssembler) {
+    public BatchController(
+            BatchService batchService,
+            BatchModelAssembler assembler,
+            BatchDetailModelAssembler detailAssembler,
+            JasperBatchPdfExporter pdfExporter
+    ) {
         this.batchService = batchService;
         this.assembler = assembler;
         this.detailAssembler = detailAssembler;
+        this.pdfExporter = pdfExporter;
     }
 
     /**
@@ -88,9 +98,9 @@ public class BatchController {
     @GetMapping
     @PreAuthorize("isAuthenticated()")
     public CollectionModel<EntityModel<BatchResponse>> list(
-            @RequestParam(required = false) String internalReferenceNumber,
+            @RequestParam(required = false) String internalBatchNumber,
             @RequestParam(required = false) Long supplierId,
-            @RequestParam(required = false) String supplierReferenceNumber,
+            @RequestParam(required = false) String supplierBatchNumber,
             @RequestParam(required = false) LocalDate expiryFromDate,
             @RequestParam(required = false) LocalDate expiryToDate,
             @RequestParam(required = false) LocalDate receptionFromDate,
@@ -111,9 +121,9 @@ public class BatchController {
 
         PageQuery pageQuery = new PageQuery(pageable.getPageNumber(), pageable.getPageSize(), sortOrders);
         BatchFilter filter = new BatchFilter(
-                internalReferenceNumber,
+                internalBatchNumber,
                 supplierId,
-                supplierReferenceNumber,
+                supplierBatchNumber,
                 expiryFromDate,
                 expiryToDate,
                 receptionFromDate,
@@ -247,6 +257,27 @@ public class BatchController {
         BatchResponse updated = batchService.destroy(id);
 
         return assembler.toModel(updated);
+    }
+
+    /**
+     * Generate the analysis certificate.
+     *
+     * @param id The ID of the batch
+     * @return The analysis certificate PDF file
+     */
+    @Operation(
+            summary = "Certificat d'analyses",
+            description = "Permet de générer le certificat d'analyses au format PDF."
+    )
+    @ApiResponse(responseCode = "200", description = "Le certificat d'analyses")
+    @ApiResponse(responseCode = "404", description = "Lot introuvable")
+    @GetMapping(value = "/{id}/certificate", produces = MediaType.APPLICATION_PDF_VALUE)
+    @PreAuthorize("hasRole('AQ')")
+    public ResponseEntity<byte[]> certificate(@PathVariable Long id) {
+        byte[] pdf = pdfExporter.generateBatchReport(batchService.getOneById(id));
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"CA-" + id + ".pdf\"")
+                .body(pdf);
     }
 
     /**

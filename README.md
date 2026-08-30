@@ -66,7 +66,7 @@ docker-compose up -d
 
 ### Build du projet avec live reload (Spring Boot DevTools)
 ```bash
-.\backend\gradlew.bat -p backend build --continuous -x test
+.\backend\gradlew.bat -p backend build --continuous -x test --write-locks
 ```
 
 ### Lancement de l'application

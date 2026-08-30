@@ -12,8 +12,8 @@ import java.util.List;
 @Relation(collectionRelation = "batches", itemRelation = "batch")
 public record BatchDetailResponse(
         Long id,
-        String internalReferenceNumber,
-        String supplierReferenceNumber,
+        String internalBatchNumber,
+        String supplierBatchNumber,
         Instant expiryDate,
         Instant receptionDate,
         BatchStatus status,

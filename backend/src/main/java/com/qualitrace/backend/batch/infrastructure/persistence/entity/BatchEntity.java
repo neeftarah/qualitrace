@@ -20,14 +20,14 @@ public class BatchEntity {
     private ComponentEntity component;
 
     @Column(name = "internal_reference_number", nullable = false, unique = true)
-    private String internalReferenceNumber;
+    private String internalBatchNumber;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "supplier_id", nullable = false)
     private SupplierEntity supplier;
 
-    @Column(name = "supplier_reference_number", nullable = false, length = 15)
-    private String supplierReferenceNumber;
+    @Column(name = "supplier_batch_number", nullable = false, length = 15)
+    private String supplierBatchNumber;
 
     @Column(name = "expiry_date", nullable = false)
     private Instant expiryDate;
@@ -63,8 +63,8 @@ public class BatchEntity {
             Long id,
             ComponentEntity component,
             SupplierEntity supplier,
-            String internalReferenceNumber,
-            String supplierReferenceNumber,
+            String internalBatchNumber,
+            String supplierBatchNumber,
             Instant expiryDate,
             Instant receptionDate,
             BatchStatus status,
@@ -73,8 +73,8 @@ public class BatchEntity {
         this.id = id;
         this.component = component;
         this.supplier = supplier;
-        this.internalReferenceNumber = internalReferenceNumber;
-        this.supplierReferenceNumber = supplierReferenceNumber;
+        this.internalBatchNumber = internalBatchNumber;
+        this.supplierBatchNumber = supplierBatchNumber;
         this.expiryDate = expiryDate;
         this.receptionDate = receptionDate;
         this.status = status;
@@ -98,11 +98,11 @@ public class BatchEntity {
     }
 
     public String getInternalReferenceNumber() {
-        return internalReferenceNumber;
+        return internalBatchNumber;
     }
 
-    public void setInternalReferenceNumber(String internalReferenceNumber) {
-        this.internalReferenceNumber = internalReferenceNumber;
+    public void setInternalReferenceNumber(String internalBatchNumber) {
+        this.internalBatchNumber = internalBatchNumber;
     }
 
     public SupplierEntity getSupplier() {
@@ -114,11 +114,11 @@ public class BatchEntity {
     }
 
     public String getSupplierReferenceNumber() {
-        return supplierReferenceNumber;
+        return supplierBatchNumber;
     }
 
-    public void setSupplierReferenceNumber(String supplierReferenceNumber) {
-        this.supplierReferenceNumber = supplierReferenceNumber;
+    public void setSupplierReferenceNumber(String supplierBatchNumber) {
+        this.supplierBatchNumber = supplierBatchNumber;
     }
 
     public Instant getExpiryDate() {

@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport name="batch-detail"
+              language="java"
+              pageWidth="595"
+              pageHeight="842"
+              columnWidth="555"
+              leftMargin="20"
+              rightMargin="20"
+              topMargin="20"
+              bottomMargin="20"
+              uuid="a1b2c3d4-e5f6-7890-abcd-ef1234567890">
+
+    <!-- Déclaration des paramètres passés depuis Java -->
+    <parameter name="BATCH_ID" class="java.lang.Long"/>
+    <parameter name="INTERNAL_REF" class="java.lang.String"/>
+    <parameter name="SUPPLIER_REF" class="java.lang.String"/>
+    <parameter name="EXPIRY_DATE" class="java.lang.String"/>
+    <parameter name="RECEPTION_DATE" class="java.lang.String"/>
+    <parameter name="STATUS" class="java.lang.String"/>
+    <parameter name="COMPONENT_NAME" class="java.lang.String"/>
+
+    <parameter name="SPECIFICATIONS_DATA_SOURCE" class="net.sf.jasperreports.engine.JRDataSource"/>
+
+    <!-- En-tête du document -->
+    <title height="60" splitType="Stretch">
+            <element kind="staticText" x="0" y="0" width="555" height="30">
+                <text><![CDATA[QualiTrace - Fiche Detaillee du Lot]]></text>
+            </element>
+            <element kind="line" x="0" y="40" width="555" height="1"/>
+    </title>
+
+    <!-- Informations Générales du Lot -->
+    <pageHeader height="110" splitType="Stretch">
+            <!-- Reference Interne -->
+            <element kind="staticText" x="0" y="0" width="130" height="20"><text><![CDATA[Réf. Interne :]]></text></element>
+            <element kind="textField" x="130" y="0" width="150" height="20"><expression><![CDATA[$P{INTERNAL_REF}]]></expression></element>
+
+            <!-- Statut -->
+            <element kind="staticText" x="300" y="0" width="100" height="20"><text><![CDATA[Statut :]]></text></element>
+            <element kind="textField" x="400" y="0" width="155" height="20"><expression><![CDATA[$P{STATUS}]]></expression></element>
+
+            <!-- Reference Fournisseur -->
+            <element kind="staticText" x="0" y="25" width="130" height="20"><text><![CDATA[Réf. Fournisseur :]]></text></element>
+            <element kind="textField" x="130" y="25" width="150" height="20"><expression><![CDATA[$P{SUPPLIER_REF}]]></expression></element>
+
+            <!-- Composant -->
+            <element kind="staticText" x="300" y="25" width="100" height="20"><text><![CDATA[Composant :]]></text></element>
+            <element kind="textField" x="400" y="25" width="155" height="20"><expression><![CDATA[$P{COMPONENT_NAME}]]></expression></element>
+
+            <!-- Date de Reception -->
+            <element kind="staticText" x="0" y="50" width="130" height="20"><text><![CDATA[Date Réception :]]></text></element>
+            <element kind="textField" x="130" y="50" width="150" height="20"><expression><![CDATA[$P{RECEPTION_DATE}]]></expression></element>
+
+            <!-- Date de Peremption -->
+            <element kind="staticText" x="300" y="50" width="100" height="20"><text><![CDATA[Date Péremption :]]></text></element>
+            <element kind="textField" x="400" y="50" width="155" height="20"><expression><![CDATA[$P{EXPIRY_DATE}]]></expression></element>
+
+            <element kind="line" x="0" y="80" width="555" height="1"/>
+    </pageHeader>
+
+    <!-- Pied de page avec pagination -->
+    <pageFooter height="30" splitType="Stretch">
+            <element kind="textField" x="350" y="5" width="205" height="20" hTextAlign="Right">
+                <expression><![CDATA["Page " + $V{PAGE_NUMBER}]]></expression>
+            </element>
+            <element kind="textField" x="0" y="5" width="200" height="20" pattern="dd/MM/yyyy HH:mm">
+                <expression><![CDATA[new java.util.Date()]]></expression>
+            </element>
+    </pageFooter>
+
+</jasperReport>

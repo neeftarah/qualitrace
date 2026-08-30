@@ -20,9 +20,9 @@ public interface BatchJpaRepository extends JpaRepository<BatchEntity, Long> {
 
     @Query("""
             SELECT b FROM BatchEntity b
-            WHERE (:internalReferenceNumber IS NULL OR b.internalReferenceNumber = :internalReferenceNumber)
+            WHERE (:internalBatchNumber IS NULL OR b.internalBatchNumber = :internalBatchNumber)
             AND (:supplierId IS NULL OR b.supplier.id = :supplierId)
-            AND (:supplierReferenceNumber IS NULL OR b.supplierReferenceNumber = :supplierReferenceNumber)
+            AND (:supplierBatchNumber IS NULL OR b.supplierBatchNumber = :supplierBatchNumber)
             AND (CAST(:expiryFromDate AS timestamp) IS NULL OR b.expiryDate >= :expiryFromDate)
             AND (CAST(:expiryToDate AS timestamp) IS NULL OR b.expiryDate <= :expiryToDate)
             AND (CAST(:receptionFromDate AS timestamp) IS NULL OR b.receptionDate >= :receptionFromDate)
@@ -33,9 +33,9 @@ public interface BatchJpaRepository extends JpaRepository<BatchEntity, Long> {
             AND (CAST(:validationToDate AS timestamp) IS NULL OR b.validatedAt <= :validationToDate)
             """)
     Page<BatchEntity> search(
-            @Param("internalReferenceNumber") String internalReferenceNumber,
+            @Param("internalBatchNumber") String internalBatchNumber,
             @Param("supplierId") Long supplierId,
-            @Param("supplierReferenceNumber") String supplierReferenceNumber,
+            @Param("supplierBatchNumber") String supplierBatchNumber,
             @Param("expiryFromDate") Instant expiryFromDate,
             @Param("expiryToDate") Instant expiryToDate,
             @Param("receptionFromDate") Instant receptionFromDate,
@@ -50,9 +50,9 @@ public interface BatchJpaRepository extends JpaRepository<BatchEntity, Long> {
     // com.qualitrace.backend.batch.infrastructure.persistence.repository.BatchJpaRepository.java
 
     @Query("""
-                SELECT MAX(b.internalReferenceNumber)
+                SELECT MAX(b.internalBatchNumber)
                 FROM BatchEntity b 
-                WHERE b.internalReferenceNumber LIKE CONCAT(:prefix, '%')
+                WHERE b.internalBatchNumber LIKE CONCAT(:prefix, '%')
             """)
     Optional<String> findMaxInternalReferenceByPrefix(@Param("prefix") String prefix);
 }
