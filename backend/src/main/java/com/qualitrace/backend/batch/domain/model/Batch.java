@@ -7,8 +7,8 @@ import com.qualitrace.backend.batch.domain.repository.BatchRepository;
 import com.qualitrace.backend.batch.domain.type.BatchStatus;
 import com.qualitrace.backend.component.domain.model.Component;
 import com.qualitrace.backend.component.domain.type.ComponentStatus;
-import com.qualitrace.backend.controls.domain.model.ControlRangeSpecification;
-import com.qualitrace.backend.controls.domain.repository.ControlRangeSpecificationRepository;
+import com.qualitrace.backend.specification.domain.model.Specification;
+import com.qualitrace.backend.specification.domain.repository.SpecificationRepository;
 import com.qualitrace.backend.deviation.domain.repository.DeviationRepository;
 import com.qualitrace.backend.deviation.domain.type.DeviationStatus;
 import com.qualitrace.backend.supplier.domain.model.Supplier;
@@ -72,7 +72,7 @@ public record Batch(
             boolean accept,
             DeviationRepository deviationRepository,
             AnalysisResultRepository analysisRepository,
-            ControlRangeSpecificationRepository controlRepository
+            SpecificationRepository controlRepository
     ) {
         if (this.status != BatchStatus.QUARANTINE) {
             throw new IllegalStateException("Seul un composant en quarantaine peut être validé");
@@ -89,10 +89,10 @@ public record Batch(
 
     public AnalysisResultStatus getAnalysisStatus(
             AnalysisResultRepository analysisRepository,
-            ControlRangeSpecificationRepository controlRepository
+            SpecificationRepository controlRepository
     ) {
         List<AnalysisResult> results = analysisRepository.findAllByBatchId(this.id);
-        List<ControlRangeSpecification> controls = controlRepository.findByComponent(this.component.id());
+        List<Specification> controls = controlRepository.findByComponent(this.component.id());
 
         if (results.isEmpty()) {
             return AnalysisResultStatus.PENDING;

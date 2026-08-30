@@ -9,8 +9,8 @@ import com.qualitrace.backend.component.domain.model.Component;
 import com.qualitrace.backend.component.domain.repository.ComponentRepository;
 import com.qualitrace.backend.component.domain.type.ComponentStatus;
 import com.qualitrace.backend.component.domain.type.ComponentType;
-import com.qualitrace.backend.controls.domain.model.ControlRangeSpecification;
-import com.qualitrace.backend.controls.domain.repository.ControlRangeSpecificationRepository;
+import com.qualitrace.backend.specification.domain.model.Specification;
+import com.qualitrace.backend.specification.domain.repository.SpecificationRepository;
 import com.qualitrace.backend.supplier.domain.model.Supplier;
 import com.qualitrace.backend.supplier.domain.repository.SupplierRepository;
 import com.qualitrace.backend.user.domain.model.User;
@@ -26,7 +26,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.hateoas.MediaTypes;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -66,7 +65,7 @@ class AnalysisResultControllerTest {
     @Autowired private BatchRepository batchRepository;
     @Autowired private SupplierRepository supplierRepository;
     @Autowired private ComponentRepository componentRepository;
-    @Autowired private ControlRangeSpecificationRepository controlRepository;
+    @Autowired private SpecificationRepository controlRepository;
     @Autowired private AnalysisResultRepository analysisResultRepository;
 
     private static RestTestClient restClient;
@@ -222,7 +221,7 @@ class AnalysisResultControllerTest {
         Supplier supplier = supplierRepository.save(Supplier.createNew("SUP-ANALYSIS", "Analysis Supplier", "Test address"));
         Component component = componentRepository.save(Component.createNew(ComponentType.RAW_MATERIAL, "CMP-ANALYSIS", "Analysis Component", supplier));
         component = componentRepository.save(new Component(component.id(), component.type(), component.reference(), component.name(), Instant.now(), ComponentStatus.ACTIVE, supplier));
-        specificationId = controlRepository.save(ControlRangeSpecification.createNew("pH", "Titration", "pH", 6.0, 8.0, component.id(), componentRepository)).id();
+        specificationId = controlRepository.save(Specification.createNew("pH", "Titration", "pH", 6.0, 8.0, component.id(), componentRepository)).id();
         return batchRepository.save(new Batch(null, component, "LOT-ANALYSIS", "SUP-ANALYSIS-LOT", Instant.parse("2030-12-31T00:00:00Z"), Instant.now(), BatchStatus.QUARANTINE));
     }
 

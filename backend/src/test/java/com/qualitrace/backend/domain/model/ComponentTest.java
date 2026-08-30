@@ -4,7 +4,7 @@ import com.qualitrace.backend.component.domain.exception.ComponentRequiresSpecif
 import com.qualitrace.backend.component.domain.model.Component;
 import com.qualitrace.backend.component.domain.type.ComponentStatus;
 import com.qualitrace.backend.component.domain.type.ComponentType;
-import com.qualitrace.backend.controls.domain.repository.ControlRangeSpecificationRepository;
+import com.qualitrace.backend.specification.domain.repository.SpecificationRepository;
 import com.qualitrace.backend.supplier.domain.model.Supplier;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,7 +19,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class ComponentTest {
     @Mock
-    private ControlRangeSpecificationRepository controlRepository;
+    private SpecificationRepository controlRepository;
 
     @Test
     void createNewComponent() {

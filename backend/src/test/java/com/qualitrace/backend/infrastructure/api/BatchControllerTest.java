@@ -1,5 +1,7 @@
 package com.qualitrace.backend.infrastructure.api;
 
+import com.qualitrace.backend.analysisresult.domain.model.AnalysisResult;
+import com.qualitrace.backend.analysisresult.domain.repository.AnalysisResultRepository;
 import com.qualitrace.backend.batch.domain.model.Batch;
 import com.qualitrace.backend.batch.domain.repository.BatchRepository;
 import com.qualitrace.backend.batch.domain.type.BatchStatus;
@@ -7,8 +9,16 @@ import com.qualitrace.backend.component.domain.model.Component;
 import com.qualitrace.backend.component.domain.repository.ComponentRepository;
 import com.qualitrace.backend.component.domain.type.ComponentStatus;
 import com.qualitrace.backend.component.domain.type.ComponentType;
+import com.qualitrace.backend.specification.domain.model.Specification;
+import com.qualitrace.backend.specification.domain.repository.SpecificationRepository;
+import com.qualitrace.backend.deviation.domain.model.Deviation;
+import com.qualitrace.backend.deviation.domain.repository.DeviationRepository;
+import com.qualitrace.backend.deviation.domain.type.DeviationStatus;
 import com.qualitrace.backend.supplier.domain.model.Supplier;
 import com.qualitrace.backend.supplier.domain.repository.SupplierRepository;
+import com.qualitrace.backend.user.domain.model.User;
+import com.qualitrace.backend.user.domain.repository.UserRepository;
+import com.qualitrace.backend.user.domain.type.UserRole;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -32,6 +42,7 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 
 import java.time.Instant;
+import java.util.Set;
 
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 
@@ -56,6 +67,18 @@ class BatchControllerTest {
 
     @Autowired
     private BatchRepository batchRepository;
+
+    @Autowired
+    private AnalysisResultRepository analysisResultRepository;
+
+    @Autowired
+    private DeviationRepository deviationRepository;
+
+    @Autowired
+    private SpecificationRepository controlRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     private static RestTestClient restClient;
 
@@ -232,6 +255,50 @@ class BatchControllerTest {
                 .expectHeader().contentType(MediaType.APPLICATION_PROBLEM_JSON);
     }
 
+    @Test
+    @WithMockUser(username = "user", roles = "AQ")
+    void getBatchesDetailGenealogy() {
+        User user = userRepository.save(User.createNew(
+                "cq-analysis", "password", "cq-analysis@example.com", "Control", "Quality", Set.of(UserRole.CQ)));
+
+        Component component = createActiveComponent("CMP-001");
+        Batch batch = createBatch(component, "SUP-LOT-001", BatchStatus.QUARANTINE);
+
+        Long specId1 = createTestControl(component.id(), "pH", "pH-3215", "pH", 6.5, 7.5);
+        Long specId2 = createTestControl(component.id(), "Viscosité", "Vi-25_30_15", "Cps", 2000, 5000);
+
+        createTestDeviation(batch.id(), "DEV-008", DeviationStatus.CLOSED, "");
+        createTestDeviation(batch.id(), "DEV-009", DeviationStatus.OPENED, "");
+
+        createTestAnalysisResult(batch.id(), specId1, 7.2, user);
+        createTestAnalysisResult(batch.id(), specId2, 3257.0, user);
+
+        restClient.get().uri("/api/v1/batches/{id}", batch.id())
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentType(MediaTypes.HAL_JSON)
+                .expectBody()
+                .jsonPath("$.id").isEqualTo(batch.id())
+                .jsonPath("$.internalReferenceNumber").isEqualTo(batch.internalReferenceNumber())
+                .jsonPath("$.supplierReferenceNumber").isEqualTo(batch.supplierReferenceNumber())
+                .jsonPath("$.expiryDate").isNotEmpty()
+                .jsonPath("$.receptionDate").isNotEmpty()
+                .jsonPath("$.status").isEqualTo("QUARANTINE")
+                .jsonPath("$.component.id").isEqualTo(component.id())
+                .jsonPath("$.component.reference").isEqualTo("CMP-001")
+                .jsonPath("$.component.supplier.id").isEqualTo(component.supplier().id())
+                .jsonPath("$.component.supplier.code").isEqualTo("SUP-CMP-001")
+                .jsonPath("$.component.supplier.name").isEqualTo("Supplier CMP-001")
+                .jsonPath("$.specifications").isArray()
+                .jsonPath("$.specifications.length()").isEqualTo(2)
+                .jsonPath("$.specifications[?(@.results.value==7.2)]").exists()
+                .jsonPath("$.specifications[?(@.results.value==3257.0)]").exists()
+                .jsonPath("$.deviations").isArray()
+                .jsonPath("$.deviations.length()").isEqualTo(2)
+                .jsonPath("$.deviations[?(@.code=='DEV-008')]").exists()
+                .jsonPath("$.deviations[?(@.code=='DEV-009')]").exists();
+    }
+
     private Component createActiveComponent(String reference) {
         Supplier supplier = supplierRepository.save(Supplier.createNew("SUP-" + reference, "Supplier " + reference, "1 rue des Tests"));
         Component draft = componentRepository.save(Component.createNew(ComponentType.RAW_MATERIAL, reference, "Component " + reference, supplier));
@@ -249,5 +316,20 @@ class BatchControllerTest {
                 Instant.parse("2030-01-01T00:00:00Z"),
                 status
         ));
+    }
+
+    private Long createTestDeviation(Long batchId, String code, DeviationStatus status, String comment) {
+        Deviation deviation = Deviation.createNew(batchId, code, status, comment, batchRepository);
+        return deviationRepository.save(deviation).id();
+    }
+
+    private Long createTestControl(Long componentId, String name, String method, String unit, double min, double max) {
+        Specification spec = Specification.createNew(name, method, unit, min, max, componentId, componentRepository);
+        return controlRepository.save(spec).id();
+    }
+
+    private Long createTestAnalysisResult(Long batchId, Long specId, Double value, User createdBy) {
+        AnalysisResult analysisResult = AnalysisResult.createNew(batchId, specId, value, createdBy, batchRepository);
+        return analysisResultRepository.save(analysisResult).id();
     }
 }
