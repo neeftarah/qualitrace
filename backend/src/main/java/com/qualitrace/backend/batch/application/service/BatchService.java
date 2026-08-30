@@ -24,12 +24,16 @@ import com.qualitrace.backend.shared.domain.model.PageResult;
 import com.qualitrace.backend.specification.application.dto.SpecificationWithResultResponse;
 import com.qualitrace.backend.specification.domain.model.Specification;
 import com.qualitrace.backend.specification.domain.repository.SpecificationRepository;
+import com.qualitrace.backend.user.domain.model.User;
+import com.qualitrace.backend.user.domain.repository.UserRepository;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.time.Instant;
 import java.util.stream.Collectors;
 
 @Service
@@ -46,6 +50,7 @@ public class BatchService {
     private final SpecificationRepository specificationRepository;
     private final AnalysisResultRepository analysisResultRepository;
     private final ComponentMapper componentMapper;
+    private final UserRepository userRepository;
 
     public BatchService(
             ComponentRepository componentRepository,
@@ -58,7 +63,8 @@ public class BatchService {
             DeviationMapper deviationMapper,
             SpecificationRepository specificationRepository,
             AnalysisResultRepository analysisResultRepository,
-            ComponentMapper componentMapper
+            ComponentMapper componentMapper,
+            UserRepository userRepository
     ) {
         this.componentRepository = componentRepository;
         this.batchRepository = batchRepository;
@@ -71,6 +77,7 @@ public class BatchService {
         this.specificationRepository = specificationRepository;
         this.analysisResultRepository = analysisResultRepository;
         this.componentMapper = componentMapper;
+        this.userRepository = userRepository;
     }
 
     @Transactional(readOnly = true)
@@ -112,6 +119,10 @@ public class BatchService {
                 batch.expiryDate(),
                 batch.receptionDate(),
                 batch.status(),
+                batch.validatedAt(),
+                batch.validatedBy() != null
+                        ? batch.validatedBy().firstname() + " " + batch.validatedBy().surname()
+                        : null,
                 componentMapper.toResponse(batch.component()),
                 specResponses,
                 deviations
@@ -135,11 +146,16 @@ public class BatchService {
 
     public BatchResponse validate(Long id, BatchValidationRequest request) {
         Batch existing = findOrThrow(id);
+        String login = SecurityContextHolder.getContext().getAuthentication().getName();
+        User validator = userRepository.findByLogin(login)
+                .orElseThrow(() -> new IllegalStateException("Utilisateur de validation introuvable : " + login));
         return batchMapper.toResponse(batchRepository.save(existing.validate(
                 request.accept(),
                 deviationRepository,
                 analysisRepository,
-                controlRepository
+                controlRepository,
+                validator,
+                Instant.now()
         )));
     }
 

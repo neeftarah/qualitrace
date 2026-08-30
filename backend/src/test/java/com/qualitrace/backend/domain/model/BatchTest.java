@@ -15,6 +15,8 @@ import com.qualitrace.backend.specification.domain.type.SpecificationStatus;
 import com.qualitrace.backend.deviation.domain.repository.DeviationRepository;
 import com.qualitrace.backend.deviation.domain.type.DeviationStatus;
 import com.qualitrace.backend.supplier.domain.model.Supplier;
+import com.qualitrace.backend.user.domain.model.User;
+import com.qualitrace.backend.user.domain.type.UserRole;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,6 +26,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatException;
@@ -279,6 +282,29 @@ class BatchTest {
         Batch validated = batch.validate(false, deviationRepository, analysisRepository, controlRepository);
 
         assertThat(validated.status()).isEqualTo(BatchStatus.REJECTED);
+    }
+
+    @Test
+    void validateStoresValidatorAndValidationDate() {
+        Batch batch = createBatch(1L, BatchStatus.QUARANTINE);
+        User validator = User.createNew(
+                "alice", "password", "alice@example.com", "Alice", "Dupont", Set.of(UserRole.AQ));
+        Instant validationDate = Instant.parse("2026-08-30T10:15:30Z");
+
+        when(analysisRepository.findAllByBatchId(1L)).thenReturn(List.of(
+                new AnalysisResult(100L, 1L, 10L, 7.0, Instant.now(), null)
+        ));
+        when(controlRepository.findByComponent(1L)).thenReturn(List.of(
+                createSpecification(10L, "PH")
+        ));
+        when(deviationRepository.existsByBatchIdAndStatus(1L, DeviationStatus.OPENED)).thenReturn(false);
+
+        Batch validated = batch.validate(
+                true, deviationRepository, analysisRepository, controlRepository, validator, validationDate);
+
+        assertThat(validated.status()).isEqualTo(BatchStatus.RELEASED);
+        assertThat(validated.validatedBy()).isEqualTo(validator);
+        assertThat(validated.validatedAt()).isEqualTo(validationDate);
     }
 
     @Test

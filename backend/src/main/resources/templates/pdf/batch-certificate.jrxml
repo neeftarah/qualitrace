@@ -11,70 +11,435 @@
               uuid="a1b2c3d4-e5f6-7890-abcd-ef1234567890">
 
     <!-- Déclaration des paramètres passés depuis Java -->
-    <parameter name="LOGO_PATH" class="java.lang.String"/>
-    <parameter name="BATCH_ID" class="java.lang.Long"/>
+    <parameter name="LOGO" class="java.io.InputStream"/>
+
+    <parameter name="COMPONENT_TYPE" class="java.lang.String"/>
     <parameter name="INTERNAL_REF" class="java.lang.String"/>
-    <parameter name="SUPPLIER_REF" class="java.lang.String"/>
-    <parameter name="EXPIRY_DATE" class="java.lang.String"/>
     <parameter name="RECEPTION_DATE" class="java.lang.String"/>
+    <parameter name="EXPIRY_DATE" class="java.lang.String"/>
+
+    <parameter name="SUPPLIER_NAME" class="java.lang.String"/>
+    <parameter name="SUPPLIER_CODE" class="java.lang.String"/>
+    <parameter name="COMPONENT_REF" class="java.lang.String"/>
+    <parameter name="SUPPLIER_REF" class="java.lang.String"/>
+
     <parameter name="STATUS" class="java.lang.String"/>
     <parameter name="COMPONENT_NAME" class="java.lang.String"/>
+    <parameter name="VALIDATED_AT" class="java.lang.String"/>
+    <parameter name="VALIDATED_BY" class="java.lang.String"/>
+    <parameter name="HAS_DEVIATIONS" class="java.lang.Boolean"/>
 
     <parameter name="SPECIFICATIONS_DATA_SOURCE" class="net.sf.jasperreports.engine.JRDataSource"/>
+    <parameter name="DEVIATIONS_DATA_SOURCE" class="net.sf.jasperreports.engine.JRDataSource"/>
+
+    <!-- === STYLES === -->
+    <style name="label" forecolor="#333333" fontName="DejaVu Sans" fontSize="8.0" bold="true"
+           hTextAlign="Left" vTextAlign="Middle">
+    </style>
+    <style name="text" forecolor="#666666" fontName="DejaVu Sans" fontSize="8.0" bold="false"
+           hTextAlign="Left" vTextAlign="Middle">
+    </style>
+    <style name="TableHeader" forecolor="#111827" fontName="DejaVu Sans" fontSize="10.0" bold="true"
+           mode="Opaque" backcolor="#E5E7EB" hTextAlign="Center" vTextAlign="Middle">
+        <box>
+            <pen lineWidth="0.8" lineColor="#333333"/>
+        </box>
+    </style>
+    <style name="TableCell" fontName="DejaVu Sans" fontSize="8.0" vTextAlign="Middle">
+        <box padding="4">
+            <pen lineWidth="0.8" lineColor="#333333"/>
+        </box>
+    </style>
+    <style name="TableCellCenter" fontName="DejaVu Sans" fontSize="8.0" hTextAlign="Center" vTextAlign="Middle">
+        <box padding="4">
+            <pen lineWidth="0.8" lineColor="#333333"/>
+        </box>
+    </style>
+    <style name="StatusBadge" forecolor="#374151" fontName="DejaVu Sans" fontSize="8.0" bold="true"
+           mode="Opaque" backcolor="#F3F4F6" hTextAlign="Center" vTextAlign="Middle">
+        <box padding="4">
+            <pen lineWidth="0.8" lineColor="#333333"/>
+        </box>
+    </style>
+    <style name="StatusBadgeGreen" forecolor="#166534" fontName="DejaVu Sans" fontSize="8.0" bold="true"
+           mode="Opaque" backcolor="#DCFCE7" hTextAlign="Center" vTextAlign="Middle">
+        <box padding="4"><pen lineWidth="0.8" lineColor="#166534"/></box>
+    </style>
+    <style name="StatusBadgeRed" forecolor="#991B1B" fontName="DejaVu Sans" fontSize="8.0" bold="true"
+           mode="Opaque" backcolor="#FEE2E2" hTextAlign="Center" vTextAlign="Middle">
+        <box padding="4"><pen lineWidth="0.8" lineColor="#991B1B"/></box>
+    </style>
+    <style name="DecisionBadge" forecolor="#374151" fontName="DejaVu Sans" fontSize="11.0" bold="true"
+           mode="Opaque" backcolor="#F3F4F6" hTextAlign="Center" vTextAlign="Middle">
+        <box padding="6"><pen lineWidth="0.8" lineColor="#9CA3AF"/></box>
+    </style>
+
+    <!-- Les datasets pour les spécifications -->
+    <dataset name="SpecificationDataset">
+        <field name="name" class="java.lang.String"/>
+        <field name="method" class="java.lang.String"/>
+        <field name="unit" class="java.lang.String"/>
+        <field name="min" class="java.lang.Double"/>
+        <field name="max" class="java.lang.Double"/>
+        <field name="measuredValue" class="java.lang.Double"/>
+        <field name="status" class="java.lang.String"/>
+    </dataset>
+
+    <!-- Les datasets pour les déviations -->
+    <dataset name="DeviationDataset">
+        <field name="code" class="java.lang.String"/>
+        <field name="comment" class="java.lang.String"/>
+        <field name="status" class="java.lang.String"/>
+    </dataset>
 
     <!-- En-tête du document -->
-    <title height="60" splitType="Stretch">
-            <element kind="staticText" x="0" y="0" width="555" height="30">
-                <text><![CDATA[QualiTrace - Fiche Detaillee du Lot]]></text>
-            </element>
-            <element kind="line" x="0" y="40" width="555" height="1"/>
+    <title height="120" splitType="Stretch">
+        <!-- === LOGO === -->
+        <element kind="image" x="177" y="5" width="200" height="45"
+                 scaleImage="RetainShape" hImageAlign="Center" vImageAlign="Middle">
+            <expression><![CDATA[$P{LOGO}]]></expression>
+        </element>
+
+        <!-- === TITRE === -->
+        <element kind="staticText" x="0" y="65" width="555" height="35"
+                 fontName="DejaVu Sans" fontSize="20.0" bold="true" hTextAlign="Center" vTextAlign="Middle">
+            <text><![CDATA[CERTIFICAT D'ANALYSES]]></text>
+        </element>
+
+        <!-- === Nom du lot === -->
+        <element kind="textField" x="0" y="100" width="555" height="20"
+                 fontName="DejaVu Sans" fontSize="12.0" italic="true" hTextAlign="Center" vTextAlign="Middle">
+            <expression><![CDATA[$P{COMPONENT_NAME}.toUpperCase()]]></expression>
+        </element>
     </title>
 
     <!-- Informations Générales du Lot -->
-    <pageHeader height="110" splitType="Stretch">
-        <image hAlign="Center" vAlign="Middle">
-            <reportElement x="227" y="0" width="100" height="50" uuid="img-logo-001"/>
-            <!-- scaleImage="RetainShape" préserve le ratio sans déformer -->
-            <graphicElement scaleImage="RetainShape"/>
-            <imageExpression><![CDATA[$P{LOGO_PATH} != null ? $P{LOGO_PATH} : "static/images/logo.png"]]></imageExpression>
-        </image>
+    <pageHeader height="120" splitType="Stretch">
+        <element kind="line" x="0" y="25" width="555" height="1"/>
+
+        <!-- === LOT ===-->
+        <element kind="staticText" x="0" y="30" width="95" height="15" style="label">
+            <text><![CDATA[Type de lot :]]></text>
+        </element>
+        <element kind="textField" x="95" y="30" width="140" height="15" style="text">
+            <expression><![CDATA[$P{COMPONENT_TYPE}]]></expression>
+        </element>
+        <element kind="staticText" x="0" y="45" width="95" height="15" style="label">
+            <text><![CDATA[N° de lot interne :]]></text>
+        </element>
+        <element kind="textField" x="95" y="45" width="140" height="15" style="text">
+            <expression><![CDATA[$P{INTERNAL_REF}]]></expression>
+        </element>
+        <element kind="staticText" x="0" y="60" width="95" height="15" style="label">
+            <text><![CDATA[Date de réception :]]></text>
+        </element>
+        <element kind="textField" x="95" y="60" width="140" height="15" style="text">
+            <expression><![CDATA[$P{RECEPTION_DATE}]]></expression>
+        </element>
+        <element kind="staticText" x="0" y="75" width="95" height="15" style="label">
+            <text><![CDATA[Date d'expiration :]]></text>
+        </element>
+        <element kind="textField" x="95" y="75" width="140" height="15" style="text">
+            <expression><![CDATA[$P{EXPIRY_DATE}]]></expression>
+        </element>
+
+        <!-- === FOURNISSEUR ===-->
+        <element kind="staticText" x="275" y="30" width="105" height="15" style="label">
+            <text><![CDATA[Nom du fournisseur :]]></text>
+        </element>
+        <element kind="textField" x="380" y="30" width="140" height="15" style="text">
+            <expression><![CDATA[$P{SUPPLIER_NAME}]]></expression>
+        </element>
+        <element kind="staticText" x="275" y="45" width="105" height="15" style="label">
+            <text><![CDATA[Code fournisseur :]]></text>
+        </element>
+        <element kind="textField" x="380" y="45" width="140" height="15" style="text">
+            <expression><![CDATA[$P{SUPPLIER_CODE}]]></expression>
+        </element>
+        <element kind="staticText" x="275" y="60" width="105" height="15" style="label">
+            <text><![CDATA[Réf. catalogue :]]></text>
+        </element>
+        <element kind="textField" x="380" y="60" width="140" height="15" style="text">
+            <expression><![CDATA[$P{COMPONENT_REF}]]></expression>
+        </element>
+        <element kind="staticText" x="275" y="75" width="105" height="15" style="label">
+            <text><![CDATA[N° de lot fournisseur :]]></text>
+        </element>
+        <element kind="textField" x="380" y="75" width="140" height="15" style="text">
+            <expression><![CDATA[$P{SUPPLIER_REF}]]></expression>
+        </element>
+
+        <element kind="line" x="0" y="94" width="555" height="1"/>
 
 
-            <!-- Reference Interne -->
-            <element kind="staticText" x="0" y="0" width="130" height="20"><text><![CDATA[Réf. Interne :]]></text></element>
-            <element kind="textField" x="130" y="0" width="150" height="20"><expression><![CDATA[$P{INTERNAL_REF}]]></expression></element>
+        <!-- === SPÉCIFICATIONS -->
+        </pageHeader>
 
-            <!-- Statut -->
-            <element kind="staticText" x="300" y="0" width="100" height="20"><text><![CDATA[Statut :]]></text></element>
-            <element kind="textField" x="400" y="0" width="155" height="20"><expression><![CDATA[$P{STATUS}]]></expression></element>
+    <detail>
+        <band height="20" splitType="Stretch">
+        <element kind="staticText" x="0" y="0" width="555" height="15"
+                 fontName="DejaVu Sans" fontSize="11.0" bold="true" forecolor="#0C3267">
+            <text><![CDATA[Spécifications :]]></text>
+        </element>
 
-            <!-- Reference Fournisseur -->
-            <element kind="staticText" x="0" y="25" width="130" height="20"><text><![CDATA[Réf. Fournisseur :]]></text></element>
-            <element kind="textField" x="130" y="25" width="150" height="20"><expression><![CDATA[$P{SUPPLIER_REF}]]></expression></element>
+        <element kind="component"
+                 x="0"
+                 y="18"
+                 width="555"
+                 height="1">
 
-            <!-- Composant -->
-            <element kind="staticText" x="300" y="25" width="100" height="20"><text><![CDATA[Composant :]]></text></element>
-            <element kind="textField" x="400" y="25" width="155" height="20"><expression><![CDATA[$P{COMPONENT_NAME}]]></expression></element>
+            <component kind="table">
+                <datasetRun subDataset="SpecificationDataset">
+                    <dataSourceExpression><![CDATA[$P{SPECIFICATIONS_DATA_SOURCE}]]></dataSourceExpression>
+                </datasetRun>
 
-            <!-- Date de Reception -->
-            <element kind="staticText" x="0" y="50" width="130" height="20"><text><![CDATA[Date Réception :]]></text></element>
-            <element kind="textField" x="130" y="50" width="150" height="20"><expression><![CDATA[$P{RECEPTION_DATE}]]></expression></element>
+                <column kind="single" width="120">
+                    <columnHeader height="25" style="TableHeader">
+                        <element kind="staticText"
+                                 width="120"
+                                 height="25"
+                                 style="TableHeader">
+                            <text><![CDATA[Contrôle]]></text>
+                        </element>
+                    </columnHeader>
 
-            <!-- Date de Peremption -->
-            <element kind="staticText" x="300" y="50" width="100" height="20"><text><![CDATA[Date Péremption :]]></text></element>
-            <element kind="textField" x="400" y="50" width="155" height="20"><expression><![CDATA[$P{EXPIRY_DATE}]]></expression></element>
+                    <detailCell height="20">
+                        <element kind="textField"
+                                 width="120"
+                                 height="20"
+                                 style="TableCell">
+                            <expression><![CDATA[$F{name}]]></expression>
+                        </element>
+                    </detailCell>
+                </column>
 
-            <element kind="line" x="0" y="80" width="555" height="1"/>
-    </pageHeader>
+                <column kind="single" width="120">
+                    <columnHeader height="25" style="TableHeader">
+                        <element kind="staticText"
+                                 width="120"
+                                 height="25"
+                                 style="TableHeader">
+                            <text><![CDATA[Méthode]]></text>
+                        </element>
+                    </columnHeader>
+
+                    <detailCell height="20">
+                        <element kind="textField"
+                                 width="120"
+                                 height="20"
+                                 style="TableCell">
+                            <expression><![CDATA[$F{method}]]></expression>
+                        </element>
+                    </detailCell>
+                </column>
+
+                <column kind="single" width="110">
+                    <columnHeader height="25" style="TableHeader">
+                        <element kind="staticText"
+                                 width="110"
+                                 height="25"
+                                 style="TableHeader">
+                            <text><![CDATA[Spécification]]></text>
+                        </element>
+                    </columnHeader>
+
+                    <detailCell height="20">
+                        <element kind="textField"
+                                 width="110"
+                                 height="20"
+                                 style="TableCellCenter">
+                            <expression><![CDATA[$F{min} + " - " + $F{max} + " " + $F{unit}]]></expression>
+                        </element>
+                    </detailCell>
+                </column>
+
+                <column kind="single" width="110">
+                    <columnHeader height="25" style="TableHeader">
+                        <element kind="staticText"
+                                 width="110"
+                                 height="25"
+                                 style="TableHeader">
+                            <text><![CDATA[Valeur mesurée]]></text>
+                        </element>
+                    </columnHeader>
+
+                    <detailCell height="20">
+                        <element kind="textField"
+                                 width="110"
+                                 height="20"
+                                 style="TableCellCenter">
+                            <expression><![CDATA[$F{measuredValue} == null ? "-" : $F{measuredValue} + " " + $F{unit}]]></expression>
+                        </element>
+                    </detailCell>
+                </column>
+
+                <column kind="single" width="95">
+                    <columnHeader height="25" style="TableHeader">
+                        <element kind="staticText"
+                                 width="95"
+                                 height="25"
+                                 style="TableHeader">
+                            <text><![CDATA[Statut]]></text>
+                        </element>
+                    </columnHeader>
+
+                    <detailCell height="20">
+                        <element kind="textField"
+                                 width="95"
+                                 height="20"
+                                 style="StatusBadge">
+                            <styleExpression><![CDATA[
+                                ("OUVERTE".equals($F{status}) || "CONFORME".equals($F{status}))
+                                    ? "StatusBadgeGreen"
+                                    : (("FERMÉE".equals($F{status}) || "NON CONFORME".equals($F{status}))
+                                        ? "StatusBadgeRed" : "StatusBadge")
+                            ]]></styleExpression>
+                            <expression><![CDATA[$F{status}]]></expression>
+                        </element>
+                    </detailCell>
+                </column>
+            </component>
+        </element>
+
+        </band>
+    </detail>
+
+    <summary height="70" splitType="Stretch">
+        <!-- === DÉVIATIONS -->
+        <element kind="staticText" x="0" y="30" width="555" height="15"
+                 fontName="DejaVu Sans" fontSize="11.0" bold="true" forecolor="#0C3267">
+            <text><![CDATA[Déviation :]]></text>
+        </element>
+
+        <element kind="component"
+                 x="0"
+                 y="48"
+                 width="555"
+                 height="1">
+            <printWhenExpression><![CDATA[$P{HAS_DEVIATIONS}]]></printWhenExpression>
+
+            <component kind="table">
+                <datasetRun subDataset="DeviationDataset">
+                    <dataSourceExpression><![CDATA[$P{DEVIATIONS_DATA_SOURCE}]]></dataSourceExpression>
+                </datasetRun>
+
+                <column kind="single" width="95">
+                    <columnHeader height="25" style="TableHeader">
+                        <element kind="staticText"
+                                 width="95"
+                                 height="25"
+                                 style="TableHeader">
+                            <text><![CDATA[Code]]></text>
+                        </element>
+                    </columnHeader>
+
+                    <detailCell height="20">
+                        <element kind="textField"
+                                 width="95"
+                                 height="20"
+                                 style="TableCell">
+                            <expression><![CDATA[$F{code}]]></expression>
+                        </element>
+                    </detailCell>
+                </column>
+
+                <column kind="single" width="365">
+                    <columnHeader height="25" style="TableHeader">
+                        <element kind="staticText"
+                                 width="365"
+                                 height="25"
+                                 style="TableHeader">
+                            <text><![CDATA[Commentaire]]></text>
+                        </element>
+                    </columnHeader>
+
+                    <detailCell height="20">
+                        <element kind="textField"
+                                 width="365"
+                                 height="20"
+                                 style="TableCell">
+                            <expression><![CDATA[$F{comment}]]></expression>
+                        </element>
+                    </detailCell>
+                </column>
+
+                <column kind="single" width="95">
+                    <columnHeader height="25" style="TableHeader">
+                        <element kind="staticText"
+                                 width="95"
+                                 height="25"
+                                 style="TableHeader">
+                            <text><![CDATA[Statut]]></text>
+                        </element>
+                    </columnHeader>
+
+                    <detailCell height="20">
+                        <element kind="textField"
+                                 width="95"
+                                 height="20"
+                                 style="StatusBadge">
+                            <styleExpression><![CDATA[
+                                ("OUVERTE".equals($F{status}) || "CONFORME".equals($F{status}))
+                                    ? "StatusBadgeRed"
+                                    : (("FERMÉE".equals($F{status}) || "NON CONFORME".equals($F{status}))
+                                        ? "StatusBadgeGreen" : "StatusBadge")
+                            ]]></styleExpression>
+                            <expression><![CDATA[$F{status}]]></expression>
+                        </element>
+                    </detailCell>
+                </column>
+            </component>
+        </element>
+
+        <element kind="staticText" x="0" y="48" width="555" height="20"
+                 fontName="DejaVu Sans" fontSize="9.0" hTextAlign="Center" vTextAlign="Middle">
+            <printWhenExpression><![CDATA[!Boolean.TRUE.equals($P{HAS_DEVIATIONS})]]></printWhenExpression>
+            <text><![CDATA[Aucune déviation]]></text>
+            <box padding="4">
+                <pen lineWidth="0.8" lineColor="#333333"/>
+            </box>
+        </element>
+    </summary>
 
     <!-- Pied de page avec pagination -->
-    <pageFooter height="30" splitType="Stretch">
-            <element kind="textField" x="350" y="5" width="205" height="20" hTextAlign="Right">
-                <expression><![CDATA["Page " + $V{PAGE_NUMBER}]]></expression>
-            </element>
-            <element kind="textField" x="0" y="5" width="200" height="20" pattern="dd/MM/yyyy HH:mm">
-                <expression><![CDATA[new java.util.Date()]]></expression>
-            </element>
-    </pageFooter>
+    <pageFooter height="100" splitType="Stretch">
+        <element kind="staticText" x="0" y="5" width="555" height="18"
+                 fontName="DejaVu Sans" fontSize="12.0" bold="true" forecolor="#0C3267">
+            <text><![CDATA[Décision]]></text>
+        </element>
 
+        <element kind="textField" x="0" y="30" width="170" height="30"
+                 style="DecisionBadge">
+            <styleExpression><![CDATA[
+                ("RELEASED".equals($P{STATUS}) || "USED".equals($P{STATUS}))
+                    ? "StatusBadgeGreen"
+                    : (("REJECTED".equals($P{STATUS}) || "DESTROYED".equals($P{STATUS}))
+                        ? "StatusBadgeRed" : "DecisionBadge")
+            ]]></styleExpression>
+            <expression><![CDATA[
+                ("RELEASED".equals($P{STATUS}) || "USED".equals($P{STATUS}))
+                    ? "LIBÉRÉ"
+                    : (("REJECTED".equals($P{STATUS}) || "DESTROYED".equals($P{STATUS}))
+                        ? "REJETÉ" : "EN COURS")
+            ]]></expression>
+        </element>
+
+        <element kind="staticText" x="275" y="30" width="355" height="15" style="label">
+            <text><![CDATA[Libéré le :]]></text>
+        </element>
+        <element kind="textField" x="350" y="30" width="280" height="15" style="text">
+            <expression><![CDATA[$P{VALIDATED_AT}]]></expression>
+        </element>
+        <element kind="staticText" x="275" y="48" width="355" height="15" style="label">
+            <text><![CDATA[Libéré par :]]></text>
+        </element>
+        <element kind="textField" x="350" y="48" width="280" height="15" style="text">
+            <expression><![CDATA[$P{VALIDATED_BY}]]></expression>
+        </element>
+
+        <element kind="textField" x="0" y="78" width="555" height="18"
+                 hTextAlign="Center" pattern="dd/MM/yyyy HH:mm" style="text">
+            <expression><![CDATA[new java.util.Date()]]></expression>
+        </element>
+    </pageFooter>
 </jasperReport>

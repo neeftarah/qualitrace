@@ -13,6 +13,7 @@ import com.qualitrace.backend.shared.domain.model.PageResult;
 import com.qualitrace.backend.shared.domain.model.SortQuery;
 import com.qualitrace.backend.supplier.domain.model.Supplier;
 import com.qualitrace.backend.supplier.infrastructure.persistence.entity.SupplierEntity;
+import com.qualitrace.backend.user.domain.model.User;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.springframework.data.domain.Page;
@@ -166,12 +167,31 @@ public class BatchRepositoryAdapter implements BatchRepository {
                 entity.getSupplierReferenceNumber(),
                 entity.getExpiryDate(),
                 entity.getReceptionDate(),
-                entity.getStatus()
+                entity.getStatus(),
+                toDomain(entity.getValidatedBy()),
+                entity.getValidatedAt()
+        );
+    }
+
+    private User toDomain(com.qualitrace.backend.user.infrastructure.persistence.entity.UserEntity entity) {
+        if (entity == null) {
+            return null;
+        }
+        return new User(
+                entity.getId(), entity.getLogin(), entity.getPassword(), entity.getEmail(),
+                entity.getFirstname(), entity.getSurname(), entity.getStatus(), entity.getVersion(),
+                entity.getCreatedAt(), entity.getUpdatedAt(), entity.getRoles()
         );
     }
 
     private BatchEntity applyChanges(BatchEntity entity, Batch batch) {
         entity.setStatus(batch.status());
+        entity.setValidatedBy(batch.validatedBy() != null
+                ? entityManager.getReference(
+                        com.qualitrace.backend.user.infrastructure.persistence.entity.UserEntity.class,
+                        batch.validatedBy().id())
+                : null);
+        entity.setValidatedAt(batch.validatedAt());
 
         return entity;
     }
