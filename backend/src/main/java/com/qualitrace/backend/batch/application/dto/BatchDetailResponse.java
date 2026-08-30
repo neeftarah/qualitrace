@@ -17,6 +17,8 @@ public record BatchDetailResponse(
         Instant expiryDate,
         Instant receptionDate,
         BatchStatus status,
+        Instant validatedAt,
+        String validatedBy,
         ComponentResponse component,
         List<SpecificationWithResultResponse> specifications,
         List<DeviationResponse> deviations

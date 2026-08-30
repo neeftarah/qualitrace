@@ -12,6 +12,7 @@ import com.qualitrace.backend.specification.domain.repository.SpecificationRepos
 import com.qualitrace.backend.deviation.domain.repository.DeviationRepository;
 import com.qualitrace.backend.deviation.domain.type.DeviationStatus;
 import com.qualitrace.backend.supplier.domain.model.Supplier;
+import com.qualitrace.backend.user.domain.model.User;
 
 import java.time.Instant;
 import java.util.List;
@@ -23,8 +24,22 @@ public record Batch(
         String supplierBatchNumber,
         Instant expiryDate,
         Instant receptionDate,
-        BatchStatus status
+        BatchStatus status,
+        User validatedBy,
+        Instant validatedAt
 ) {
+    public Batch(
+            Long id,
+            Component component,
+            String internalBatchNumber,
+            String supplierBatchNumber,
+            Instant expiryDate,
+            Instant receptionDate,
+            BatchStatus status
+    ) {
+        this(id, component, internalBatchNumber, supplierBatchNumber, expiryDate,
+                receptionDate, status, null, null);
+    }
     public static Batch createNew(
             Component component,
             String supplierBatchNumber,
@@ -60,7 +75,9 @@ public record Batch(
                 supplierBatchNumber,
                 expiryDate,
                 receptionDate,
-                BatchStatus.QUARANTINE // RG-STK-01 : Tout lot créé lors d'une réception est obligatoirement en statut « Quarantaine ».
+                BatchStatus.QUARANTINE, // RG-STK-01 : Tout lot créé lors d'une réception est obligatoirement en statut « Quarantaine ».
+                null,
+                null
         );
     }
 
@@ -85,6 +102,28 @@ public record Batch(
         }
 
         return withStatus(accept ? BatchStatus.RELEASED : BatchStatus.REJECTED);
+    }
+
+    public Batch validate(
+            boolean accept,
+            DeviationRepository deviationRepository,
+            AnalysisResultRepository analysisRepository,
+            SpecificationRepository controlRepository,
+            User validator,
+            Instant validationDate
+    ) {
+        Batch validated = validate(accept, deviationRepository, analysisRepository, controlRepository);
+        return new Batch(
+                validated.id,
+                validated.component,
+                validated.internalBatchNumber,
+                validated.supplierBatchNumber,
+                validated.expiryDate,
+                validated.receptionDate,
+                validated.status,
+                validator,
+                validationDate
+        );
     }
 
     public AnalysisResultStatus getAnalysisStatus(
@@ -128,14 +167,8 @@ public record Batch(
     }
 
     private Batch withStatus(BatchStatus newStatus) {
-        return new Batch(
-                this.id,
-                this.component,
-                this.internalBatchNumber,
-                this.supplierBatchNumber,
-                this.expiryDate,
-                this.receptionDate,
-                newStatus
-        );
+        return new Batch(this.id, this.component, this.internalBatchNumber,
+                this.supplierBatchNumber, this.expiryDate, this.receptionDate,
+                newStatus, this.validatedBy, this.validatedAt);
     }
 }

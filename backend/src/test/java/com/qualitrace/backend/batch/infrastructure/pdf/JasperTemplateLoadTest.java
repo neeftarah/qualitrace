@@ -4,6 +4,7 @@ import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.JasperExportManager;
 import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JREmptyDataSource;
+import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 import net.sf.jasperreports.engine.JasperReport;
 import net.sf.jasperreports.engine.JasperPrint;
 import org.junit.jupiter.api.Test;
@@ -27,7 +28,11 @@ class JasperTemplateLoadTest {
                     "EXPIRY_DATE", "2030-12-31",
                     "RECEPTION_DATE", "2026-01-01",
                     "STATUS", "RELEASED",
-                    "COMPONENT_NAME", "Component"
+                    "VALIDATED_AT", "30/08/2026",
+                    "VALIDATED_BY", "Alice Dupont",
+                    "COMPONENT_NAME", "Component",
+                    "SPECIFICATIONS_DATA_SOURCE", new JRBeanCollectionDataSource(java.util.List.of()),
+                    "DEVIATIONS_DATA_SOURCE", new JRBeanCollectionDataSource(java.util.List.of())
             ));
             JasperPrint print = JasperFillManager.fillReport(report, parameters, new JREmptyDataSource());
 
