@@ -89,9 +89,7 @@ public record Batch(
             boolean accept,
             DeviationRepository deviationRepository,
             AnalysisResultRepository analysisRepository,
-            SpecificationRepository controlRepository,
-            User validator,
-            Instant validationDate
+            SpecificationRepository controlRepository
     ) {
         if (this.status != BatchStatus.QUARANTINE) {
             throw new IllegalStateException("Seul un composant en quarantaine peut être validé");
@@ -103,7 +101,29 @@ public record Batch(
             throw new IllegalStateException("Toutes les déviations doivent être clôturées avant de pouvoir valider un lot");
         }
 
-        return withStatus(accept ? BatchStatus.RELEASED : BatchStatus.REJECTED, validator, validationDate);
+        return withStatus(accept ? BatchStatus.RELEASED : BatchStatus.REJECTED);
+    }
+
+    public Batch validate(
+            boolean accept,
+            DeviationRepository deviationRepository,
+            AnalysisResultRepository analysisRepository,
+            SpecificationRepository controlRepository,
+            User validator,
+            Instant validationDate
+    ) {
+        Batch validated = validate(accept, deviationRepository, analysisRepository, controlRepository);
+        return new Batch(
+                validated.id,
+                validated.component,
+                validated.internalBatchNumber,
+                validated.supplierBatchNumber,
+                validated.expiryDate,
+                validated.receptionDate,
+                validated.status,
+                validator,
+                validationDate
+        );
     }
 
     public AnalysisResultStatus getAnalysisStatus(
@@ -131,31 +151,24 @@ public record Batch(
             throw new IllegalStateException("Seul un lot validé peu être utilisé");
         }
 
-        return withStatus(BatchStatus.USED, null, null);
+        return withStatus(BatchStatus.USED);
     }
 
-    public Batch destroy(User validator, Instant validationDate) {
+    public Batch destroy() {
         if (this.status == BatchStatus.DESTROYED) {
             throw new IllegalStateException("Le composant est déjà détruit");
         }
-        return withStatus(BatchStatus.DESTROYED, validator, validationDate);
+
+        return withStatus(BatchStatus.DESTROYED);
     }
 
     public boolean isExpired() {
         return expiryDate.isBefore(Instant.now());
     }
 
-    private Batch withStatus(BatchStatus newStatus, User validator, Instant validationDateUser) {
-        return new Batch(
-                this.id,
-                this.component,
-                this.internalBatchNumber,
-                this.supplierBatchNumber,
-                this.expiryDate,
-                this.receptionDate,
-                newStatus,
-                validator != null ? validator : this.validatedBy,
-                validationDateUser != null ? validationDateUser : this.validatedAt
-        );
+    private Batch withStatus(BatchStatus newStatus) {
+        return new Batch(this.id, this.component, this.internalBatchNumber,
+                this.supplierBatchNumber, this.expiryDate, this.receptionDate,
+                newStatus, this.validatedBy, this.validatedAt);
     }
 }

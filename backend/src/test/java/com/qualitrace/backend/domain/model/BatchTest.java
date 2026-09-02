@@ -36,8 +36,6 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class BatchTest {
-    private User validator;
-    private Instant validationDate;
 
     @Mock
     private BatchRepository batchRepository;
@@ -57,9 +55,6 @@ class BatchTest {
     @BeforeEach
     void setUp() {
         supplier = Supplier.createNew("SUP001", "Supplier 1", "123 Main St, City, Country");
-        validator = User.createNew(
-                "alice", "password", "alice@example.com", "Alice", "Dupont", Set.of(UserRole.AQ));
-        validationDate = Instant.parse("2026-08-30T10:15:30Z");
         activeComponent = new Component(
                 1L,
                 ComponentType.RAW_MATERIAL,
@@ -256,6 +251,7 @@ class BatchTest {
     @Test
     void validateAccepted() {
         Batch batch = createBatch(1L, BatchStatus.QUARANTINE);
+
         when(analysisRepository.findAllByBatchId(1L)).thenReturn(List.of(
                 new AnalysisResult(100L, 1L, 10L, 7.0, Instant.now(), null)
         ));
@@ -264,18 +260,17 @@ class BatchTest {
         ));
         when(deviationRepository.existsByBatchIdAndStatus(1L, DeviationStatus.OPENED)).thenReturn(false);
 
-        Batch validated = batch.validate(true, deviationRepository, analysisRepository, controlRepository, validator, validationDate);
+        Batch validated = batch.validate(true, deviationRepository, analysisRepository, controlRepository);
 
         assertThat(validated.status()).isEqualTo(BatchStatus.RELEASED);
         assertThat(validated.id()).isEqualTo(1L);
         assertThat(validated.component()).isEqualTo(activeComponent);
-        assertThat(validated.validatedBy()).isEqualTo(validator);
-        assertThat(validated.validatedAt()).isEqualTo(validationDate);
     }
 
     @Test
     void validateRefused() {
         Batch batch = createBatch(1L, BatchStatus.QUARANTINE);
+
         when(analysisRepository.findAllByBatchId(1L)).thenReturn(List.of(
                 new AnalysisResult(100L, 1L, 10L, 7.0, Instant.now(), null)
         ));
@@ -284,16 +279,18 @@ class BatchTest {
         ));
         when(deviationRepository.existsByBatchIdAndStatus(1L, DeviationStatus.OPENED)).thenReturn(false);
 
-        Batch validated = batch.validate(false, deviationRepository, analysisRepository, controlRepository, validator, validationDate);
+        Batch validated = batch.validate(false, deviationRepository, analysisRepository, controlRepository);
 
         assertThat(validated.status()).isEqualTo(BatchStatus.REJECTED);
-        assertThat(validated.validatedBy()).isEqualTo(validator);
-        assertThat(validated.validatedAt()).isEqualTo(validationDate);
     }
 
     @Test
     void validateStoresValidatorAndValidationDate() {
         Batch batch = createBatch(1L, BatchStatus.QUARANTINE);
+        User validator = User.createNew(
+                "alice", "password", "alice@example.com", "Alice", "Dupont", Set.of(UserRole.AQ));
+        Instant validationDate = Instant.parse("2026-08-30T10:15:30Z");
+
         when(analysisRepository.findAllByBatchId(1L)).thenReturn(List.of(
                 new AnalysisResult(100L, 1L, 10L, 7.0, Instant.now(), null)
         ));
@@ -313,8 +310,9 @@ class BatchTest {
     @Test
     void validateWhenNotQuarantineShouldFail() {
         Batch receivedBatch = createBatch(1L, BatchStatus.RELEASED);
+
         assertThatException().isThrownBy(() -> receivedBatch.validate(
-                        true, deviationRepository, analysisRepository, controlRepository, validator, validationDate
+                        true, deviationRepository, analysisRepository, controlRepository
                 )).isInstanceOf(IllegalStateException.class)
                 .withMessage("Seul un composant en quarantaine peut être validé");
     }
@@ -329,7 +327,7 @@ class BatchTest {
         ));
 
         assertThatException().isThrownBy(() -> batch.validate(
-                        true, deviationRepository, analysisRepository, controlRepository, validator, validationDate
+                        true, deviationRepository, analysisRepository, controlRepository
                 )).isInstanceOf(IllegalStateException.class)
                 .withMessage("Tous les résultats d'analyses doivent avoir été saisis pour valider un lot");
     }
@@ -347,7 +345,7 @@ class BatchTest {
         when(deviationRepository.existsByBatchIdAndStatus(1L, DeviationStatus.OPENED)).thenReturn(true);
 
         assertThatException().isThrownBy(() -> batch.validate(
-                        true, deviationRepository, analysisRepository, controlRepository, validator, validationDate
+                        true, deviationRepository, analysisRepository, controlRepository
                 )).isInstanceOf(IllegalStateException.class)
                 .withMessage("Toutes les déviations doivent être clôturées avant de pouvoir valider un lot");
     }
@@ -372,7 +370,7 @@ class BatchTest {
     @Test
     void destroyBatch() {
         Batch batch = createBatch(1L, BatchStatus.QUARANTINE);
-        Batch destroyedBatch = batch.destroy(validator, validationDate);
+        Batch destroyedBatch = batch.destroy();
 
         assertThat(destroyedBatch.status()).isEqualTo(BatchStatus.DESTROYED);
     }
@@ -381,7 +379,7 @@ class BatchTest {
     void destroyAlreadyDestroyedBatchShouldFail() {
         Batch batch = createBatch(1L, BatchStatus.DESTROYED);
 
-        assertThatException().isThrownBy(() -> batch.destroy(validator, validationDate))
+        assertThatException().isThrownBy(batch::destroy)
                 .isInstanceOf(IllegalStateException.class)
                 .withMessage("Le composant est déjà détruit");
     }

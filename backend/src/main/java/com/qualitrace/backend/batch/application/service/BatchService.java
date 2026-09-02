@@ -82,6 +82,10 @@ public class BatchService {
 
     @Transactional(readOnly = true)
     public BatchDetailResponse getOneById(Long id) {
+//        Batch batch = batchRepository.findById(id)
+//                .orElseThrow(() -> new BatchNotFoundException(id));
+//        return batchMapper.toResponse(batch);
+
         Batch batch = findOrThrow(id);
 
         List<Specification> specs =
@@ -162,13 +166,7 @@ public class BatchService {
 
     public BatchResponse destroy(Long id) {
         Batch existing = findOrThrow(id);
-        String login = SecurityContextHolder.getContext().getAuthentication().getName();
-        User validator = userRepository.findByLogin(login)
-                .orElseThrow(() -> new IllegalStateException("Utilisateur de validation introuvable : " + login));
-        return batchMapper.toResponse(batchRepository.save(existing.destroy(
-                validator,
-                Instant.now()
-        )));
+        return batchMapper.toResponse(batchRepository.save(existing.destroy()));
     }
 
     private Batch findOrThrow(Long id) {
