@@ -101,7 +101,9 @@ public class ComponentController {
         );
 
         return pagedAssembler.toModel(page, assembler)
-                .add(linkTo(methodOn(ComponentController.class).create(null)).withRel("create"));
+                .add(linkTo(methodOn(ComponentController.class).create(
+                        new ComponentCreateRequest(ComponentType.COMPONENT, "", "", 1L)
+                )).withRel("create"));
     }
 
     /**

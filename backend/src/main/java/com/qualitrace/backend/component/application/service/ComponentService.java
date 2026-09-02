@@ -7,23 +7,20 @@ import com.qualitrace.backend.component.application.mapper.ComponentMapper;
 import com.qualitrace.backend.component.domain.exception.ComponentNotFoundException;
 import com.qualitrace.backend.component.domain.model.Component;
 import com.qualitrace.backend.component.domain.model.ComponentFilter;
-import com.qualitrace.backend.supplier.domain.exception.SupplierNotFoundException;
 import com.qualitrace.backend.component.domain.repository.ComponentRepository;
-import com.qualitrace.backend.specification.domain.repository.SpecificationRepository;
-import com.qualitrace.backend.supplier.domain.repository.SupplierRepository;
 import com.qualitrace.backend.shared.domain.model.PageQuery;
 import com.qualitrace.backend.shared.domain.model.PageResult;
+import com.qualitrace.backend.specification.domain.repository.SpecificationRepository;
+import com.qualitrace.backend.supplier.domain.exception.SupplierNotFoundException;
 import com.qualitrace.backend.supplier.domain.model.Supplier;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.qualitrace.backend.supplier.domain.repository.SupplierRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional
 public class ComponentService {
-    @Autowired
     private final SupplierRepository supplierRepository;
-
     private final ComponentRepository componentRepository;
     private final ComponentMapper componentMapper;
     private final SpecificationRepository specificationRepository;

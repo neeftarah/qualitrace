@@ -4,6 +4,8 @@ import com.qualitrace.backend.batch.application.dto.BatchDetailResponse;
 import com.qualitrace.backend.batch.domain.type.BatchStatus;
 import com.qualitrace.backend.batch.infrastructure.api.BatchController;
 import org.jspecify.annotations.NullMarked;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.server.RepresentationModelAssembler;
 import org.springframework.stereotype.Component;
@@ -24,7 +26,21 @@ public class BatchDetailModelAssembler implements RepresentationModelAssembler<B
         EntityModel<BatchDetailResponse> model = EntityModel.of(
                 batch,
                 linkTo(methodOn(BatchController.class).get(batch.id())).withSelfRel(),
-                linkTo(methodOn(BatchController.class).list(null, null, null, null, null, null, null, null, null, null, null, null, null)).withRel("batches"),
+                linkTo(methodOn(BatchController.class).list(
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        Pageable.unpaged(),
+                        new PagedResourcesAssembler<>(null, null)
+                )).withRel("batches"),
                 linkTo(methodOn(BatchController.class).destroy(batch.id())).withRel("destroy")
         );
 

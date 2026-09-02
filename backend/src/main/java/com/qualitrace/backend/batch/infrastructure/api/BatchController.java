@@ -37,6 +37,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
@@ -143,7 +144,9 @@ public class BatchController {
         );
 
         return pagedAssembler.toModel(page, assembler)
-                .add(linkTo(methodOn(BatchController.class).create(null)).withRel("create"));
+                .add(linkTo(methodOn(BatchController.class).create(
+                        new BatchCreateRequest(1L, "", Instant.now())
+                )).withRel("create"));
     }
 
     /**
