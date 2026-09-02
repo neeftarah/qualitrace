@@ -1,5 +1,6 @@
 package com.qualitrace.backend.user.infrastructure.api;
 
+import com.qualitrace.backend.shared.infrastructure.security.QualitracePrincipal;
 import com.qualitrace.backend.user.application.assembler.UserModelAssembler;
 import com.qualitrace.backend.user.application.dto.UserCreateRequest;
 import com.qualitrace.backend.user.application.dto.UserResponse;
@@ -31,6 +32,7 @@ import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
@@ -128,6 +130,26 @@ public class UserController {
     @PreAuthorize("isAuthenticated()")
     public EntityModel<UserResponse> get(@PathVariable UUID id) {
         UserResponse user = userService.getOneById(id);
+
+        return assembler.toModel(user);
+    }
+
+    /**
+     * Get details of the current user.
+     *
+     * @return The details of the user
+     */
+    @Operation(
+            summary = "Consulter le détail de l'utilisateur connecté",
+            description = "Retourne le détail de l'utilisateur connecté."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Requête OK")
+    })
+    @GetMapping("/self")
+    @PreAuthorize("isAuthenticated()")
+    public EntityModel<UserResponse> getSelf(@AuthenticationPrincipal QualitracePrincipal principal) {
+        UserResponse user = userService.getOneById(principal.getId());
 
         return assembler.toModel(user);
     }

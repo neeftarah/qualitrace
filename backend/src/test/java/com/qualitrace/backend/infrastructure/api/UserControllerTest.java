@@ -128,6 +128,28 @@ class UserControllerTest {
                 .jsonPath("$.password").doesNotExist(); // sécurité : jamais renvoyé
     }
 
+    @Test
+    @WithMockUser(username = "admin", roles = "ADMIN")
+    void createAcceptsSingleRoleValue() {
+        restClient.post().uri("/api/v1/users")
+                .contentType(MediaTypes.HAL_JSON)
+                .body("""
+                {
+                    "login": "single-role-user",
+                    "password": "SecurePass123!",
+                    "email": "single-role@qualitrace.com",
+                    "firstname": "Single",
+                    "surname": "Role",
+                    "roles": "AQ"
+                }
+                """)
+                .exchange()
+                .expectStatus().isCreated()
+                .expectBody()
+                .jsonPath("$.roles").isArray()
+                .jsonPath("$.roles[0]").isEqualTo("AQ");
+    }
+
     /**
      * Test la récupération des informations d'un utilisateur.
      * Vérifie que le mot de passe n'est jamais renvoyé dans la réponse.
