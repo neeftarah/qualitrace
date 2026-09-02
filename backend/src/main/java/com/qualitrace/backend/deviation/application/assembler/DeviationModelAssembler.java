@@ -1,9 +1,9 @@
 package com.qualitrace.backend.deviation.application.assembler;
 
-import com.qualitrace.backend.component.domain.type.ComponentStatus;
+import com.qualitrace.backend.deviation.application.dto.DeviationResponse;
+import com.qualitrace.backend.deviation.application.dto.DeviationUpdateRequest;
 import com.qualitrace.backend.deviation.domain.type.DeviationStatus;
 import com.qualitrace.backend.deviation.infrastructure.api.DeviationController;
-import com.qualitrace.backend.deviation.application.dto.DeviationResponse;
 import org.jspecify.annotations.NullMarked;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.server.RepresentationModelAssembler;
@@ -29,12 +29,16 @@ public class DeviationModelAssembler implements RepresentationModelAssembler<Dev
                         .withSelfRel()
         );
 
-        model.add(linkTo(methodOn(DeviationController.class).update(0L, 0L, null)).withRel("update"));
+        model.add(linkTo(methodOn(DeviationController.class).update(
+                deviation.batchId(),
+                deviation.id(),
+                new DeviationUpdateRequest("")
+        )).withRel("update"));
 
         if (deviation.status() == DeviationStatus.OPENED) {
-            model.add(linkTo(methodOn(DeviationController.class).close(0L, 0L)).withRel("close"));
+            model.add(linkTo(methodOn(DeviationController.class).close(deviation.batchId(), deviation.id())).withRel("close"));
         } else {
-            model.add(linkTo(methodOn(DeviationController.class).open(0L, 0L)).withRel("open"));
+            model.add(linkTo(methodOn(DeviationController.class).open(deviation.batchId(), deviation.id())).withRel("open"));
         }
 
         return model;

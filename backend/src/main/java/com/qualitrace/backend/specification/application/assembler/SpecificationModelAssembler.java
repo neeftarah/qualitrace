@@ -1,6 +1,7 @@
 package com.qualitrace.backend.specification.application.assembler;
 
 import com.qualitrace.backend.specification.application.dto.SpecificationResponse;
+import com.qualitrace.backend.specification.application.dto.SpecificationUpdateRequest;
 import com.qualitrace.backend.specification.infrastructure.api.SpecificationController;
 import org.jspecify.annotations.NullMarked;
 import org.springframework.hateoas.EntityModel;
@@ -28,8 +29,15 @@ public class SpecificationModelAssembler implements RepresentationModelAssembler
         );
 
         // Lien de mise à jour : présent uniquement si la gamme de contrôle n'est pas archivée
-        model.add(linkTo(methodOn(SpecificationController.class).update(0L, 0L, null)).withRel("update"));
-        model.add(linkTo(methodOn(SpecificationController.class).delete(0L, 0L)).withRel("delete"));
+        model.add(linkTo(methodOn(SpecificationController.class).update(
+                specification.componentId(),
+                specification.id(),
+                new SpecificationUpdateRequest("", 0.0, 0.0)
+        )).withRel("update"));
+        model.add(linkTo(methodOn(SpecificationController.class).delete(
+                specification.componentId(),
+                specification.id()
+        )).withRel("delete"));
 
         return model;
     }

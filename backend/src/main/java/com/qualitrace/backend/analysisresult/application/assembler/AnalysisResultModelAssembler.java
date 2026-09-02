@@ -1,6 +1,7 @@
 package com.qualitrace.backend.analysisresult.application.assembler;
 
 import com.qualitrace.backend.analysisresult.application.dto.AnalysisResultResponse;
+import com.qualitrace.backend.analysisresult.application.dto.AnalysisResultUpdateRequest;
 import com.qualitrace.backend.analysisresult.infrastructure.api.AnalysisResultController;
 import org.jspecify.annotations.NullMarked;
 import org.springframework.hateoas.EntityModel;
@@ -27,7 +28,11 @@ public class AnalysisResultModelAssembler implements RepresentationModelAssemble
                         .withSelfRel()
         );
 
-        model.add(linkTo(methodOn(AnalysisResultController.class).update(0L, 0L, null)).withRel("update"));
+        model.add(linkTo(methodOn(AnalysisResultController.class).update(
+                analysisResult.batchId(),
+                analysisResult.id(),
+                new AnalysisResultUpdateRequest(0.0)
+        )).withRel("update"));
 
         return model;
     }

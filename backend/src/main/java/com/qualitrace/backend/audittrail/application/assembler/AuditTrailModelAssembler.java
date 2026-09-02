@@ -9,9 +9,6 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.server.RepresentationModelAssembler;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDate;
-import java.util.UUID;
-
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
@@ -27,13 +24,13 @@ public class AuditTrailModelAssembler implements RepresentationModelAssembler<Au
         return EntityModel.of(
                 response,
                 linkTo(methodOn(AuditTrailController.class).list(
-                        UUID.randomUUID(),
-                        "",
-                        "",
-                        "",
-                        "",
-                        LocalDate.now(),
-                        LocalDate.now(),
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
                         Pageable.unpaged(),
                         new PagedResourcesAssembler<>(null, null)
                 )).withSelfRel()

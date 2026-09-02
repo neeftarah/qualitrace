@@ -2,7 +2,6 @@ package com.qualitrace.backend.user.application.assembler;
 
 import com.qualitrace.backend.user.application.dto.UserResponse;
 import com.qualitrace.backend.user.application.dto.UserUpdateRequest;
-import com.qualitrace.backend.user.domain.type.UserRole;
 import com.qualitrace.backend.user.domain.type.UserStatus;
 import com.qualitrace.backend.user.infrastructure.api.UserController;
 import org.jspecify.annotations.NullMarked;
@@ -37,12 +36,12 @@ public class UserModelAssembler implements RepresentationModelAssembler<UserResp
                 user,
                 linkTo(methodOn(UserController.class).get(user.id())).withSelfRel(),
                 linkTo(methodOn(UserController.class).list(
-                        "",
-                        "",
-                        "",
-                        "",
-                        UserStatus.ACTIVE,
-                        UserRole.ADMIN,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
                         Pageable.unpaged(),
                         new PagedResourcesAssembler<>(null, null)
                 )).withRel("users")
@@ -64,18 +63,9 @@ public class UserModelAssembler implements RepresentationModelAssembler<UserResp
 
     private void addStatusTransitionLinks(EntityModel<UserResponse> model, UserResponse user) {
         switch (user.status()) {
-            case ACTIVE -> {
-                model.add(linkTo(methodOn(UserController.class).archive(user.id()))
-                        .withRel("archive"));
-            }
-            case LOCKED -> {
-                model.add(linkTo(methodOn(UserController.class).unlock(user.id()))
-                        .withRel("activate"));
-            }
-            case ARCHIVED -> {
-                model.add(linkTo(methodOn(UserController.class).activate(user.id()))
-                        .withRel("activate"));
-            }
+            case ACTIVE -> model.add(linkTo(methodOn(UserController.class).archive(user.id())).withRel("archive"));
+            case LOCKED -> model.add(linkTo(methodOn(UserController.class).unlock(user.id())).withRel("unlock"));
+            case ARCHIVED -> model.add(linkTo(methodOn(UserController.class).activate(user.id())).withRel("activate"));
         }
     }
 }

@@ -28,9 +28,9 @@ public class SupplierModelAssembler implements RepresentationModelAssembler<Supp
                 supplier,
                 linkTo(methodOn(SupplierController.class).get(supplier.id())).withSelfRel(),
                 linkTo(methodOn(SupplierController.class).list(
-                        "",
-                        "",
-                        SupplierStatus.ACTIVE,
+                        null,
+                        null,
+                        null,
                         Pageable.unpaged(),
                         new PagedResourcesAssembler<>(null, null)
                 )).withRel("suppliers")
