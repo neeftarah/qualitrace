@@ -32,7 +32,15 @@ import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.test.context.TestSecurityContextHolder;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.client.RestTestClient;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -50,6 +58,32 @@ import static org.springframework.security.test.web.servlet.setup.SecurityMockMv
 @AutoConfigureMockMvc
 @Transactional
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@Sql(statements = "INSERT INTO users" +
+        "(id, login, password, email, firstname, surname, status, roles, version, created_at)" +
+        "VALUES" +
+        "(" +
+        "    '8b289d81-8824-4554-8f16-7ba3f687abe1'," +
+        "    'aqUser'," +
+        "    '$2y$10$TmcP7m6NXUz.5xI/tULCmeD3l9GynICd64WnY.5pCbOIN0sDzXb26'," +
+        "    'jmoreau.dev+aq@gmail.com'," +
+        "    'aq'," +
+        "    'TEST'," +
+        "    'ACTIVE'," +
+        "    '{AQ}'," +
+        "    0," +
+        "    NOW()" +
+        "),(" +
+        "    '3a389d81-8824-4554-8f16-7ba3f687abe1'," +
+        "    'supplyUser'," +
+        "    '$2y$10$TmcP7m6NXUz.5xI/tULCmeD3l9GynICd64WnY.5pCbOIN0sDzXb26'," +
+        "    'jmoreau.dev+supply@gmail.com'," +
+        "    'supply'," +
+        "    'TEST'," +
+        "    'ACTIVE'," +
+        "    '{SUPPLY}'," +
+        "    0," +
+        "    NOW()" +
+        ")")
 class BatchControllerTest {
 
     @Container
@@ -79,6 +113,9 @@ class BatchControllerTest {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private UserDetailsService userDetailsService;
 
     private static RestTestClient restClient;
 
@@ -172,7 +209,7 @@ class BatchControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "prod", roles = "PROD")
+    @WithMockUser(username = "prod", roles = "PRODUCTION")
     void useShouldChangeReceivedBatchStatus() {
         Batch batch = createBatch(createActiveComponent("CMP-001"), "SUP-LOT-001", BatchStatus.RELEASED);
 
@@ -187,6 +224,7 @@ class BatchControllerTest {
     @Test
     @WithMockUser(username = "supply", roles = "SUPPLY")
     void destroyShouldChangeRefusedBatchStatus() {
+        authenticateAs("supplyUser");
         Batch batch = createBatch(createActiveComponent("CMP-001"), "SUP-LOT-001", BatchStatus.REJECTED);
 
         restClient.patch().uri("/api/v1/batches/{id}/destroy", batch.id())
@@ -331,5 +369,13 @@ class BatchControllerTest {
     private Long createTestAnalysisResult(Long batchId, Long specId, Double value, User createdBy) {
         AnalysisResult analysisResult = AnalysisResult.createNew(batchId, specId, value, createdBy, batchRepository);
         return analysisResultRepository.save(analysisResult).id();
+    }
+
+    private void authenticateAs(String login) {
+        UserDetails principal = userDetailsService.loadUserByUsername(login);
+        Authentication auth = new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities());
+        SecurityContext context = SecurityContextHolder.createEmptyContext();
+        context.setAuthentication(auth);
+        TestSecurityContextHolder.setContext(context);
     }
 }

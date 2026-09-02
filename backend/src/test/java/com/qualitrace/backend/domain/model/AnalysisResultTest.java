@@ -24,8 +24,8 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 class AnalysisResultTest {
-
     private User user;
+
     @Mock
     private BatchRepository batchRepository;
 
