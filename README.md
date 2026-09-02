@@ -12,11 +12,20 @@
     <img src="https://img.shields.io/badge/PostgreSQL-336791?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL">
     <img src="https://img.shields.io/badge/Docker-2560FF?style=for-the-badge&logo=docker&logoColor=white" alt="Docker">
     <img src="https://img.shields.io/badge/Redis-FF4438?style=for-the-badge&logo=redis&logoColor=white" alt="Redis">
-    <img src="https://img.shields.io/badge/VueJS-3FB984?style=for-the-badge&logo=vuedotjs&logoColor=white" alt="VueJS">
+    <img src="https://img.shields.io/badge/Angular-C30130?style=for-the-badge&logo=angular&logoColor=white" alt="VueJS">
     <br>
     <img src="https://img.shields.io/github/actions/workflow/status/neeftarah/qualitrace/build.yml?label=Build" alt="Build">
     <img src="https://img.shields.io/badge/Status-In_Development-yellow" alt="Status">
     <img src="https://img.shields.io/badge/License-Apache_2.0-blue.svg" alt="License">
+    <br>
+    <br>
+    <img src="https://sonarcloud.io/api/project_badges/measure?project=neeftarah_qualitrace&metric=alert_status" alt="Quality gate status">
+    <br>
+    <img src="https://sonarcloud.io/api/project_badges/measure?project=neeftarah_qualitrace&metric=coverage" alt="Coverage">
+    <img src="https://sonarcloud.io/api/project_badges/measure?project=neeftarah_qualitrace&metric=ncloc" alt="Lines of Code">
+    <img src="https://sonarcloud.io/api/project_badges/measure?project=neeftarah_qualitrace&metric=reliability_rating" alt="Reliability Rating">
+    <img src="https://sonarcloud.io/api/project_badges/measure?project=neeftarah_qualitrace&metric=security_rating" alt="Security Rating">
+    <img src="https://sonarcloud.io/api/project_badges/measure?project=neeftarah_qualitrace&metric=sqale_rating" alt="Maintainability Rating">
 </p>
 
 ---
