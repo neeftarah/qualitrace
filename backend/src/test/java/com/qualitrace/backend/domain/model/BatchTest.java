@@ -369,7 +369,7 @@ class BatchTest {
 
     @Test
     void destroyBatch() {
-        Batch batch = createBatch(1L, BatchStatus.QUARANTINE);
+        Batch batch = createBatch(1L, BatchStatus.REJECTED);
         Batch destroyedBatch = batch.destroy();
 
         assertThat(destroyedBatch.status()).isEqualTo(BatchStatus.DESTROYED);
@@ -381,7 +381,7 @@ class BatchTest {
 
         assertThatException().isThrownBy(batch::destroy)
                 .isInstanceOf(IllegalStateException.class)
-                .withMessage("Le composant est déjà détruit");
+                .withMessage("Le lot est déjà détruit");
     }
 
     @Test
