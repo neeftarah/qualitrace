@@ -231,7 +231,7 @@ public class BatchController {
     @ApiResponse(responseCode = "404", description = "Lot introuvable")
     @ApiResponse(responseCode = "409", description = "Transition invalide depuis le statut actuel")
     @PatchMapping("/{id}/use")
-    @PreAuthorize("hasRole('PROD')")
+    @PreAuthorize("hasRole('PRODUCTION')")
     public EntityModel<BatchResponse> use(@PathVariable Long id) {
         BatchResponse updated = batchService.use(id);
 

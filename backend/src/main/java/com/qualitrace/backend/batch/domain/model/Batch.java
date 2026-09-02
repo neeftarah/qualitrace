@@ -156,7 +156,11 @@ public record Batch(
 
     public Batch destroy() {
         if (this.status == BatchStatus.DESTROYED) {
-            throw new IllegalStateException("Le composant est déjà détruit");
+            throw new IllegalStateException("Le lot est déjà détruit");
+        }
+
+        if (this.status != BatchStatus.REJECTED && !isExpired()) {
+            throw new IllegalStateException("Un lot ne peux être détruit que s'il est rejeté ou périmé");
         }
 
         return withStatus(BatchStatus.DESTROYED);

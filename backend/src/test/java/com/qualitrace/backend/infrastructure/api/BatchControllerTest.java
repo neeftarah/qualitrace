@@ -172,7 +172,7 @@ class BatchControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "prod", roles = "PROD")
+    @WithMockUser(username = "prod", roles = "PRODUCTION")
     void useShouldChangeReceivedBatchStatus() {
         Batch batch = createBatch(createActiveComponent("CMP-001"), "SUP-LOT-001", BatchStatus.RELEASED);
 
