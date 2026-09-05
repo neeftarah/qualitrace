@@ -82,10 +82,6 @@ public class BatchService {
 
     @Transactional(readOnly = true)
     public BatchDetailResponse getOneById(Long id) {
-//        Batch batch = batchRepository.findById(id)
-//                .orElseThrow(() -> new BatchNotFoundException(id));
-//        return batchMapper.toResponse(batch);
-
         Batch batch = findOrThrow(id);
 
         List<Specification> specs =
