@@ -5,9 +5,14 @@ spring:
   # Datasource configuration
   datasource:
       url: jdbc:postgresql://localhost:5432/qualitrace
-      username: root
-      password: P@ssw0rd
+      username: qualitrace_app
+      password: ${DB_APP_PASSWORD:app-secret}
       driver-class-name: org.postgresql.Driver
+
+  flyway:                     # utilisé uniquement pour les migrations
+      url: jdbc:postgresql://localhost:5432/qualitrace
+      user: root
+      password: ${POSTGRES_PASSWORD:P@ssw0rd}
 
   # JPA configuration
   jpa:
