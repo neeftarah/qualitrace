@@ -6,11 +6,11 @@ import com.qualitrace.backend.component.application.dto.ComponentResponse;
 import com.qualitrace.backend.component.application.dto.ComponentUpdateRequest;
 import com.qualitrace.backend.component.application.service.ComponentService;
 import com.qualitrace.backend.component.domain.model.ComponentFilter;
-import com.qualitrace.backend.shared.domain.model.PageQuery;
-import com.qualitrace.backend.shared.domain.model.PageResult;
-import com.qualitrace.backend.shared.domain.model.SortQuery;
 import com.qualitrace.backend.component.domain.type.ComponentStatus;
 import com.qualitrace.backend.component.domain.type.ComponentType;
+import com.qualitrace.backend.shared.domain.model.PageQuery;
+import com.qualitrace.backend.shared.domain.model.PageResult;
+import com.qualitrace.backend.shared.infrastructure.api.PageQueryUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -22,7 +22,6 @@ import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.CollectionModel;
@@ -33,7 +32,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Set;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -82,14 +80,7 @@ public class ComponentController {
             @ParameterObject @PageableDefault(size = 10, sort = "name") Pageable pageable,
             PagedResourcesAssembler<ComponentResponse> pagedAssembler
     ) {
-        validateSortFields(pageable.getSort());
-
-        List<SortQuery> sortOrders = pageable.getSort().stream()
-                .map(order -> new SortQuery(order.getProperty(),
-                        order.isDescending() ? SortQuery.Direction.DESC : SortQuery.Direction.ASC))
-                .toList();
-
-        PageQuery pageQuery = new PageQuery(pageable.getPageNumber(), pageable.getPageSize(), sortOrders);
+        PageQuery pageQuery = PageQueryUtils.toPageQuery(pageable, ALLOWED_SORT_FIELDS);
         ComponentFilter filter = new ComponentFilter(type, reference, name, status, supplierId);
 
         PageResult<ComponentResponse> result = componentService.getAll(pageQuery, filter);
@@ -223,18 +214,5 @@ public class ComponentController {
         ComponentResponse updated = componentService.archive(id);
 
         return assembler.toModel(updated);
-    }
-
-    /**
-     * Validation des critères de tri.
-     *
-     * @param sort Critères de tri.
-     */
-    private void validateSortFields(Sort sort) {
-        sort.forEach(order -> {
-            if (!ALLOWED_SORT_FIELDS.contains(order.getProperty())) {
-                throw new IllegalArgumentException("Champ de tri non autorisé : " + order.getProperty());
-            }
-        });
     }
 }

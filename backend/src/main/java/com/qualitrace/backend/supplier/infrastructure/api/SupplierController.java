@@ -1,13 +1,13 @@
 package com.qualitrace.backend.supplier.infrastructure.api;
 
+import com.qualitrace.backend.shared.domain.model.PageQuery;
+import com.qualitrace.backend.shared.domain.model.PageResult;
+import com.qualitrace.backend.shared.infrastructure.api.PageQueryUtils;
 import com.qualitrace.backend.supplier.application.assembler.SupplierModelAssembler;
 import com.qualitrace.backend.supplier.application.dto.SupplierCreateRequest;
 import com.qualitrace.backend.supplier.application.dto.SupplierResponse;
 import com.qualitrace.backend.supplier.application.dto.SupplierUpdateRequest;
 import com.qualitrace.backend.supplier.application.service.SupplierService;
-import com.qualitrace.backend.shared.domain.model.PageQuery;
-import com.qualitrace.backend.shared.domain.model.PageResult;
-import com.qualitrace.backend.shared.domain.model.SortQuery;
 import com.qualitrace.backend.supplier.domain.model.SupplierFilter;
 import com.qualitrace.backend.supplier.domain.type.SupplierStatus;
 import io.swagger.v3.oas.annotations.Operation;
@@ -21,7 +21,6 @@ import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.CollectionModel;
@@ -32,7 +31,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Set;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -79,14 +77,7 @@ public class SupplierController {
             @ParameterObject @PageableDefault(size = 10, sort = "name") Pageable pageable,
             PagedResourcesAssembler<SupplierResponse> pagedAssembler
     ) {
-        validateSortFields(pageable.getSort());
-
-        List<SortQuery> sortOrders = pageable.getSort().stream()
-                .map(order -> new SortQuery(order.getProperty(),
-                        order.isDescending() ? SortQuery.Direction.DESC : SortQuery.Direction.ASC))
-                .toList();
-
-        PageQuery pageQuery = new PageQuery(pageable.getPageNumber(), pageable.getPageSize(), sortOrders);
+        PageQuery pageQuery = PageQueryUtils.toPageQuery(pageable, ALLOWED_SORT_FIELDS);
         SupplierFilter filter = new SupplierFilter(code, name, status);
 
         PageResult<SupplierResponse> result = supplierService.getAll(pageQuery, filter);
@@ -220,18 +211,5 @@ public class SupplierController {
         SupplierResponse updated = supplierService.archive(id);
 
         return assembler.toModel(updated);
-    }
-
-    /**
-     * Validation des critères de tri.
-     *
-     * @param sort Critères de tri.
-     */
-    private void validateSortFields(Sort sort) {
-        sort.forEach(order -> {
-            if (!ALLOWED_SORT_FIELDS.contains(order.getProperty())) {
-                throw new IllegalArgumentException("Champ de tri non autorisé : " + order.getProperty());
-            }
-        });
     }
 }

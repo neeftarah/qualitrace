@@ -12,7 +12,7 @@ import com.qualitrace.backend.batch.domain.type.BatchStatus;
 import com.qualitrace.backend.batch.infrastructure.pdf.JasperBatchPdfExporter;
 import com.qualitrace.backend.shared.domain.model.PageQuery;
 import com.qualitrace.backend.shared.domain.model.PageResult;
-import com.qualitrace.backend.shared.domain.model.SortQuery;
+import com.qualitrace.backend.shared.infrastructure.api.PageQueryUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -24,7 +24,6 @@ import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.CollectionModel;
@@ -39,7 +38,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -113,14 +111,7 @@ public class BatchController {
             @ParameterObject @PageableDefault(size = 10, sort = "receptionDate") Pageable pageable,
             PagedResourcesAssembler<BatchResponse> pagedAssembler
     ) {
-        validateSortFields(pageable.getSort());
-
-        List<SortQuery> sortOrders = pageable.getSort().stream()
-                .map(order -> new SortQuery(order.getProperty(),
-                        order.isDescending() ? SortQuery.Direction.DESC : SortQuery.Direction.ASC))
-                .toList();
-
-        PageQuery pageQuery = new PageQuery(pageable.getPageNumber(), pageable.getPageSize(), sortOrders);
+        PageQuery pageQuery = PageQueryUtils.toPageQuery(pageable, ALLOWED_SORT_FIELDS);
         BatchFilter filter = new BatchFilter(
                 internalBatchNumber,
                 supplierId,
@@ -281,18 +272,5 @@ public class BatchController {
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"CA-" + id + ".pdf\"")
                 .body(pdf);
-    }
-
-    /**
-     * Validation des critères de tri.
-     *
-     * @param sort Critères de tri.
-     */
-    private void validateSortFields(Sort sort) {
-        sort.forEach(order -> {
-            if (!ALLOWED_SORT_FIELDS.contains(order.getProperty())) {
-                throw new IllegalArgumentException("Champ de tri non autorisé : " + order.getProperty());
-            }
-        });
     }
 }

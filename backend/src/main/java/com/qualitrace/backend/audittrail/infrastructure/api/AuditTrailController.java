@@ -6,6 +6,7 @@ import com.qualitrace.backend.audittrail.application.service.AuditTrailService;
 import com.qualitrace.backend.audittrail.domain.model.AuditTrailFilter;
 import com.qualitrace.backend.shared.domain.model.PageQuery;
 import com.qualitrace.backend.shared.domain.model.PageResult;
+import com.qualitrace.backend.shared.infrastructure.api.PageQueryUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -28,6 +29,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDate;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -39,6 +41,9 @@ import java.util.UUID;
 public class AuditTrailController {
     private final AuditTrailService auditTrailService;
     private final AuditTrailModelAssembler assembler;
+    private static final Set<String> ALLOWED_SORT_FIELDS = Set.of(
+            "author_id", "event", "entity_type", "entity_id", "content", "fromDate", "toDate"
+    );
 
     public AuditTrailController(AuditTrailService auditTrailService, AuditTrailModelAssembler assembler) {
         this.auditTrailService = auditTrailService;
@@ -60,7 +65,7 @@ public class AuditTrailController {
                     content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
     @GetMapping
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasRole('AQ') or hasRole('ADMIN')")
     public CollectionModel<EntityModel<AuditTrailResponse>> list(
             @RequestParam(required = false) UUID author_id,
             @RequestParam(required = false) String event,
@@ -72,7 +77,7 @@ public class AuditTrailController {
             @ParameterObject @PageableDefault(size = 10) Pageable pageable,
             PagedResourcesAssembler<AuditTrailResponse> pagedAssembler
     ) {
-        PageQuery pageQuery = new PageQuery(pageable.getPageNumber(), pageable.getPageSize(), null);
+        PageQuery pageQuery = PageQueryUtils.toPageQuery(pageable, ALLOWED_SORT_FIELDS);
         AuditTrailFilter filter = new AuditTrailFilter(author_id, event, entity_type, entity_id, content, fromDate, toDate);
 
         PageResult<AuditTrailResponse> result = auditTrailService.getAll(pageQuery, filter);
