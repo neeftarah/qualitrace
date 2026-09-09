@@ -1,31 +1,65 @@
-import { HttpClient } from '@angular/common/http';
 import { Injectable, inject, signal } from '@angular/core';
-import { Observable, tap } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { Observable, tap, switchMap, of, catchError, firstValueFrom } from 'rxjs';
+import { UserSelf } from './user.model';
+import { environment } from '../../environments/environment';
 
-export interface LoginResponse { token: string; }
-
-@Injectable({ providedIn: 'root' })
+@Injectable({
+    providedIn: 'root'
+})
 export class AuthService {
     private readonly http = inject(HttpClient);
-    private readonly apiUrl = 'http://localhost:8080/api/v1';
-    private readonly storageKey = 'qualitrace.authenticated';
-    readonly isAuthenticated = signal(sessionStorage.getItem(this.storageKey) === 'true');
+    private readonly tokenKey = 'qualitrace.token';
 
-    login(login: string, password: string): Observable<LoginResponse> {
-        return this.http.post<LoginResponse>(`${this.apiUrl}/auth/login`, { login, password }).pipe(
-            tap(() => {
-                sessionStorage.setItem(this.storageKey, 'true');
-                this.isAuthenticated.set(true);
-            })
+    // Signal contenant le profil de l'utilisateur connecté
+    currentUser = signal<UserSelf | null>(null);
+
+    login(login: string, password: string): Observable<UserSelf> {
+        return this.http.post<{ token: string }>(`${environment.apiUrl}/auth/login`, { login, password }).pipe(
+            tap(res => localStorage.setItem(this.tokenKey, res.token)),
+            switchMap(() => this.fetchCurrentUser())
         );
     }
 
     logout(): Observable<void> {
-        return this.http.post<void>(`${this.apiUrl}/auth/logout`, {}).pipe(tap(() => this.clearSession()));
+            return this.http.post<void>(`${environment.apiUrl}/auth/logout`, {}).pipe(tap(() => this.clearSession()));
+    }
+
+    fetchCurrentUser(): Observable<UserSelf> {
+        return this.http.get<UserSelf>(`${environment.apiUrl}/users/self`).pipe(
+            tap(user => this.currentUser.set(user))
+        );
+    }
+
+    getToken(): string | null {
+        return localStorage.getItem(this.tokenKey);
     }
 
     clearSession(): void {
-        sessionStorage.removeItem(this.storageKey);
-        this.isAuthenticated.set(false);
+        localStorage.removeItem(this.tokenKey);
+        this.currentUser.set(null);
+    }
+
+    hasAnyRole(requiredRoles: string[]): boolean {
+        const user = this.currentUser();
+        if (!user || !user.roles) return false;
+        return requiredRoles.some(role => user.roles.includes(role));
+    }
+
+    async initializeAuth(): Promise<UserSelf | null> {
+        const token = this.getToken();
+        if (!token) {
+            return null;
+        }
+
+        try {
+            const user = await firstValueFrom(this.fetchCurrentUser());
+            console.log('Utilisateur réhydraté au F5 :', user);
+            return user;
+        } catch (error) {
+            console.error('Échec réhydratation au F5 :', error);
+            this.clearSession();
+            return null;
+        }
     }
 }

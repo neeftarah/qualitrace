@@ -1,8 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MenuItem } from 'primeng/api';
 import { AppMenuitem } from './app.menuitem';
+import { AuthService } from '../../core/auth.service';
 
 @Component({
     selector: 'app-menu',
@@ -19,10 +20,33 @@ import { AppMenuitem } from './app.menuitem';
     </ul> `,
 })
 export class AppMenu {
+    private readonly auth = inject(AuthService);
     model: MenuItem[] = [];
 
     ngOnInit() {
-        this.model = [
+        const baseMenu: MenuItem[] = [
+            {
+                label: 'Home',
+                items: [{ label: 'Tableau de bord', icon: 'pi pi-fw pi-home', routerLink: ['/'] }]
+            }
+        ];
+
+        if (this.auth.hasAnyRole(['ADMIN', 'AQ'])) {
+            baseMenu.push({
+                label: 'Traçabilité & Conformité',
+                items: [
+                    {
+                        label: 'Audit Trail',
+                        icon: 'pi pi-fw pi-history',
+                        routerLink: ['/audit-trail']
+                    }
+                ]
+            });
+        }
+
+        baseMenu.push({
+            label: 'SAKAI',
+            items: [
             {
                 label: 'Home',
                 items: [{ label: 'Dashboard', icon: 'pi pi-fw pi-home', routerLink: ['/'] }]
@@ -163,6 +187,9 @@ export class AppMenu {
                     }
                 ]
             }
-        ];
+        ]
+        });
+
+        this.model = baseMenu;
     }
 }

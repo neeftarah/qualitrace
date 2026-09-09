@@ -82,6 +82,10 @@ docker-compose up -d
 ```bash
 .\backend\gradlew.bat -p backend bootRun
 ```
+### Lancement de l'application front
+```bash
+.\frontend\gradlew.bat -p backend bootRun
+```
 
 ## Accéder à l'application
 

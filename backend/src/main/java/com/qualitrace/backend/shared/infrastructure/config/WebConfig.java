@@ -12,7 +12,7 @@ public class WebConfig implements WebMvcConfigurer {
         // On autorise le futur frontend (souvent sur le port 5173 avec Vite/VueJS)
         registry.addMapping("/api/**")
                 .allowedOrigins("http://localhost:5173")
-                .allowedMethods("GET", "POST", "PUT")
+                .allowedMethods("*")
                 .allowedHeaders("*")
                 .allowCredentials(true);
     }
