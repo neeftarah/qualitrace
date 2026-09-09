@@ -25,7 +25,6 @@ public interface AuditTrailJpaRepository extends JpaRepository<AuditTrailEntity,
         AND (:content IS NULL OR (
             CAST(at.previousData AS string) LIKE :content
             OR CAST(at.changedData AS string) LIKE :content))
-        ORDER BY at.timestamp DESC
     """)
     Page<AuditTrailEntity> search(
             @Param("author_id") UUID author_id,

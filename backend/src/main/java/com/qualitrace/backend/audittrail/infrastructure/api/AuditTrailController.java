@@ -17,6 +17,7 @@ import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.CollectionModel;
@@ -42,7 +43,7 @@ public class AuditTrailController {
     private final AuditTrailService auditTrailService;
     private final AuditTrailModelAssembler assembler;
     private static final Set<String> ALLOWED_SORT_FIELDS = Set.of(
-            "author_id", "event", "entity_type", "entity_id", "content", "fromDate", "toDate"
+            "author_id", "event", "entity_type", "entity_id", "content", "timestamp"
     );
 
     public AuditTrailController(AuditTrailService auditTrailService, AuditTrailModelAssembler assembler) {
@@ -74,9 +75,10 @@ public class AuditTrailController {
             @RequestParam(required = false) String content,
             @RequestParam(required = false) LocalDate fromDate,
             @RequestParam(required = false) LocalDate toDate,
-            @ParameterObject @PageableDefault(size = 10) Pageable pageable,
+            @ParameterObject @PageableDefault(size = 10, sort = "timestamp", direction = Sort.Direction.DESC) Pageable pageable,
             PagedResourcesAssembler<AuditTrailResponse> pagedAssembler
     ) {
+        System.out.println(pageable);
         PageQuery pageQuery = PageQueryUtils.toPageQuery(pageable, ALLOWED_SORT_FIELDS);
         AuditTrailFilter filter = new AuditTrailFilter(author_id, event, entity_type, entity_id, content, fromDate, toDate);
 

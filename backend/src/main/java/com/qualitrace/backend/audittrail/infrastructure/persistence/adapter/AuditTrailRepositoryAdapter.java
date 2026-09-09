@@ -7,15 +7,18 @@ import com.qualitrace.backend.audittrail.infrastructure.persistence.entity.Audit
 import com.qualitrace.backend.audittrail.infrastructure.persistence.repository.AuditTrailJpaRepository;
 import com.qualitrace.backend.shared.domain.model.PageQuery;
 import com.qualitrace.backend.shared.domain.model.PageResult;
+import com.qualitrace.backend.shared.domain.model.SortQuery;
 import com.qualitrace.backend.user.domain.model.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
+import java.util.List;
 
 @Repository
 public class AuditTrailRepositoryAdapter implements AuditTrailRepository {
@@ -28,7 +31,12 @@ public class AuditTrailRepositoryAdapter implements AuditTrailRepository {
 
     @Override
     public PageResult<AuditTrail> findAll(PageQuery pageQuery, AuditTrailFilter filter) {
-        Pageable pageable = PageRequest.of(pageQuery.page(), pageQuery.size());
+        Sort sort = Sort.by(pageQuery.sort().stream()
+                .map(s -> new Sort.Order(
+                        s.direction() == SortQuery.Direction.DESC ? Sort.Direction.DESC : Sort.Direction.ASC,
+                        s.field()))
+                .toList());
+        Pageable pageable = PageRequest.of(pageQuery.page(), pageQuery.size(), sort);
 
         Instant from = filter.fromDate() != null
                 ? filter.fromDate().atStartOfDay(ZoneOffset.UTC).toInstant()
