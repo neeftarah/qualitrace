@@ -28,7 +28,14 @@ public class AuditEventListener implements
     @Override
     public void onPostInsert(PostInsertEvent event) {
         Map<String, Object> after = sanitize(toMap(event.getPersister(), event.getState()));
-        write((EventSource) event.getSession(), "CREATE", entityType(event), entityId(event.getId()), Map.of(), after);
+        write(
+                (EventSource) event.getSession(),
+                resolveEventType("CREATE"),
+                entityType(event),
+                entityId(event.getId()),
+                Map.of(),
+                after
+        );
     }
 
     @Override
@@ -41,12 +48,12 @@ public class AuditEventListener implements
         if (diff[0].isEmpty()) return;
 
         write(
-            (EventSource) event.getSession(),
-            "UPDATE",
-            entityType(event),
-            entityId(event.getId()),
-            sanitize(diff[0]),
-            sanitize(diff[1])
+                (EventSource) event.getSession(),
+                resolveEventType("UPDATE"),
+                entityType(event),
+                entityId(event.getId()),
+                sanitize(diff[0]),
+                sanitize(diff[1])
         );
     }
 
@@ -57,7 +64,10 @@ public class AuditEventListener implements
     }
 
     // false = exécution SYNCHRONE, pendant le flush, dans la transaction en cours — pas après commit
-    @Override public boolean requiresPostCommitHandling(EntityPersister persister) { return false; }
+    @Override
+    public boolean requiresPostCommitHandling(EntityPersister persister) {
+        return false;
+    }
 
     /**
      * Écrit la ligne d'audit en JDBC brut, sur la connexion de la session Hibernate en cours.
@@ -74,7 +84,7 @@ public class AuditEventListener implements
         session.doWork(connection -> {
             try (PreparedStatement ps = connection.prepareStatement("""
                     INSERT INTO audit_trail (author_id, event, entity_type, entity_id, timestamp, previous_data, changed_data)
-                    VALUES (?, ?, ?, ?, ?, CAST(? AS jsonb), CAST(? AS jsonb))
+                    VALUES (?, ?, ?, ?, ?, CAST(? AS JSONB), CAST(? AS JSONB))
                     """)) {
                 if (authorId != null) {
                     ps.setObject(1, authorId);
@@ -148,5 +158,10 @@ public class AuditEventListener implements
             return principal.getId();
         }
         return null; // action système (seed, tâche planifiée) — pas d'auteur humain
+    }
+
+    private String resolveEventType(String defaultType) {
+        String customEvent = AuditContext.getEvent();
+        return (customEvent != null && !customEvent.isBlank()) ? customEvent : defaultType;
     }
 }

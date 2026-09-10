@@ -10,6 +10,7 @@ import com.qualitrace.backend.component.domain.model.ComponentFilter;
 import com.qualitrace.backend.component.domain.repository.ComponentRepository;
 import com.qualitrace.backend.shared.domain.model.PageQuery;
 import com.qualitrace.backend.shared.domain.model.PageResult;
+import com.qualitrace.backend.shared.infrastructure.audit.AuditContext;
 import com.qualitrace.backend.specification.domain.repository.SpecificationRepository;
 import com.qualitrace.backend.supplier.domain.exception.SupplierNotFoundException;
 import com.qualitrace.backend.supplier.domain.model.Supplier;
@@ -71,20 +72,37 @@ public class ComponentService {
 
     public ComponentResponse draft(Long id) {
         Component existing = findOrThrow(id);
-        return componentMapper.toResponse(componentRepository.save(existing.draft()));
+        AuditContext.setEvent("DRAFTED");
+
+        try {
+            return componentMapper.toResponse(componentRepository.save(existing.draft()));
+        } finally {
+            AuditContext.clear();
+        }
     }
 
     public ComponentResponse archive(Long id) {
         Component existing = findOrThrow(id);
-        return componentMapper.toResponse(componentRepository.save(existing.archive()));
+        AuditContext.setEvent("ARCHIVED");
+
+        try {
+            return componentMapper.toResponse(componentRepository.save(existing.archive()));
+        } finally {
+            AuditContext.clear();
+        }
     }
 
     public ComponentResponse activate(Long id) {
         Component existing = findOrThrow(id);
+        AuditContext.setEvent("ACTIVATED");
 
-        return componentMapper.toResponse(
-                componentRepository.save(existing.activate(specificationRepository))
-        );
+        try {
+            return componentMapper.toResponse(
+                    componentRepository.save(existing.activate(specificationRepository))
+            );
+        } finally {
+            AuditContext.clear();
+        }
     }
 
     private Component findOrThrow(Long id) {

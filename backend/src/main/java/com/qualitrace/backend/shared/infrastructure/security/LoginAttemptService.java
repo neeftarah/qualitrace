@@ -1,5 +1,6 @@
 package com.qualitrace.backend.shared.infrastructure.security;
 
+import com.qualitrace.backend.shared.infrastructure.audit.AuditContext;
 import com.qualitrace.backend.user.domain.repository.UserRepository;
 import com.qualitrace.backend.user.domain.type.UserStatus;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -17,18 +18,24 @@ public class LoginAttemptService {
         this.userRepository = userRepository;
     }
 
-    /** Check rapide, un seul GET Redis — aucun appel BDD. */
+    /**
+     * Check rapide, un seul GET Redis — aucun appel BDD.
+     */
     public boolean isLocked(String login) {
         String value = redisTemplate.opsForValue().get(key(login));
         return value != null && Long.parseLong(value) >= MAX_ATTEMPTS;
     }
 
-    /** Déjà verrouillé côté Redis : on continue de compter, mais aucun accès BDD/BCrypt. */
+    /**
+     * Déjà verrouillé côté Redis : on continue de compter, mais aucun accès BDD/BCrypt.
+     */
     public void recordAttemptWhileLocked(String login) {
         redisTemplate.opsForValue().increment(key(login));
     }
 
-    /** Échec réel (après authentification tentée) : incrémente, et verrouille en BDD une seule fois, au franchissement du seuil. */
+    /**
+     * Échec réel (après authentification tentée) : incrémente, et verrouille en BDD une seule fois, au franchissement du seuil.
+     */
     public void recordFailure(String login) {
         Long attempts = redisTemplate.opsForValue().increment(key(login));
 
@@ -51,8 +58,14 @@ public class LoginAttemptService {
 
     private void lockUser(String login) {
         userRepository.findByLogin(login).ifPresent(user -> {
-            if (user.status() == UserStatus.ACTIVE) {
-                userRepository.save(user.lock());
+            AuditContext.setEvent("LOCKED");
+
+            try {
+                if (user.status() == UserStatus.ACTIVE) {
+                    userRepository.save(user.lock());
+                }
+            } finally {
+                AuditContext.clear();
             }
         });
     }

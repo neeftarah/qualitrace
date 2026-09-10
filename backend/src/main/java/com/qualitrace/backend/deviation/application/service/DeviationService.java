@@ -9,6 +9,7 @@ import com.qualitrace.backend.deviation.application.mapper.DeviationMapper;
 import com.qualitrace.backend.deviation.domain.exception.DeviationNotFoundException;
 import com.qualitrace.backend.deviation.domain.model.Deviation;
 import com.qualitrace.backend.deviation.domain.repository.DeviationRepository;
+import com.qualitrace.backend.shared.infrastructure.audit.AuditContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -59,14 +60,24 @@ public class DeviationService {
 
     public DeviationResponse open(Long id) {
         Deviation existing = findOrThrow(id);
+        AuditContext.setEvent("OPENED");
 
-        return deviationMapper.toResponse(deviationRepository.save(existing.open()));
+        try {
+            return deviationMapper.toResponse(deviationRepository.save(existing.open()));
+        } finally {
+            AuditContext.clear();
+        }
     }
 
     public DeviationResponse close(Long id) {
         Deviation existing = findOrThrow(id);
+        AuditContext.setEvent("CLOSED");
 
-        return deviationMapper.toResponse(deviationRepository.save(existing.close()));
+        try {
+            return deviationMapper.toResponse(deviationRepository.save(existing.close()));
+        } finally {
+            AuditContext.clear();
+        }
     }
 
     private Deviation findOrThrow(Long id) {

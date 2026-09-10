@@ -5,6 +5,7 @@ import com.qualitrace.backend.component.domain.exception.ComponentNotFoundExcept
 import com.qualitrace.backend.component.domain.model.Component;
 import com.qualitrace.backend.component.domain.repository.ComponentRepository;
 import com.qualitrace.backend.component.domain.type.ComponentStatus;
+import com.qualitrace.backend.shared.infrastructure.audit.AuditContext;
 import com.qualitrace.backend.specification.application.dto.SpecificationCreateRequest;
 import com.qualitrace.backend.specification.application.dto.SpecificationResponse;
 import com.qualitrace.backend.specification.application.dto.SpecificationUpdateRequest;
@@ -66,8 +67,13 @@ public class SpecificationService {
     public void delete(Long id) {
         Specification existing = findOrThrow(id);
         getEditableComponent(existing.componentId());
+        AuditContext.setEvent("DELETED");
 
-        specificationRepository.save(existing.delete(componentRepository));
+        try {
+            specificationRepository.save(existing.delete(componentRepository));
+        } finally {
+            AuditContext.clear();
+        }
     }
 
     private Specification findOrThrow(Long id) {

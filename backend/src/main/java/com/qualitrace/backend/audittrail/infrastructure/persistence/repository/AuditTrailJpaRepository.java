@@ -18,8 +18,8 @@ public interface AuditTrailJpaRepository extends JpaRepository<AuditTrailEntity,
         LEFT JOIN at.author author
         WHERE (:author_id IS NULL OR at.author.id = :author_id)
         AND (:event IS NULL OR at.event = :event)
-        AND (:entity_type IS NULL OR at.entityType = :entity_type)
-        AND (:entity_id IS NULL OR at.entityId = :entity_id)
+        AND (:entityType IS NULL OR at.entityType = :entityType)
+        AND (:entityId IS NULL OR at.entityId = :entityId)
         AND (CAST(:fromDate AS timestamp) IS NULL OR at.timestamp >= :fromDate)
         AND (CAST(:toDate AS timestamp) IS NULL OR at.timestamp <= :toDate)
         AND (:content IS NULL OR (
@@ -29,8 +29,8 @@ public interface AuditTrailJpaRepository extends JpaRepository<AuditTrailEntity,
     Page<AuditTrailEntity> search(
             @Param("author_id") UUID author_id,
             @Param("event") String event,
-            @Param("entity_type") String entity_type,
-            @Param("entity_id") String entity_id,
+            @Param("entityType") String entityType,
+            @Param("entityId") String entityId,
             @Param("content") String content,
             @Param("fromDate") Instant fromDate,
             @Param("toDate") Instant toDate,

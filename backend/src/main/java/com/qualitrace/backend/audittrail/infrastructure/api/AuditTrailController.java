@@ -43,7 +43,7 @@ public class AuditTrailController {
     private final AuditTrailService auditTrailService;
     private final AuditTrailModelAssembler assembler;
     private static final Set<String> ALLOWED_SORT_FIELDS = Set.of(
-            "author_id", "event", "entity_type", "entity_id", "content", "timestamp"
+            "event", "entityType", "entityId", "content", "timestamp", "author.surname"
     );
 
     public AuditTrailController(AuditTrailService auditTrailService, AuditTrailModelAssembler assembler) {

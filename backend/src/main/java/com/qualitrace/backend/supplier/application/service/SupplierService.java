@@ -1,17 +1,17 @@
 package com.qualitrace.backend.supplier.application.service;
 
+import com.qualitrace.backend.component.domain.repository.ComponentRepository;
+import com.qualitrace.backend.shared.domain.model.PageQuery;
+import com.qualitrace.backend.shared.domain.model.PageResult;
+import com.qualitrace.backend.shared.infrastructure.audit.AuditContext;
 import com.qualitrace.backend.supplier.application.dto.SupplierCreateRequest;
 import com.qualitrace.backend.supplier.application.dto.SupplierResponse;
 import com.qualitrace.backend.supplier.application.dto.SupplierUpdateRequest;
 import com.qualitrace.backend.supplier.application.mapper.SupplierMapper;
 import com.qualitrace.backend.supplier.domain.exception.SupplierNotFoundException;
-import com.qualitrace.backend.shared.domain.model.PageQuery;
-import com.qualitrace.backend.shared.domain.model.PageResult;
 import com.qualitrace.backend.supplier.domain.model.Supplier;
 import com.qualitrace.backend.supplier.domain.model.SupplierFilter;
-import com.qualitrace.backend.component.domain.repository.ComponentRepository;
 import com.qualitrace.backend.supplier.domain.repository.SupplierRepository;
-import com.qualitrace.backend.component.domain.type.ComponentStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -61,13 +61,24 @@ public class SupplierService {
     @Transactional
     public SupplierResponse archive(Long id) {
         Supplier existing = findOrThrow(id);
+        AuditContext.setEvent("ARCHIVED");
 
-        return supplierMapper.toResponse(supplierRepository.save(existing.archive(componentRepository)));
+        try {
+            return supplierMapper.toResponse(supplierRepository.save(existing.archive(componentRepository)));
+        } finally {
+            AuditContext.clear();
+        }
     }
 
     public SupplierResponse reactivate(Long id) {
         Supplier existing = findOrThrow(id);
-        return supplierMapper.toResponse(supplierRepository.save(existing.reactivate()));
+        AuditContext.setEvent("ACTIVATED");
+
+        try {
+            return supplierMapper.toResponse(supplierRepository.save(existing.reactivate()));
+        } finally {
+            AuditContext.clear();
+        }
     }
 
     private Supplier findOrThrow(Long id) {

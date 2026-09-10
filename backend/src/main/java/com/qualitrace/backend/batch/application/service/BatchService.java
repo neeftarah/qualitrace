@@ -21,6 +21,7 @@ import com.qualitrace.backend.deviation.application.mapper.DeviationMapper;
 import com.qualitrace.backend.deviation.domain.repository.DeviationRepository;
 import com.qualitrace.backend.shared.domain.model.PageQuery;
 import com.qualitrace.backend.shared.domain.model.PageResult;
+import com.qualitrace.backend.shared.infrastructure.audit.AuditContext;
 import com.qualitrace.backend.specification.application.dto.SpecificationWithResultResponse;
 import com.qualitrace.backend.specification.domain.model.Specification;
 import com.qualitrace.backend.specification.domain.repository.SpecificationRepository;
@@ -30,10 +31,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.time.Instant;
 import java.util.stream.Collectors;
 
 @Service
@@ -145,24 +146,42 @@ public class BatchService {
         String login = SecurityContextHolder.getContext().getAuthentication().getName();
         User validator = userRepository.findByLogin(login)
                 .orElseThrow(() -> new IllegalStateException("Utilisateur de validation introuvable : " + login));
-        return batchMapper.toResponse(batchRepository.save(existing.validate(
-                request.accept(),
-                deviationRepository,
-                analysisRepository,
-                controlRepository,
-                validator,
-                Instant.now()
-        )));
+        AuditContext.setEvent(request.accept() ? "VALIDATED" : "REFUSED");
+
+        try {
+            return batchMapper.toResponse(batchRepository.save(existing.validate(
+                    request.accept(),
+                    deviationRepository,
+                    analysisRepository,
+                    controlRepository,
+                    validator,
+                    Instant.now()
+            )));
+        } finally {
+            AuditContext.clear();
+        }
     }
 
     public BatchResponse use(Long id) {
         Batch existing = findOrThrow(id);
-        return batchMapper.toResponse(batchRepository.save(existing.use()));
+        AuditContext.setEvent("USED");
+
+        try {
+            return batchMapper.toResponse(batchRepository.save(existing.use()));
+        } finally {
+            AuditContext.clear();
+        }
     }
 
     public BatchResponse destroy(Long id) {
         Batch existing = findOrThrow(id);
-        return batchMapper.toResponse(batchRepository.save(existing.destroy()));
+        AuditContext.setEvent("DESTROYED");
+
+        try {
+            return batchMapper.toResponse(batchRepository.save(existing.destroy()));
+        } finally {
+            AuditContext.clear();
+        }
     }
 
     private Batch findOrThrow(Long id) {
