@@ -85,11 +85,20 @@ export class AuditTrailListComponent {
     // Options pour les listes déroulantes
     eventOptions = [
         { label: 'Tous les événements', value: null },
-        { label: 'CRÉATION', value: 'CREATE' },
-        { label: 'MISE À JOUR', value: 'UPDATE' },
-        { label: 'VALIDATION', value: 'VALIDATE' },
-        { label: 'SUPPRESSION', value: 'DELETE' },
-        { label: 'ARCHIVAGE', value: 'ARCHIVE' }
+        { label: 'CREATED', value: 'CREATED' },
+        { label: 'VALIDATED', value: 'VALIDATED' },
+        { label: 'ACTIVATED', value: 'ACTIVATED' },
+        { label: 'CLOSED', value: 'CLOSED' },
+        { label: 'UNLOCKED', value: 'UNLOCKED' },
+        { label: 'UPDATED', value: 'UPDATED' },
+        { label: 'USED', value: 'USED' },
+        { label: 'DELETED', value: 'DELETED' },
+        { label: 'ARCHIVED', value: 'ARCHIVED' },
+        { label: 'REFUSED', value: 'REFUSED' },
+        { label: 'DESTROYED', value: 'DESTROYED' },
+        { label: 'DRAFTED', value: 'DRAFTED' },
+        { label: 'OPENED', value: 'OPENED' },
+        { label: 'LOCKED', value: 'LOCKED' }
     ];
 
     entityTypeOptions = [
@@ -164,11 +173,44 @@ export class AuditTrailListComponent {
 
     getSeverity(event: string): 'success' | 'info' | 'warn' | 'danger' | 'secondary' {
         switch (event) {
-            case 'CREATE': return 'success';
-            case 'UPDATE': return 'info';
-            case 'VALIDATE': return 'success';
-            case 'DELETE': case 'ARCHIVE': return 'danger';
+            case 'CREATED':
+            case 'VALIDATED':
+            case 'ACTIVATED':
+            case 'CLOSED':
+            case 'UNLOCKED':
+                return 'success';
+            case 'UPDATED':
+            case 'USED':
+                return 'info';
+            case 'DELETED':
+            case 'ARCHIVED':
+            case 'REFUSED':
+            case 'DESTROYED':
+            case 'DRAFTED':
+            case 'OPENED':
+            case 'LOCKED':
+                return 'danger';
             default: return 'secondary';
+        }
+    }
+
+    getEntityTypeName(type: string): string {
+        switch (type) {
+            case 'DeviationEntity' :
+                return 'Déviation';
+            case 'BatchEntity' :
+                return 'Lot';
+            case 'AnalysisResultEntity' :
+                return 'Résultat d\'analyses';
+            case 'SpecificationEntity' :
+                return 'Gamme de contrôles';
+            case 'ComponentEntity' :
+                return 'Composant';
+            case 'SupplierEntity' :
+                return 'Fournisseur';
+            case 'UserEntity':
+                return 'Utilisateur';
+            default: return type;
         }
     }
 

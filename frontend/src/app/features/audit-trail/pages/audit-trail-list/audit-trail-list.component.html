@@ -139,7 +139,7 @@
                 <td>
                     <p-tag [value]="item.event" [severity]="getSeverity(item.event)" />
                 </td>
-                <td><span class="font-semibold">{{ item.entity_type }}</span></td>
+                <td><span class="font-semibold">{{ getEntityTypeName(item.entity_type) }}</span></td>
                 <td>{{ item.entity_id }}</td>
                 <td>{{ item.author?.firstname }} {{ item.author?.surname }} ({{ item.author?.login }})</td>
                 <td class="py-3 px-4 text-center">
