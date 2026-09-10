@@ -130,7 +130,7 @@ class AuditTrailControllerTest {
     @Test
     public void listByEvent() {
         // Filtre sur event
-        restClient.get().uri("/api/v1/audit_trail?event=CREATE")
+        restClient.get().uri("/api/v1/audit_trail?event=CREATED")
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().contentType(MediaTypes.HAL_JSON)

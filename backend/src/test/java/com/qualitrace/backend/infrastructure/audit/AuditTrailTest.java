@@ -53,7 +53,7 @@ class AuditTrailTest {
 
         assertThat(entries)
                 .anySatisfy(entry -> {
-                    assertThat(entry.getEvent()).isEqualTo("CREATE");
+                    assertThat(entry.getEvent()).isEqualTo("CREATED");
                     assertThat(entry.getEntityType()).isEqualTo("UserEntity");
                     assertThat(entry.getEntityId()).isEqualTo(saved.id().toString());
                     assertThat(entry.getPreviousData()).isEqualTo("{}");
@@ -74,7 +74,7 @@ class AuditTrailTest {
         List<AuditTrailEntity> entries = auditTrailJpaRepository.findAll();
 
         assertThat(entries)
-                .filteredOn(entry -> entry.getEntityId().equals(saved.id().toString()) && entry.getEvent().equals("UPDATE"))
+                .filteredOn(entry -> entry.getEntityId().equals(saved.id().toString()) && entry.getEvent().equals("UPDATED"))
                 .hasSize(1)
                 .first()
                 .satisfies(entry -> {

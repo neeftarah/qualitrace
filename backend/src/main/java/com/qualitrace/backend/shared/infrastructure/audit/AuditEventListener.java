@@ -30,7 +30,7 @@ public class AuditEventListener implements
         Map<String, Object> after = sanitize(toMap(event.getPersister(), event.getState()));
         write(
                 (EventSource) event.getSession(),
-                resolveEventType("CREATE"),
+                resolveEventType("CREATED"),
                 entityType(event),
                 entityId(event.getId()),
                 Map.of(),
@@ -49,7 +49,7 @@ public class AuditEventListener implements
 
         write(
                 (EventSource) event.getSession(),
-                resolveEventType("UPDATE"),
+                resolveEventType("UPDATED"),
                 entityType(event),
                 entityId(event.getId()),
                 sanitize(diff[0]),
@@ -60,7 +60,7 @@ public class AuditEventListener implements
     @Override
     public void onPostDelete(PostDeleteEvent event) {
         Map<String, Object> before = sanitize(toMap(event.getPersister(), event.getDeletedState()));
-        write((EventSource) event.getSession(), "DELETE", entityType(event), entityId(event.getId()), before, Map.of());
+        write((EventSource) event.getSession(), "DELETED", entityType(event), entityId(event.getId()), before, Map.of());
     }
 
     // false = exécution SYNCHRONE, pendant le flush, dans la transaction en cours — pas après commit
