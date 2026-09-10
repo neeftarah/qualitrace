@@ -42,6 +42,7 @@ export interface AuditTrailQueryParams {
     content?: string;
     event?: string;
     entity_type?: string;
+    entity_id?: string;
     author_id?: string;
     fromDate?: string;
     toDate?: string;

@@ -1,6 +1,112 @@
-<div class="card">
+<div class="card p-4">
     <div class="font-semibold text-xl mb-4">Audit Trail - Journal de Traçabilité</div>
 
+    <!-- Ligne 1 : Recherche globale, Événement, Entité -->
+    <div class="flex flex-nowrap flex-auto justify-between items-end gap-2 mb-6">
+        <div>
+            <label class="block text-sm font-medium mb-1" for="searchContent">Recherche contenu</label>
+            <div class="p-inputgroup">
+                <input
+                    id="searchContent"
+                    pInputText
+                    type="text"
+                    [(ngModel)]="searchTerm"
+                    (keyup.enter)="applyFilters(dt)"
+                    placeholder="Contenu..." />
+            </div>
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium mb-1" for="searchEvent">Événement</label>
+            <p-select
+                id="searchEvent"
+                [options]="eventOptions"
+                [(ngModel)]="selectedEvent"
+                optionLabel="label"
+                optionValue="value"
+                placeholder="Événement"
+                (onChange)="applyFilters(dt)"
+                styleClass="w-full">
+            </p-select>
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium mb-1" for="searchEntityType">Type d'entité</label>
+            <p-select
+                id="searchEntityType"
+                [options]="entityTypeOptions"
+                [(ngModel)]="selectedEntityType"
+                optionLabel="label"
+                optionValue="value"
+                placeholder="Entité"
+                (onChange)="applyFilters(dt)"
+                styleClass="w-full">
+            </p-select>
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium mb-1" for="searchEntityId">ID Entité</label>
+            <input
+                id="searchEntityId"
+                pInputText
+                type="text"
+                [(ngModel)]="selectedEntityId"
+                (keyup.enter)="applyFilters(dt)"
+                placeholder="ex: DEV-102"
+                class="w-full" />
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium mb-1" for="searchAuthor">Auteur</label>
+            <p-select
+            [options]="authorOptions()"
+            [(ngModel)]="selectedAuthorId"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Auteur"
+            [filter]="true"
+            filterBy="label"
+            (onChange)="applyFilters(dt)"
+            styleClass="w-full">
+        </p-select>
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium mb-1" for="searchDates">Période (Du - Au)</label>
+            <p-datepicker
+                id="searchDates"
+                [(ngModel)]="dateRange"
+                selectionMode="range"
+                [readonlyInput]="true"
+                dateFormat="dd/mm/yy"
+                placeholder="Du - Au"
+                (onSelect)="applyFilters(dt)"
+                (onClear)="applyFilters(dt)"
+                [showIcon]="true"
+                styleClass="w-full">
+            </p-datepicker>
+        </div>
+
+        <div>
+            <button
+                pButton
+                title="Réinitialiser la recherche"
+                icon="pi pi-filter-slash"
+                class="p-button-outlined p-button-secondary"
+                (click)="resetFilters(dt)">
+            </button>
+            &nbsp;
+            <button
+                type="button"
+                pButton
+                icon="pi pi-search"
+                (click)="applyFilters(dt)"
+                title="Lancer la recherche">
+            </button>
+        </div>
+    </div>
+
+    <!-- Table PrimeNG -->
     <p-table
         #dt
         [value]="auditTrails()"
@@ -14,30 +120,15 @@
         [tableStyle]="{ 'min-width': '60rem' }"
         dataKey="id">
 
-        <ng-template pTemplate="caption">
-            <div class="flex justify-between items-center">
-                <span class="text-xl font-bold">Événements</span>
-                <p-iconField iconPosition="left">
-                    <p-inputIcon styleClass="pi pi-search" />
-                    <input
-                        pInputText
-                        type="text"
-                        [(ngModel)]="searchTerm"
-                        (keyup.enter)="dt.reset()"
-                        placeholder="Rechercher et valider..." />
-                </p-iconField>
-            </div>
-        </ng-template>
-
         <ng-template pTemplate="header">
             <tr>
-                <th pSortableColumn="id">ID <p-sortIcon field="id" /></th>
-                <th pSortableColumn="timestamp">Date <p-sortIcon field="timestamp" /></th>
-                <th pSortableColumn="event">Événement <p-sortIcon field="event" /></th>
-                <th pSortableColumn="entity_type">Entité <p-sortIcon field="entity_type" /></th>
-                <th>ID Entité</th>
-                <th>Auteur</th>
-                <th>Données Modifiées</th>
+                <th>ID</th>
+                <th class="w-2/16" pSortableColumn="timestamp">Date <p-sortIcon field="timestamp" /></th>
+                <th class="w-2/16" pSortableColumn="event">Événement <p-sortIcon field="event" /></th>
+                <th class="w-4/16" pSortableColumn="entityType">Entité <p-sortIcon field="entityType" /></th>
+                <th class="w-3/16" pSortableColumn="entityId">ID Entité <p-sortIcon field="entityId" /></th>
+                <th class="w-4/16" pSortableColumn="author.surname">Auteur <p-sortIcon field="author.surname" /></th>
+                <th class="w-1/16 py-3 px-4 text-center">Actions</th>
             </tr>
         </ng-template>
 
@@ -51,9 +142,17 @@
                 <td><span class="font-semibold">{{ item.entity_type }}</span></td>
                 <td>{{ item.entity_id }}</td>
                 <td>{{ item.author?.firstname }} {{ item.author?.surname }} ({{ item.author?.login }})</td>
-                <td class="max-w-xs truncate" [title]="item.changed_data">
-                    <code>{{ item.changed_data }}</code>
-                </td>
+                <td class="py-3 px-4 text-center">
+                <p-button
+                    icon="pi pi-search"
+                    [rounded]="true"
+                    [text]="true"
+                    severity="secondary"
+                    pTooltip="Voir les modifications"
+                    tooltipPosition="top"
+                    (click)="openDiffModal(item)">
+                </p-button>
+            </td>
             </tr>
         </ng-template>
 
@@ -64,3 +163,52 @@
         </ng-template>
     </p-table>
 </div>
+
+<p-dialog
+    header="Détail des modifications"
+    [visible]="displayDiffModal()"
+    (visibleChange)="displayDiffModal.set($event)"
+    [modal]="true"
+    [style]="{ width: '60vw' }"
+    [breakpoints]="{ '960px': '90vw' }"
+    [draggable]="false"
+    [resizable]="false">
+
+    @if (selectedAuditTrail(); as selected) {
+        <div class="mb-4 pb-2 border-b text-xs text-gray-600 flex gap-4">
+            <span><strong>Événement :</strong> {{ selected.event }}</span>
+            <span><strong>Entité :</strong> {{ selected.entity_type }} #{{ selected.entity_id }}</span>
+        </div>
+
+        @if (activeDiff().length > 0) {
+            <div class="space-y-4 font-mono text-xs">
+                @for (diff of activeDiff(); track diff.key) {
+                    <div class="border rounded border-gray-200 overflow-hidden">
+                        <!-- Nom du champ -->
+                        <div class="bg-gray-100 px-3 py-1 font-bold text-gray-700 border-b border-gray-200">
+                            {{ diff.key }}
+                        </div>
+
+                        <!-- Diff - Ancienne valeur -->
+                        @if (diff.type === 'MODIFIED' || diff.type === 'REMOVED') {
+                            <div class="bg-red-50 text-red-800 px-3 py-1 flex items-start gap-2 border-b border-red-100">
+                                <span class="font-bold select-none text-red-500">-</span>
+                                <pre class="whitespace-pre-wrap break-all font-mono">{{ diff.oldValue }}</pre>
+                            </div>
+                        }
+
+                        <!-- Diff - Nouvelle valeur -->
+                        @if (diff.type === 'MODIFIED' || diff.type === 'ADDED') {
+                            <div class="bg-green-50 text-green-800 px-3 py-1 flex items-start gap-2">
+                                <span class="font-bold select-none text-green-500">+</span>
+                                <pre class="whitespace-pre-wrap break-all font-mono">{{ diff.newValue }}</pre>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        } @else {
+            <p class="text-sm text-gray-500 italic text-center py-4">Aucune différence détectée entre les deux états.</p>
+        }
+    }
+</p-dialog>

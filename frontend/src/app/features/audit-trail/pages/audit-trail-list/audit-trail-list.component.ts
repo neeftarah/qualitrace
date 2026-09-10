@@ -1,14 +1,26 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { TableLazyLoadEvent, TableModule } from 'primeng/table';
+import { Table, TableLazyLoadEvent, TableModule } from 'primeng/table';
 import { InputTextModule } from 'primeng/inputtext';
 import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
+import { DatePickerModule } from 'primeng/datepicker';
+import { SelectModule } from 'primeng/select';
 import { AuditTrailService } from '../../services/audit-trail.service';
 import { AuditTrail } from '../../models/audit-trail.model';
+import { DialogModule } from 'primeng/dialog';
+import { JsonPipe } from '@angular/common';
+import { TooltipModule } from 'primeng/tooltip';
+
+export interface DiffItem {
+    key: string;
+    oldValue: string;
+    newValue: string;
+    type: 'MODIFIED' | 'ADDED' | 'REMOVED';
+}
 
 @Component({
     selector: 'app-audit-trail-list',
@@ -22,7 +34,12 @@ import { AuditTrail } from '../../models/audit-trail.model';
         TagModule,
         IconFieldModule,
         InputIconModule,
-        DatePipe
+        DatePickerModule,
+        SelectModule,
+        DatePipe,
+        DialogModule,
+        ButtonModule,
+        TooltipModule
     ],
     templateUrl: './audit-trail-list.component.html'
 })
@@ -33,7 +50,58 @@ export class AuditTrailListComponent {
     totalRecords = signal<number>(0);
     loading = signal<boolean>(true);
     pageSize = signal<number>(10);
+    authorOptions = signal<{ label: string; value: string | null }[]>([
+        { label: 'Tous les auteurs', value: null }
+    ]);
+
+    // Critères de recherche
     searchTerm = '';
+    selectedEvent: string | null = null;
+    selectedEntityType: string | null = null;
+    selectedEntityId: string | null = null;
+    selectedAuthorId: string | null = null;
+    dateRange: Date[] | null = null;
+
+    ngOnInit(): void {
+        this.loadAuthors();
+    }
+
+    private loadAuthors(): void {
+        this.auditTrailService.getAuthors().subscribe({
+            next: (authors) => {
+                const options = [
+                    { label: 'Tous les auteurs', value: null },
+                    ...authors.map(a => ({
+                        label: `${a.firstname} ${a.surname} (${a.login})`,
+                        value: a.id // Ou a.login selon ce qu'attend le backend pour author_id
+                    }))
+                ];
+                this.authorOptions.set(options);
+            },
+            error: (err) => console.error('Erreur chargement auteurs', err)
+        });
+    }
+
+    // Options pour les listes déroulantes
+    eventOptions = [
+        { label: 'Tous les événements', value: null },
+        { label: 'CRÉATION', value: 'CREATE' },
+        { label: 'MISE À JOUR', value: 'UPDATE' },
+        { label: 'VALIDATION', value: 'VALIDATE' },
+        { label: 'SUPPRESSION', value: 'DELETE' },
+        { label: 'ARCHIVAGE', value: 'ARCHIVE' }
+    ];
+
+    entityTypeOptions = [
+        { label: 'Toutes les entités', value: null },
+        { label: 'Déviation', value: 'DeviationEntity' },
+        { label: 'Lot', value: 'BatchEntity' },
+        { label: 'Résultat d\'analyses', value: 'AnalysisResultEntity' },
+        { label: 'Gamme de contrôles', value: 'SpecificationEntity' },
+        { label: 'Composant', value: 'ComponentEntity' },
+        { label: 'Fournisseur', value: 'SupplierEntity' },
+        { label: 'Utilisateur', value: 'UserEntity' }
+    ];
 
     loadData(event: TableLazyLoadEvent): void {
         this.loading.set(true);
@@ -48,11 +116,26 @@ export class AuditTrailListComponent {
             sort = `${field},${order}`;
         }
 
+        let fromDate: string | undefined = undefined;
+        let toDate: string | undefined = undefined;
+        if (this.dateRange && this.dateRange[0]) {
+            fromDate = this.formatDateToYYYYMMDD(this.dateRange[0]);
+        }
+        if (this.dateRange && this.dateRange[1]) {
+            toDate = this.formatDateToYYYYMMDD(this.dateRange[1]);
+        }
+
         this.auditTrailService.getAuditTrails({
             page,
             size,
             sort,
-            content: this.searchTerm || undefined
+            content: this.searchTerm || undefined,
+            event: this.selectedEvent || undefined,
+            entity_type: this.selectedEntityType || undefined,
+            entity_id: this.selectedEntityId?.trim() || undefined,
+            author_id: this.selectedAuthorId?.trim() || undefined,
+            fromDate,
+            toDate
         }).subscribe({
             next: (res) => {
                 this.auditTrails.set(res._embedded?.audit_trails || []);
@@ -65,13 +148,85 @@ export class AuditTrailListComponent {
         });
     }
 
+    applyFilters(dt: Table): void {
+        dt.reset();
+    }
+
+    resetFilters(dt: Table): void {
+        this.searchTerm = '';
+        this.selectedEvent = null;
+        this.selectedEntityType = null;
+        this.selectedEntityId = null;
+        this.selectedAuthorId = null;
+        this.dateRange = null;
+        dt.reset();
+    }
+
     getSeverity(event: string): 'success' | 'info' | 'warn' | 'danger' | 'secondary' {
         switch (event) {
-            case 'CREATED': return 'success';
-            case 'UPDATED': return 'info';
-            case 'VALIDATED': return 'success';
-            case 'DELETED': case 'ARCHIVED': return 'danger';
+            case 'CREATE': return 'success';
+            case 'UPDATE': return 'info';
+            case 'VALIDATE': return 'success';
+            case 'DELETE': case 'ARCHIVE': return 'danger';
             default: return 'secondary';
         }
+    }
+
+    displayDiffModal = signal<boolean>(false);
+    selectedAuditTrail = signal<AuditTrail | null>(null);
+    activeDiff = signal<DiffItem[]>([]);
+
+    openDiffModal(item: AuditTrail): void {
+        this.selectedAuditTrail.set(item);
+        this.activeDiff.set(this.computeDiff(item.previous_data, item.changed_data));
+        this.displayDiffModal.set(true);
+    }
+
+    private computeDiff(prevRaw: any, nextRaw: any): DiffItem[] {
+        const prev = this.parseJson(prevRaw);
+        const next = this.parseJson(nextRaw);
+
+        const allKeys = Array.from(new Set([...Object.keys(prev), ...Object.keys(next)]));
+        const diffs: DiffItem[] = [];
+
+        for (const key of allKeys) {
+            const hasPrev = Object.prototype.hasOwnProperty.call(prev, key);
+            const hasNext = Object.prototype.hasOwnProperty.call(next, key);
+            const val1 = prev[key];
+            const val2 = next[key];
+
+            if (hasPrev && !hasNext) {
+                diffs.push({ key, oldValue: this.formatVal(val1), newValue: '', type: 'REMOVED' });
+            } else if (!hasPrev && hasNext) {
+                diffs.push({ key, oldValue: '', newValue: this.formatVal(val2), type: 'ADDED' });
+            } else if (JSON.stringify(val1) !== JSON.stringify(val2)) {
+                diffs.push({ key, oldValue: this.formatVal(val1), newValue: this.formatVal(val2), type: 'MODIFIED' });
+            }
+        }
+
+        return diffs;
+    }
+
+    private parseJson(data: any): Record<string, any> {
+        if (!data) return {};
+        if (typeof data === 'object') return data;
+        try {
+            return JSON.parse(data);
+        } catch {
+            return {};
+        }
+    }
+
+    private formatVal(val: any): string {
+        if (val === null || val === undefined) return 'null';
+        if (typeof val === 'object') return JSON.stringify(val, null, 2);
+        return String(val);
+    }
+
+    private formatDateToYYYYMMDD(date: Date): string {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
     }
 }
