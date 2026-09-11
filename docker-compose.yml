@@ -16,6 +16,7 @@ services:
 
   redis:
     image: redis:8
+    restart: unless-stopped
     container_name: qualitrace-redis
     ports:
       - "6379:6379"
