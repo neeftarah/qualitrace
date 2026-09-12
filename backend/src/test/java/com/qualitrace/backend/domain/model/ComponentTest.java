@@ -143,11 +143,14 @@ class ComponentTest {
                 .withMessage("Le composant est déjà archivé");
 
         // ARCHIVED ==> ACTIVE
-        Component reactivatedComponent = archivedComponent.activate(controlRepository);
+        Component reDraftComponent = archivedComponent.activate(controlRepository);
+        assertThat(reDraftComponent.status()).isEqualTo(ComponentStatus.DRAFT);
+
+        Component reactivatedComponent = reDraftComponent.activate(controlRepository);
         assertThat(reactivatedComponent.status()).isEqualTo(ComponentStatus.ACTIVE);
 
         assertThatException().isThrownBy(() -> reactivatedComponent.activate(controlRepository)).isInstanceOf(IllegalStateException.class)
-                .withMessage("Seul un composant archivé ou en brouillon peut être réactivé (statut actuel : ACTIVE)");
+                .withMessage("Seul un composant archivé ou en brouillon peut être réactivé ou rendu disponible (statut actuel : ACTIVE)");
 
         // ACTIVE ==> DRAFT
         Component draftComponent = reactivatedComponent.draft();
