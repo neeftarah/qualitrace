@@ -73,7 +73,7 @@ export class AuditTrailListComponent {
                     { label: 'Tous les auteurs', value: null },
                     ...authors.map(a => ({
                         label: `${a.firstname} ${a.surname} (${a.login})`,
-                        value: a.id // Ou a.login selon ce qu'attend le backend pour author_id
+                        value: a.id
                     }))
                 ];
                 this.authorOptions.set(options);

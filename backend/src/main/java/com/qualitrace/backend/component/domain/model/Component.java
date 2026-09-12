@@ -82,24 +82,28 @@ public record Component(Long id, ComponentType type, String reference, String na
      * Cette action n’est disponible que si la gamme de contrôle a été complétée.
      */
     public Component activate(SpecificationRepository specificationRepository) {
-        if (this.status != ComponentStatus.ARCHIVED && this.status != ComponentStatus.DRAFT) {
+        if (this.status == ComponentStatus.ACTIVE) {
             throw new IllegalStateException(
-                    "Seul un composant archivé ou en brouillon peut être réactivé (statut actuel : %s)".formatted(this.status));
+                    "Seul un composant archivé ou en brouillon peut être réactivé ou rendu disponible (statut actuel : %s)".formatted(this.status));
         }
 
-        if (!specificationRepository.existsActiveSpecForComponent(id)) {
-            throw new ComponentRequiresSpecificationException(id);
-        }
+        if(this.status == ComponentStatus.DRAFT) {
+            if (!specificationRepository.existsActiveSpecForComponent(id)) {
+                throw new ComponentRequiresSpecificationException(id);
+            }
 
-        return new Component(
-                this.id,
-                this.type,
-                this.reference,
-                this.name,
-                Instant.now(), // RG-REF-05
-                ComponentStatus.ACTIVE,
-                this.supplier
-        );
+            return new Component(
+                    this.id,
+                    this.type,
+                    this.reference,
+                    this.name,
+                    Instant.now(), // RG-REF-05
+                    ComponentStatus.ACTIVE,
+                    this.supplier
+            );
+        } else {
+            return this.draft();
+        }
     }
 
     private Component withStatus(ComponentStatus newStatus) {

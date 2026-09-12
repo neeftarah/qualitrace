@@ -47,7 +47,7 @@ public class ComponentController {
     private final ComponentService componentService;
     private final ComponentModelAssembler assembler;
     private static final Set<String> ALLOWED_SORT_FIELDS = Set.of(
-            "code", "name"
+            "type", "reference", "name", "status", "supplier.name", "supplier_id"
     );
 
     public ComponentController(ComponentService componentService, ComponentModelAssembler assembler) {

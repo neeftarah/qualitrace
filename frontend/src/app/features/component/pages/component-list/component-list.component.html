@@ -1,0 +1,194 @@
+<div class="card p-4">
+    <div class="font-semibold text-xl mb-4">Composants</div>
+
+    <!-- Ligne 1 : Recherche -->
+    <p-toolbar role="toolbar" styleclass="mb-6" class="mb-6 p-component p-toolbar" pc471="" data-pc-section="root" data-pc-name="t">
+        <!----><!---->
+        <div class="p-toolbar-start" data-pc-section="start">
+            <p-button label="Nouveau"
+                      icon="pi pi-plus"
+                      severity="secondary"
+                      class="mr-2"
+                      pc476=""
+                      data-pc-section="host"
+                      (click)="openModal(null)"></p-button>
+        </div>
+        <div class="p-toolbar-end gap-3 items-end" data-pc-section="end">
+            <div>
+                <p-select
+                    id="searchType"
+                    [options]="typesOptions"
+                    [(ngModel)]="selectedType"
+                    optionLabel="label"
+                    optionValue="value"
+                    placeholder="Types de composants"
+                    (onChange)="applyFilters(dt)"
+                    styleClass="w-full">
+                </p-select>
+            </div>
+
+            <div>
+                <div class="p-inputgroup">
+                    <input
+                        id="searchReference"
+                        pInputText
+                        type="text"
+                        [(ngModel)]="searchReference"
+                        (keyup.enter)="applyFilters(dt)"
+                        placeholder="Référence" />
+                </div>
+            </div>
+
+            <div>
+                <div class="p-inputgroup">
+                    <input
+                        id="searchName"
+                        pInputText
+                        type="text"
+                        [(ngModel)]="searchName"
+                        (keyup.enter)="applyFilters(dt)"
+                        placeholder="Nom" />
+                </div>
+            </div>
+
+            <div>
+                <p-select
+                    [options]="supplierOptions()"
+                    [(ngModel)]="selectedSupplier"
+                    optionLabel="label"
+                    optionValue="value"
+                    placeholder="Fournisseur"
+                    [filter]="true"
+                    filterBy="label"
+                    (onChange)="applyFilters(dt)"
+                    styleClass="w-full">
+                </p-select>
+            </div>
+
+            <div>
+                <p-select
+                    id="searchStatus"
+                    [options]="statusOptions"
+                    [(ngModel)]="selectedStatus"
+                    optionLabel="label"
+                    optionValue="value"
+                    placeholder="Statut"
+                    (onChange)="applyFilters(dt)"
+                    styleClass="w-full">
+                </p-select>
+            </div>
+
+            <div>
+                <button
+                    pButton
+                    title="Réinitialiser la recherche"
+                    icon="pi pi-filter-slash"
+                    class="p-button-outlined p-button-secondary"
+                    (click)="resetFilters(dt)">
+                </button>
+                &nbsp;
+                <button
+                    type="button"
+                    pButton
+                    icon="pi pi-search"
+                    (click)="applyFilters(dt)"
+                    title="Lancer la recherche">
+                </button>
+            </div>
+        </div>
+    </p-toolbar>
+
+    <!-- Table PrimeNG -->
+    <p-table
+        #dt
+        styleClass="p-datatable-striped"
+        [value]="components()"
+        [lazy]="true"
+        (onLazyLoad)="loadData($event)"
+        [paginator]="true"
+        [rows]="pageSize()"
+        [totalRecords]="totalRecords()"
+        [loading]="loading()"
+        [rowsPerPageOptions]="[10, 25, 50]"
+        [tableStyle]="{ 'min-width': '60rem' }"
+        dataKey="id">
+
+        <ng-template pTemplate="header">
+            <tr>
+                <th class="w-1/13">ID</th>
+                <th class="w-2/13" pSortableColumn="type">Type de composant <p-sortIcon field="type" /></th>
+                <th class="w-2/13" pSortableColumn="reference">Référence <p-sortIcon field="reference" /></th>
+                <th class="w-2/13" pSortableColumn="name">Nom <p-sortIcon field="name" /></th>
+                <th class="w-3/13" pSortableColumn="supplier.name">Fournisseur <p-sortIcon field="supplier.name" /></th>
+                <th class="w-2/13" pSortableColumn="status">Statut <p-sortIcon field="status" /></th>
+                <th class="w-1/13 py-3 px-4 text-center">Actions</th>
+            </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-item>
+            <tr>
+                <td>{{ item.id }}</td>
+                <td>{{ getTypeName(item.type) }}</td>
+                <td>{{ item.reference }}</td>
+                <td>{{ item.name }}</td>
+                <td>{{ item.supplier.name }} ({{ item.supplier.code }})</td>
+                <td>
+                    <p-tag [value]="getStatusName(item.status) | uppercase " [severity]="getStatusClass(item.status)" />
+                </td>
+                <td class="py-3 px-4 text-center">
+                    <p-button
+                        icon="pi pi-pencil"
+                        [rounded]="true"
+                        [text]="true"
+                        severity="secondary"
+                        pTooltip="Éditer"
+                        tooltipPosition="top"
+                        (click)="openModal(item)">
+                    </p-button>
+                    @if (item.status == 'ACTIVE' || item.status == 'DRAFT') {
+                    <p-button
+                        icon="pi pi-trash"
+                        [rounded]="true"
+                        [text]="true"
+                        severity="secondary"
+                        pTooltip="Archiver"
+                        tooltipPosition="top"
+                        (click)="archiveComponent(item)">
+                    </p-button>
+                    } @else {
+                    <p-button
+                        icon="pi pi-refresh"
+                        [rounded]="true"
+                        [text]="true"
+                        severity="secondary"
+                        pTooltip="Réactiver"
+                        tooltipPosition="top"
+                        (click)="activateComponent(item)">
+                    </p-button>
+                    }
+                </td>
+            </tr>
+        </ng-template>
+
+        <ng-template pTemplate="emptymessage">
+            <tr>
+                <td colspan="7" style="text-align: center">Aucun enregistrement trouvé.</td>
+            </tr>
+        </ng-template>
+    </p-table>
+</div>
+
+<p-confirmDialog></p-confirmDialog>
+
+<p-dialog
+    header='Création/Modification'
+    [visible]="displayModal()"
+    (visibleChange)="displayModal.set($event)"
+    [modal]="true"
+    [style]="{ width: '60vw' }"
+    [breakpoints]="{ '960px': '90vw' }"
+    [draggable]="false"
+    [resizable]="false">
+
+    <p class="text-sm text-gray-500 italic text-center py-4">Fonctionnalité non implémentée.</p>
+</p-dialog>

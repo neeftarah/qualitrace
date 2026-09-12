@@ -18,7 +18,8 @@ export const appRoutes: Routes = [
             { path: 'pages', loadChildren: () => import('./app/pages/pages.routes') },
             { path: 'audit-trail', loadChildren: () => import('./app/features/audit-trail/audit-trail.routes').then((m) => m.AUDIT_TRAIL_ROUTES)},
             { path: 'suppliers', loadChildren: () => import('./app/features/supplier/supplier.routes').then((m) => m.SUPPLIER_ROUTES)},
-            { path: 'users', loadChildren: () => import('./app/features/user/user.routes').then((m) => m.USER_ROUTES)}
+            { path: 'users', loadChildren: () => import('./app/features/user/user.routes').then((m) => m.USER_ROUTES)},
+            { path: 'components', loadChildren: () => import('./app/features/component/component.routes').then((m) => m.COMPONENT_ROUTES)}
         ]
     },
     { path: 'landing', component: Landing },
