@@ -34,6 +34,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.Collections;
 import java.util.Set;
 import java.util.UUID;
@@ -82,11 +83,26 @@ public class UserController {
             @RequestParam(required = false) String surname,
             @RequestParam(required = false) UserStatus status,
             @RequestParam(required = false) UserRole role,
+            @RequestParam(required = false) LocalDate fromCreationDate,
+            @RequestParam(required = false) LocalDate toCreationDate,
+            @RequestParam(required = false) LocalDate fromUpdateDate,
+            @RequestParam(required = false) LocalDate toUpdateDate,
             @ParameterObject @PageableDefault(size = 10, sort = "surname") Pageable pageable,
             PagedResourcesAssembler<UserResponse> pagedAssembler
     ) {
         PageQuery pageQuery = PageQueryUtils.toPageQuery(pageable, ALLOWED_SORT_FIELDS);
-        UserFilter filter = new UserFilter(login, email, firstname, surname, status, role);
+        UserFilter filter = new UserFilter(
+                login,
+                email,
+                firstname,
+                surname,
+                status,
+                role,
+                fromCreationDate,
+                toCreationDate,
+                fromUpdateDate,
+                toUpdateDate
+        );
 
         PageResult<UserResponse> result = userService.getAll(pageQuery, filter);
 

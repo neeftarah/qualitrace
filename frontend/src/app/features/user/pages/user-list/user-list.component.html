@@ -1,0 +1,261 @@
+<div class="card p-4">
+    <div class="font-semibold text-xl mb-4">Utilisateurs</div>
+
+    <!-- Ligne 1 : Recherche -->
+    <p-toolbar role="toolbar" styleclass="mb-6" class="mb-6 p-component p-toolbar" pc471="" data-pc-section="root" data-pc-name="t">
+        <!----><!---->
+        <div class="p-toolbar-start" data-pc-section="start">
+            <p-button label="Nouveau"
+                      icon="pi pi-plus"
+                      severity="secondary"
+                      class="mr-2"
+                      pc476=""
+                      data-pc-section="host"
+                      (click)="openModal(null)"></p-button>
+        </div>
+        <div class="p-toolbar-end gap-3 items-end" data-pc-section="end">
+            <div>
+                <div class="p-inputgroup">
+                    <input
+                        id="searchLogin"
+                        pInputText
+                        type="text"
+                        [(ngModel)]="searchLogin"
+                        (keyup.enter)="applyFilters(dt)"
+                        placeholder="Login"
+                        size="8" />
+                </div>
+            </div>
+            <div>
+                <div class="p-inputgroup">
+                    <input
+                        id="searchEmail"
+                        pInputText
+                        type="text"
+                        [(ngModel)]="searchEmail"
+                        (keyup.enter)="applyFilters(dt)"
+                        placeholder="E-mail"
+                        size="16" />
+                </div>
+            </div>
+            <div>
+                <div class="p-inputgroup">
+                    <input
+                        id="searchFirstname"
+                        pInputText
+                        type="text"
+                        [(ngModel)]="searchFirstname"
+                        (keyup.enter)="applyFilters(dt)"
+                        size="12"
+                        placeholder="Prénom" />
+                </div>
+            </div>
+            <div>
+                <div class="p-inputgroup">
+                    <input
+                        id="searchSurname"
+                        pInputText
+                        type="text"
+                        size="12"
+                        [(ngModel)]="searchSurname"
+                        (keyup.enter)="applyFilters(dt)"
+                        placeholder="Nom de famille" />
+                </div>
+            </div>
+
+            <div>
+                <p-select
+                    id="searchRole"
+                    [options]="rolesOptions"
+                    [(ngModel)]="selectedRole"
+                    optionLabel="label"
+                    optionValue="value"
+                    placeholder="Rôle"
+                    (onChange)="applyFilters(dt)"
+                    styleClass="w-full">
+                </p-select>
+            </div>
+
+            <div>
+                <p-select
+                    id="searchStatus"
+                    [options]="statusOptions"
+                    [(ngModel)]="selectedStatus"
+                    optionLabel="label"
+                    optionValue="value"
+                    placeholder="Statut"
+                    (onChange)="applyFilters(dt)"
+                    styleClass="w-full">
+                </p-select>
+            </div>
+
+            <div>
+                <p-datepicker
+                    id="searchCreationDates"
+                    [(ngModel)]="dateCreationRange"
+                    selectionMode="range"
+                    [readonlyInput]="true"
+                    [showClear]="true"
+                    dateFormat="dd/mm/yy"
+                    placeholder="Créé le (Du - Au)"
+                    (onSelect)="applyFilters(dt)"
+                    (onClear)="applyFilters(dt)"
+                    [showIcon]="true"
+                    styleClass="w-full"
+                    inputStyleClass="!w-49 !text-xs">
+                </p-datepicker>
+            </div>
+
+            <div>
+                <p-datepicker
+                    id="searchUpdateDates"
+                    [(ngModel)]="dateUpdateRange"
+                    selectionMode="range"
+                    [readonlyInput]="true"
+                    [showClear]="true"
+                    dateFormat="dd/mm/yy"
+                    placeholder="Mis à jour le (Du - Au)"
+                    (onSelect)="applyFilters(dt)"
+                    (onClear)="applyFilters(dt)"
+                    [showIcon]="true"
+                    styleClass="w-full"
+                    inputStyleClass="!w-49 !text-xs">
+                </p-datepicker>
+            </div>
+
+            <div>
+                <button
+                    pButton
+                    title="Réinitialiser la recherche"
+                    icon="pi pi-filter-slash"
+                    class="p-button-outlined p-button-secondary"
+                    (click)="resetFilters(dt)">
+                </button>
+                &nbsp;
+                <button
+                    type="button"
+                    pButton
+                    icon="pi pi-search"
+                    (click)="applyFilters(dt)"
+                    title="Lancer la recherche">
+                </button>
+            </div>
+        </div>
+    </p-toolbar>
+
+    <!-- Table PrimeNG -->
+    <p-table
+        #dt
+        styleClass="p-datatable-striped"
+        [value]="users()"
+        [lazy]="true"
+        (onLazyLoad)="loadData($event)"
+        [paginator]="true"
+        [rows]="pageSize()"
+        [totalRecords]="totalRecords()"
+        [loading]="loading()"
+        [rowsPerPageOptions]="[10, 25, 50]"
+        [tableStyle]="{ 'min-width': '60rem' }"
+        dataKey="id">
+
+        <ng-template pTemplate="header">
+            <tr>
+                <th class="w-2/13">ID</th>
+                <th class="w-1/13" pSortableColumn="login">Login <p-sortIcon field="login" /></th>
+                <th class="w-3/13" pSortableColumn="email">E-mail <p-sortIcon field="email" /></th>
+                <th class="w-1/13" pSortableColumn="firstname">Prénom <p-sortIcon field="firstname" /></th>
+                <th class="w-1/13" pSortableColumn="surname">Nom de famille <p-sortIcon field="surname" /></th>
+                <th class="w-1/13">Rôle(s)</th>
+                <th class="w-1/13" pSortableColumn="status">Statut <p-sortIcon field="status" /></th>
+                <th class="w-1/13" pSortableColumn="createdAt">Date de création <p-sortIcon field="createdAt" /></th>
+                <th class="w-1/13" pSortableColumn="updatedAt">Date de mise à jour <p-sortIcon field="updatedAt" /></th>
+                <th class="w-1/13 py-3 px-4 text-center">Actions</th>
+            </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-item>
+            <tr>
+                <td>{{ item.id }}</td>
+                <td>{{ item.login }}</td>
+                <td>{{ item.email }}</td>
+                <td>{{ item.firstname }}</td>
+                <td>{{ item.surname }}</td>
+                <td class="py-3 px-4">
+                    <div class="flex flex-wrap gap-2">
+                        @for (role of item.roles; track role) {
+                            <p-tag [value]="role" [severity]="getRoleClass(role)" [rounded]="true" styleClass="!text-[9px] !px-2 !py-1 !min-w-0 font-normal"></p-tag>
+                        }
+                    </div>
+                </td>
+                <td>
+                    <p-tag [value]="item.status" [severity]="getStatusClass(item.status)" />
+                </td>
+                <td>{{ item.createdAt | date:'dd/MM/yyyy HH:mm:ss' }}</td>
+                <td>{{ item.updatedAt | date:'dd/MM/yyyy HH:mm:ss' }}</td>
+                <td class="py-3 px-4 text-center">
+                    <p-button
+                        icon="pi pi-pencil"
+                        [rounded]="true"
+                        [text]="true"
+                        severity="secondary"
+                        pTooltip="Éditer"
+                        tooltipPosition="top"
+                        (click)="openModal(item)">
+                    </p-button>
+                    @if (item.status == 'ACTIVE') {
+                    <p-button
+                        icon="pi pi-trash"
+                        [rounded]="true"
+                        [text]="true"
+                        severity="secondary"
+                        pTooltip="Archiver"
+                        tooltipPosition="top"
+                        (click)="archiveUser(item)">
+                    </p-button>
+                    } @else if (item.status == 'LOCKED') {
+                        <p-button
+                            icon="pi pi-lock-open"
+                            [rounded]="true"
+                            [text]="true"
+                            severity="secondary"
+                            pTooltip="Débloquer"
+                            tooltipPosition="top"
+                            (click)="unlockUser(item)">
+                        </p-button>
+                    } @else {
+                    <p-button
+                        icon="pi pi-refresh"
+                        [rounded]="true"
+                        [text]="true"
+                        severity="secondary"
+                        pTooltip="Réactiver"
+                        tooltipPosition="top"
+                        (click)="activateUser(item)">
+                    </p-button>
+                    }
+                </td>
+            </tr>
+        </ng-template>
+
+        <ng-template pTemplate="emptymessage">
+            <tr>
+                <td colspan="9" style="text-align: center">Aucun enregistrement trouvé.</td>
+            </tr>
+        </ng-template>
+    </p-table>
+</div>
+
+<p-confirmDialog></p-confirmDialog>
+
+<p-dialog
+    header='Création/Modification'
+    [visible]="displayModal()"
+    (visibleChange)="displayModal.set($event)"
+    [modal]="true"
+    [style]="{ width: '60vw' }"
+    [breakpoints]="{ '960px': '90vw' }"
+    [draggable]="false"
+    [resizable]="false">
+
+    <p class="text-sm text-gray-500 italic text-center py-4">Fonctionnalité non implémentée.</p>
+</p-dialog>

@@ -42,6 +42,10 @@ public class UserModelAssembler implements RepresentationModelAssembler<UserResp
                         null,
                         null,
                         null,
+                        null,
+                        null,
+                        null,
+                        null,
                         Pageable.unpaged(),
                         new PagedResourcesAssembler<>(null, null)
                 )).withRel("users")

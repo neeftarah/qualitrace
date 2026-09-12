@@ -1,5 +1,5 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { CommonModule, DatePipe } from '@angular/common';
+import { CommonModule, DatePipe, formatDate } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Table, TableLazyLoadEvent, TableModule } from 'primeng/table';
 import { InputTextModule } from 'primeng/inputtext';
@@ -128,10 +128,10 @@ export class AuditTrailListComponent {
         let fromDate: string | undefined = undefined;
         let toDate: string | undefined = undefined;
         if (this.dateRange && this.dateRange[0]) {
-            fromDate = this.formatDateToYYYYMMDD(this.dateRange[0]);
+            fromDate = formatDate(this.dateRange[0], 'yyyy-MM-dd', 'en-US');
         }
         if (this.dateRange && this.dateRange[1]) {
-            toDate = this.formatDateToYYYYMMDD(this.dateRange[1]);
+            toDate = formatDate(this.dateRange[1], 'yyyy-MM-dd', 'en-US');
         }
 
         this.auditTrailService.getAuditTrails({
@@ -263,12 +263,5 @@ export class AuditTrailListComponent {
         if (val === null || val === undefined) return 'null';
         if (typeof val === 'object') return JSON.stringify(val, null, 2);
         return String(val);
-    }
-
-    private formatDateToYYYYMMDD(date: Date): string {
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
     }
 }

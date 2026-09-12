@@ -14,6 +14,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 
+import java.time.Instant;
+import java.time.LocalTime;
+import java.time.ZoneOffset;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -35,6 +38,22 @@ public class UserRepositoryAdapter implements UserRepository {
                 .toList());
         Pageable pageable = PageRequest.of(pageQuery.page(), pageQuery.size(), sort);
 
+        Instant fromCreationDate = filter.fromCreationDate() != null
+                ? filter.fromCreationDate().atStartOfDay(ZoneOffset.UTC).toInstant()
+                : null;
+
+        Instant toCreationDate = filter.toCreationDate() != null
+                ? filter.toCreationDate().atTime(LocalTime.MAX).atZone(ZoneOffset.UTC).toInstant()
+                : null;
+
+        Instant fromUpdateDate = filter.fromUpdateDate() != null
+                ? filter.fromUpdateDate().atStartOfDay(ZoneOffset.UTC).toInstant()
+                : null;
+
+        Instant toUpdateDate = filter.toUpdateDate() != null
+                ? filter.toUpdateDate().atTime(LocalTime.MAX).atZone(ZoneOffset.UTC).toInstant()
+                : null;
+
         Page<UserEntity> page = jpaRepository.search(
                 filter.login(),
                 filter.email(),
@@ -42,6 +61,10 @@ public class UserRepositoryAdapter implements UserRepository {
                 filter.surname(),
                 filter.status() != null ? filter.status().name() : null,
                 filter.role() != null ? filter.role().name() : null,
+                fromCreationDate,
+                toCreationDate,
+                fromUpdateDate,
+                toUpdateDate,
                 pageable
         );
 
