@@ -109,6 +109,7 @@
     <!-- Table PrimeNG -->
     <p-table
         #dt
+        styleClass="p-datatable-striped"
         [value]="auditTrails()"
         [lazy]="true"
         (onLazyLoad)="loadData($event)"
@@ -137,7 +138,7 @@
                 <td>{{ item.id }}</td>
                 <td>{{ item.timestamp | date:'dd/MM/yyyy HH:mm:ss' }}</td>
                 <td>
-                    <p-tag [value]="item.event" [severity]="getSeverity(item.event)" />
+                    <p-tag [value]="item.event" [severity]="getStatusClass(item.event)" />
                 </td>
                 <td><span class="font-semibold">{{ getEntityTypeName(item.entity_type) }}</span></td>
                 <td>{{ item.entity_id }}</td>

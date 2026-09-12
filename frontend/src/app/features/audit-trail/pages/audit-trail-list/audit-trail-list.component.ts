@@ -171,7 +171,7 @@ export class AuditTrailListComponent {
         dt.reset();
     }
 
-    getSeverity(event: string): 'success' | 'info' | 'warn' | 'danger' | 'secondary' {
+    getStatusClass(event: string): 'success' | 'info' | 'warn' | 'danger' | 'secondary' {
         switch (event) {
             case 'CREATED':
             case 'VALIDATED':

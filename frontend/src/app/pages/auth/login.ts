@@ -37,7 +37,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 
                                 <div class="flex items-center justify-between mt-2 mb-8 gap-8">
                                     <div class="flex items-center">
-                                        <p-checkbox [(ngModel)]="checked" inputId="rememberme" name="rememberme" binary class="mr-2"></p-checkbox>
+                                        <p-checkbox [(ngModel)]="checked" inputId="rememberme" name="rememberme" binary class="mr-2" disabled="disabled"></p-checkbox>
                                         <label for="rememberme">Remember me</label>
                                     </div>
                                     <span class="font-medium no-underline ml-2 text-right cursor-pointer text-primary">Forgot password?</span>

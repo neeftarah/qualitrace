@@ -46,7 +46,7 @@ public class SupplierController {
     private final SupplierService supplierService;
     private final SupplierModelAssembler assembler;
     private static final Set<String> ALLOWED_SORT_FIELDS = Set.of(
-            "code", "name"
+            "code", "name", "status"
     );
 
     public SupplierController(SupplierService supplierService, SupplierModelAssembler assembler) {

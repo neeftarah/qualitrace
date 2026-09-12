@@ -16,7 +16,8 @@ export const appRoutes: Routes = [
             { path: 'uikit', loadChildren: () => import('./app/pages/uikit/uikit.routes') },
             { path: 'documentation', component: Documentation },
             { path: 'pages', loadChildren: () => import('./app/pages/pages.routes') },
-            { path: 'audit-trail', loadChildren: () => import('./app/features/audit-trail/audit-trail.routes').then((m) => m.AUDIT_TRAIL_ROUTES)}
+            { path: 'audit-trail', loadChildren: () => import('./app/features/audit-trail/audit-trail.routes').then((m) => m.AUDIT_TRAIL_ROUTES)},
+            { path: 'suppliers', loadChildren: () => import('./app/features/supplier/supplier.routes').then((m) => m.SUPPLIER_ROUTES)}
         ]
     },
     { path: 'landing', component: Landing },
