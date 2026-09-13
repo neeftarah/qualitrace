@@ -1,0 +1,143 @@
+<div class="card p-4" *ngIf="batch() as batch">
+    <div class="flex justify-between align-items-center mb-3">
+        <div class="text-xl font-bold">
+            Lot n° {{ batch.internalBatchNumber }} - {{ batch.component.name }} |
+            <p-tag [value]="getStatusName(batch.status)" [severity]="getStatusClass(batch.status)" class="p-5"></p-tag>
+        </div>
+        <div>
+            <p-button
+                label="Certificat"
+                icon="pi pi-download"
+                severity="info"
+                [text]="true"
+                (click)="getCertificateBatch(batch)">
+            </p-button>
+            <p-button
+                label="Retour"
+                icon="pi pi-arrow-left"
+                severity="secondary"
+                [text]="true"
+                (click)="goBack()">
+            </p-button>
+        </div>
+    </div>
+
+    <!-- En-tête -->
+    <p-panel>
+        <div class="grid grid-cols-4 gap-4 grid-cols-[10%_40%_10%_40%]">
+            <div class="h-8"><b>Catégorie : </b></div>
+            <div class="h-8">{{ getTypeName(batch.component.type) }}</div>
+            <div class="h-8"><b>Nom du fournisseur : </b></div>
+            <div class="h-8">{{ batch.component.supplier.name }}</div>
+
+            <div class="h-8"><b>N° de lot interne : </b></div>
+            <div class="h-8">{{ batch.internalBatchNumber }}</div>
+            <div class="h-8"><b>Code fournisseur : </b></div>
+            <div class="h-8">{{ batch.component.supplier.code }}</div>
+
+            <div class="h-8"><b>Date de réception : </b></div>
+            <div class="h-8">{{ batch.receptionDate | date:'dd/MM/yyyy' }}</div>
+            <div class="h-8"><b>Réf. catalogue : </b></div>
+            <div class="h-8">{{ batch.component.reference }}</div>
+
+            <div class="h-8"><b>Date d'expiration : </b></div>
+            <div class="h-8">{{ batch.expiryDate | date:'dd/MM/yyyy' }}</div>
+            <div class="h-8"><b>N° de lot fournisseur : </b></div>
+            <div class="h-8">{{ batch.supplierBatchNumber }}</div>
+        </div>
+    </p-panel>
+
+    <!-- Spécifications -->
+    <p-panel header="Analyses" styleClass="mt-3">
+        <p-table [value]="batch.specifications ?? []"
+                 styleClass="p-datatable-striped">
+            <ng-template pTemplate="header">
+                <tr>
+                    <th>Nom</th>
+                    <th>Méthode</th>
+                    <th>Unité</th>
+                    <th *ngIf="canSeeMinMax">Min</th>
+                    <th *ngIf="canSeeMinMax">Max</th>
+                    <th>Valeur</th>
+                    <th *ngIf="canEditAnalysis"></th>
+                    <th>Statut</th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-spec>
+                <tr>
+                    <td>{{ spec.name }}</td>
+                    <td>{{ spec.method }}</td>
+                    <td>{{ spec.unit }}</td>
+                    <td *ngIf="canSeeMinMax">{{ spec.min }}</td>
+                    <td *ngIf="canSeeMinMax">{{ spec.max }}</td>
+                    <td>
+                        <span *ngIf="!canEditAnalysis">{{ spec.results?.value ?? '—' }}</span>
+                        <p-inputNumber
+                            *ngIf="canEditAnalysis"
+                            [(ngModel)]="editingValues[spec.id]"
+                            [ngModelOptions]="{standalone: true}"
+                            [maxFractionDigits]="2"
+                            [placeholder]="spec.results?.value?.toString() ?? 'À saisir'">
+                        </p-inputNumber>
+                    </td>
+                    <td *ngIf="canEditAnalysis">
+                        <p-button label="Enregistrer" size="small" (click)="saveResult(spec)"></p-button>
+                    </td>
+                    <td>
+                        @if (!spec.results?.value) {
+                            <p-tag severity="secondary" value="NON SAISIE"></p-tag>
+                        } @else if (spec.results?.value < spec.min || spec.results?.value > spec.max) {
+                            <p-tag severity="danger" value="NON CONFORME"></p-tag>
+                        } @else {
+                            <p-tag severity="success" value="CONFORME"></p-tag>
+                        }
+                    </td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </p-panel>
+
+    <!-- Déviations -->
+    @if (canSeeDeviations) {
+    <p-panel header="Déviations" styleClass="mt-3">
+        <p-table [value]="batch.deviations ?? []"
+                 styleClass="p-datatable-striped">
+            <ng-template pTemplate="header">
+                <tr>
+                    <th>Code</th>
+                    <th>Commentaire</th>
+                    <th>Statut</th>
+                    <th></th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-dev>
+                <tr>
+                    <td>{{ dev.code }}</td>
+                    <td [style.white-space]="isExpanded(dev.id) ? 'normal' : 'nowrap'"
+                        [style.max-width]="isExpanded(dev.id) ? 'none' : '300px'"
+                        [style.overflow]="isExpanded(dev.id) ? 'visible' : 'hidden'"
+                        [style.text-overflow]="isExpanded(dev.id) ? 'clip' : 'ellipsis'">
+                        {{ dev.comment }}
+                    </td>
+                    <td><p-tag
+                        [value]="dev.status === 'OPENED' ? 'OUVERTE' : 'FERMÉE'"
+                        [severity]="dev.status === 'OPENED' ? 'warn' : 'success'"></p-tag></td>
+                    <td>
+                        <p-button
+                            [label]="dev.status === 'OPENED' ? 'Clôturer' : 'Ouvrir'"
+                            size="small"
+                            [severity]="dev.status === 'OPENED' ? 'danger' : 'success'"
+                            (click)="toggleDeviationStatus(dev)">
+                        </p-button>
+                    </td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="9" style="text-align: center">Aucune déviation enregistrée.</td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </p-panel>
+    }
+</div>

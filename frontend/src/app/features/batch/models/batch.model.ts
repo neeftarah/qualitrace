@@ -8,6 +8,36 @@ export interface ComponentSupplier {
     status: string;
 }
 
+export interface BatchSpecification {
+    id: number;
+    name: string;
+    method: string;
+    unit: string;
+    min: number;
+    max: number;
+    results: {
+        id: number;
+        value: number;
+        createdAt: string;
+        createdBy: { firstname: string; surname: string };
+    } | null;
+}
+
+export interface BatchDeviation {
+    id: number;
+    code: string;
+    status: 'OPENED' | 'CLOSED';
+    comment: string;
+    batchId: number;
+}
+
+export interface BatchValidator {
+    id: string;
+    login: string;
+    firstname: string;
+    surname: string;
+}
+
 export interface BatchComponent {
     id: number;
     type: 'RAW_MATERIAL' | 'COMPONENT' | string;
@@ -26,6 +56,10 @@ export interface Batch {
     expiryDate: string;
     receptionDate: string;
     status: BatchStatus;
+    validatedAt: string | null;
+    validatedBy: BatchValidator | null;
+    specifications: BatchSpecification[] | null;
+    deviations: BatchDeviation[] | null;
 }
 
 export interface HalPage {

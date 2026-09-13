@@ -17,6 +17,7 @@ import {ConfirmDialogModule} from 'primeng/confirmdialog';
 import {ConfirmationService} from 'primeng/api';
 import {HttpResponse} from '@angular/common/http';
 import {Toolbar} from "primeng/toolbar";
+import { RouterLink } from '@angular/router';
 
 @Component({
     selector: 'batch-list',
@@ -36,7 +37,8 @@ import {Toolbar} from "primeng/toolbar";
         DialogModule,
         ButtonModule,
         TooltipModule,
-        ConfirmDialogModule
+        ConfirmDialogModule,
+        RouterLink
     ],
     providers: [ConfirmationService],
     templateUrl: './batch-list.component.html'

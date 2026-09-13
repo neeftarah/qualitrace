@@ -199,7 +199,7 @@
                         severity="secondary"
                         pTooltip="Éditer"
                         tooltipPosition="top"
-                        (click)="openModal(item)">
+                        [routerLink]="['/batches', item.id]">
                     </p-button>
                     <p-button
                         icon="pi pi-file-pdf"

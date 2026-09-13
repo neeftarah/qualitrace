@@ -35,8 +35,20 @@ export class BatchService {
         return this.http.get<BatchHalResponse>(this.apiUrl, {params: httpParams});
     }
 
-    getBatchById(id: number): Observable<Batch> {
+    getById(id: number): Observable<Batch> {
         return this.http.get<Batch>(this.apiUrl + '/' + id);
+    }
+
+    saveAnalysis(batchId: number, specificationId: number, value: number): Observable<any> {
+        return this.http.post(this.apiUrl + '/' + batchId + '/analysis', { specificationId, value });
+    }
+
+    updateAnalysis(batchId: number, analysisId: number, value: number): Observable<any> {
+        return this.http.put(this.apiUrl + '/' + batchId + '/analysis/' + analysisId, { value });
+    }
+
+    toggleDeviation(batchId: number, deviationId: number, action: 'open' | 'close'): Observable<any> {
+        return this.http.patch(this.apiUrl + '/' + batchId + '/deviations/' + deviationId + '/' + action, {});
     }
 
     destroyBatch(item: Batch) {
