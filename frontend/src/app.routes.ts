@@ -1,10 +1,10 @@
-import { Routes } from '@angular/router';
-import { AppLayout } from './app/layout/component/app.layout';
-import { Dashboard } from './app/pages/dashboard/dashboard';
-import { Documentation } from './app/pages/documentation/documentation';
-import { Landing } from './app/pages/landing/landing';
-import { Notfound } from './app/pages/notfound/notfound';
-import { authGuard } from './app/core/auth.guard';
+import {Routes} from '@angular/router';
+import {AppLayout} from './app/layout/component/app.layout';
+import {Dashboard} from './app/pages/dashboard/dashboard';
+import {Documentation} from './app/pages/documentation/documentation';
+import {Landing} from './app/pages/landing/landing';
+import {Notfound} from './app/pages/notfound/notfound';
+import {authGuard} from './app/core/auth.guard';
 
 export const appRoutes: Routes = [
     {
@@ -12,18 +12,39 @@ export const appRoutes: Routes = [
         component: AppLayout,
         canActivate: [authGuard],
         children: [
-            { path: '', component: Dashboard },
-            { path: 'uikit', loadChildren: () => import('./app/pages/uikit/uikit.routes') },
-            { path: 'documentation', component: Documentation },
-            { path: 'pages', loadChildren: () => import('./app/pages/pages.routes') },
-            { path: 'audit-trail', loadChildren: () => import('./app/features/audit-trail/audit-trail.routes').then((m) => m.AUDIT_TRAIL_ROUTES)},
-            { path: 'suppliers', loadChildren: () => import('./app/features/supplier/supplier.routes').then((m) => m.SUPPLIER_ROUTES)},
-            { path: 'users', loadChildren: () => import('./app/features/user/user.routes').then((m) => m.USER_ROUTES)},
-            { path: 'components', loadChildren: () => import('./app/features/component/component.routes').then((m) => m.COMPONENT_ROUTES)}
+            {path: '', component: Dashboard},
+            {path: 'uikit', loadChildren: () => import('./app/pages/uikit/uikit.routes')},
+            {path: 'documentation', component: Documentation},
+            {path: 'pages', loadChildren: () => import('./app/pages/pages.routes')},
+            {
+                path: 'audit-trail',
+                loadChildren: () => import('./app/features/audit-trail/audit-trail.routes')
+                    .then((m) => m.AUDIT_TRAIL_ROUTES)
+            },
+            {
+                path: 'suppliers',
+                loadChildren: () => import('./app/features/supplier/supplier.routes')
+                    .then((m) => m.SUPPLIER_ROUTES)
+            },
+            {
+                path: 'users',
+                loadChildren: () => import('./app/features/user/user.routes')
+                    .then((m) => m.USER_ROUTES)
+            },
+            {
+                path: 'components',
+                loadChildren: () => import('./app/features/component/component.routes')
+                    .then((m) => m.COMPONENT_ROUTES)
+            },
+            {
+                path: 'batches',
+                loadChildren: () => import('./app/features/batch/batch.routes')
+                    .then((m) => m.BATCH_ROUTES)
+            }
         ]
     },
-    { path: 'landing', component: Landing },
-    { path: 'notfound', component: Notfound },
-    { path: 'auth', loadChildren: () => import('./app/pages/auth/auth.routes') },
-    { path: '**', redirectTo: '/notfound' }
+    {path: 'landing', component: Landing},
+    {path: 'notfound', component: Notfound},
+    {path: 'auth', loadChildren: () => import('./app/pages/auth/auth.routes')},
+    {path: '**', redirectTo: '/notfound'}
 ];

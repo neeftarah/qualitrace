@@ -20,9 +20,10 @@ public interface BatchJpaRepository extends JpaRepository<BatchEntity, Long> {
 
     @Query("""
             SELECT b FROM BatchEntity b
-            WHERE (:internalBatchNumber IS NULL OR b.internalBatchNumber = :internalBatchNumber)
+            WHERE (:internalBatchNumber IS NULL OR b.internalBatchNumber ILIKE CONCAT('%', CAST(:internalBatchNumber AS string), '%'))
+            AND (:componentId IS NULL OR b.component.id = :componentId)
             AND (:supplierId IS NULL OR b.supplier.id = :supplierId)
-            AND (:supplierBatchNumber IS NULL OR b.supplierBatchNumber = :supplierBatchNumber)
+            AND (:supplierBatchNumber IS NULL OR b.supplierBatchNumber ILIKE CONCAT('%', CAST(:supplierBatchNumber AS string), '%'))
             AND (CAST(:expiryFromDate AS timestamp) IS NULL OR b.expiryDate >= :expiryFromDate)
             AND (CAST(:expiryToDate AS timestamp) IS NULL OR b.expiryDate <= :expiryToDate)
             AND (CAST(:receptionFromDate AS timestamp) IS NULL OR b.receptionDate >= :receptionFromDate)
@@ -34,6 +35,7 @@ public interface BatchJpaRepository extends JpaRepository<BatchEntity, Long> {
             """)
     Page<BatchEntity> search(
             @Param("internalBatchNumber") String internalBatchNumber,
+            @Param("componentId") Long componentId,
             @Param("supplierId") Long supplierId,
             @Param("supplierBatchNumber") String supplierBatchNumber,
             @Param("expiryFromDate") Instant expiryFromDate,
@@ -47,11 +49,9 @@ public interface BatchJpaRepository extends JpaRepository<BatchEntity, Long> {
             Pageable pageable
     );
 
-    // com.qualitrace.backend.batch.infrastructure.persistence.repository.BatchJpaRepository.java
-
     @Query("""
                 SELECT MAX(b.internalBatchNumber)
-                FROM BatchEntity b 
+                FROM BatchEntity b
                 WHERE b.internalBatchNumber LIKE CONCAT(:prefix, '%')
             """)
     Optional<String> findMaxInternalReferenceByPrefix(@Param("prefix") String prefix);

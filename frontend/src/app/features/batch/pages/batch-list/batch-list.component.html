@@ -1,0 +1,238 @@
+<div class="card p-4">
+    <div class="font-semibold text-xl mb-4">Gestion des lots</div>
+
+    <!-- Recherche -->
+    <p-toolbar role="toolbar" styleclass="mb-6" class="mb-6 p-batch p-toolbar" pc471="" data-pc-section="root"
+               data-pc-name="t">
+        <div class="p-toolbar-start" data-pc-section="start">
+            <p-button label="Nouveau"
+                      icon="pi pi-plus"
+                      severity="secondary"
+                      class="mr-2"
+                      pc476=""
+                      data-pc-section="host"
+                      (click)="openModal(null)"></p-button>
+        </div>
+        <div class="p-toolbar-end gap-3 items-end" data-pc-section="end">
+            <div>
+                <div class="p-inputgroup">
+                    <input
+                        id="internalBatchNumber"
+                        pInputText
+                        type="text"
+                        size="13"
+                        [(ngModel)]="internalBatchNumber"
+                        (keyup.enter)="applyFilters(dt)"
+                        placeholder="Réf. Interne"/>
+                </div>
+            </div>
+
+            <div>
+                <div class="p-inputgroup">
+                    <input
+                        id="supplierBatchNumber"
+                        pInputText
+                        type="text"
+                        size="13"
+                        [(ngModel)]="supplierBatchNumber"
+                        (keyup.enter)="applyFilters(dt)"
+                        placeholder="Réf. Fournisseur"/>
+                </div>
+            </div>
+
+            <div>
+                <p-datepicker
+                    id="searchReceptionDates"
+                    [(ngModel)]="dateReceptionRange"
+                    selectionMode="range"
+                    [readonlyInput]="true"
+                    [showClear]="true"
+                    dateFormat="dd/mm/yy"
+                    placeholder="Date de réception (Du - Au)"
+                    (onSelect)="applyFilters(dt)"
+                    (onClear)="applyFilters(dt)"
+                    [showIcon]="true"
+                    styleClass="w-full"
+                    inputStyleClass="!w-49 !text-xs">
+                </p-datepicker>
+            </div>
+
+            <div>
+                <p-datepicker
+                    id="searchExpiryDates"
+                    [(ngModel)]="dateExpiryRange"
+                    selectionMode="range"
+                    [readonlyInput]="true"
+                    [showClear]="true"
+                    dateFormat="dd/mm/yy"
+                    placeholder="Date d'expiration (Du - Au)"
+                    (onSelect)="applyFilters(dt)"
+                    (onClear)="applyFilters(dt)"
+                    [showIcon]="true"
+                    styleClass="w-full"
+                    inputStyleClass="!w-49 !text-xs">
+                </p-datepicker>
+            </div>
+
+            <div>
+                <p-select
+                    [options]="componentOptions()"
+                    [(ngModel)]="selectedComponent"
+                    optionLabel="label"
+                    optionValue="value"
+                    placeholder="Composant"
+                    [filter]="true"
+                    filterBy="label"
+                    (onChange)="applyFilters(dt)"
+                    styleClass="!w-53">
+                </p-select>
+            </div>
+
+            <div>
+                <p-select
+                    [options]="supplierOptions()"
+                    [(ngModel)]="selectedSupplier"
+                    optionLabel="label"
+                    optionValue="value"
+                    placeholder="Fournisseur"
+                    [filter]="true"
+                    filterBy="label"
+                    (onChange)="applyFilters(dt)"
+                    styleClass="!w-53">
+                </p-select>
+            </div>
+
+            <div>
+                <p-select
+                    id="searchStatus"
+                    [options]="statusOptions"
+                    [(ngModel)]="selectedStatus"
+                    optionLabel="label"
+                    optionValue="value"
+                    placeholder="Statut"
+                    (onChange)="applyFilters(dt)"
+                    styleClass="!w-44">
+                </p-select>
+            </div>
+
+            <div>
+                <button
+                    pButton
+                    title="Réinitialiser la recherche"
+                    icon="pi pi-filter-slash"
+                    class="p-button-outlined p-button-secondary"
+                    (click)="resetFilters(dt)">
+                </button>
+                &nbsp;
+                <button
+                    type="button"
+                    pButton
+                    icon="pi pi-search"
+                    (click)="applyFilters(dt)"
+                    title="Lancer la recherche">
+                </button>
+            </div>
+        </div>
+    </p-toolbar>
+
+    <!-- Liste -->
+    <p-table
+        #dt
+        styleClass="p-datatable-striped"
+        [value]="batchs()"
+        [lazy]="true"
+        (onLazyLoad)="loadData($event)"
+        [paginator]="true"
+        [rows]="pageSize()"
+        [totalRecords]="totalRecords()"
+        [loading]="loading()"
+        [rowsPerPageOptions]="[10, 25, 50]"
+        [tableStyle]="{ 'min-width': '60rem' }"
+        dataKey="id">
+
+        <ng-template pTemplate="header">
+            <tr>
+                <th class="w-1/16">ID</th>
+                <th class="w-2/16" pSortableColumn="internalBatchNumber">Réf. Interne
+                    <p-sortIcon field="internalBatchNumber"/>
+                </th>
+                <th class="w-2/16" pSortableColumn="supplierBatchNumber">Réf. Fournisseur
+                    <p-sortIcon field="supplierBatchNumber"/>
+                </th>
+                <th class="w-2/16" pSortableColumn="receptionDate">Date de réception
+                    <p-sortIcon field="receptionDate"/>
+                </th>
+                <th class="w-2/16" pSortableColumn="expiryDate">Date d'expiration
+                    <p-sortIcon field="expiryDate"/>
+                </th>
+                <th class="w-2/16" pSortableColumn="component.name">Composant
+                    <p-sortIcon field="component.name"/>
+                </th>
+                <th class="w-2/16" pSortableColumn="component.supplier.name">Fournisseur
+                    <p-sortIcon field="component.supplier.name"/>
+                </th>
+                <th class="w-2/16" pSortableColumn="status">Statut
+                    <p-sortIcon field="status"/>
+                </th>
+                <th class="w-1/16 py-3 px-4 text-center">Actions</th>
+            </tr>
+
+        </ng-template>
+
+        <ng-template pTemplate="body" let-item>
+            <tr>
+                <td>{{ item.id }}</td>
+                <td>{{ item.internalBatchNumber }}</td>
+                <td>{{ item.supplierBatchNumber }}</td>
+                <td>{{ item.receptionDate | date:'dd/MM/yyyy' }}</td>
+                <td>{{ item.expiryDate | date:'dd/MM/yyyy' }}</td>
+                <td>{{ item.component.name }} ({{ item.component.reference }})</td>
+                <td>{{ item.component.supplier.name }} ({{ item.component.supplier.code }})</td>
+                <td>
+                    <p-tag [value]="getStatusName(item.status) | uppercase " [severity]="getStatusClass(item.status)"/>
+                </td>
+                <td class="py-3 px-4 text-center flex flex-nowrap justify-center">
+                    <p-button
+                        icon="pi pi-pencil"
+                        [rounded]="true"
+                        [text]="true"
+                        severity="secondary"
+                        pTooltip="Éditer"
+                        tooltipPosition="top"
+                        (click)="openModal(item)">
+                    </p-button>
+                    <p-button
+                        icon="pi pi-file-pdf"
+                        [rounded]="true"
+                        [text]="true"
+                        severity="secondary"
+                        pTooltip="Certificat d'analyses"
+                        tooltipPosition="top"
+                        (click)="getCertificateBatch(item)">
+                    </p-button>
+                </td>
+            </tr>
+        </ng-template>
+
+        <ng-template pTemplate="emptymessage">
+            <tr>
+                <td colspan="9" style="text-align: center">Aucun enregistrement trouvé.</td>
+            </tr>
+        </ng-template>
+    </p-table>
+</div>
+
+<p-confirmDialog></p-confirmDialog>
+
+<p-dialog
+    header='Création/Modification'
+    [visible]="displayModal()"
+    (visibleChange)="displayModal.set($event)"
+    [modal]="true"
+    [style]="{ width: '60vw' }"
+    [breakpoints]="{ '960px': '90vw' }"
+    [draggable]="false"
+    [resizable]="false">
+
+    <p class="text-sm text-gray-500 italic text-center py-4">Fonctionnalité non implémentée.</p>
+</p-dialog>

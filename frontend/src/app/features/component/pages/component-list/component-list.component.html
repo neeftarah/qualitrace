@@ -1,9 +1,9 @@
 <div class="card p-4">
-    <div class="font-semibold text-xl mb-4">Composants</div>
+    <div class="font-semibold text-xl mb-4">Gestion des composants</div>
 
-    <!-- Ligne 1 : Recherche -->
-    <p-toolbar role="toolbar" styleclass="mb-6" class="mb-6 p-component p-toolbar" pc471="" data-pc-section="root" data-pc-name="t">
-        <!----><!---->
+    <!-- Recherche -->
+    <p-toolbar role="toolbar" styleclass="mb-6" class="mb-6 p-component p-toolbar" pc471="" data-pc-section="root"
+               data-pc-name="t">
         <div class="p-toolbar-start" data-pc-section="start">
             <p-button label="Nouveau"
                       icon="pi pi-plus"
@@ -35,7 +35,7 @@
                         type="text"
                         [(ngModel)]="searchReference"
                         (keyup.enter)="applyFilters(dt)"
-                        placeholder="Référence" />
+                        placeholder="Référence"/>
                 </div>
             </div>
 
@@ -47,7 +47,7 @@
                         type="text"
                         [(ngModel)]="searchName"
                         (keyup.enter)="applyFilters(dt)"
-                        placeholder="Nom" />
+                        placeholder="Nom"/>
                 </div>
             </div>
 
@@ -98,7 +98,7 @@
         </div>
     </p-toolbar>
 
-    <!-- Table PrimeNG -->
+    <!-- Liste -->
     <p-table
         #dt
         styleClass="p-datatable-striped"
@@ -116,11 +116,21 @@
         <ng-template pTemplate="header">
             <tr>
                 <th class="w-1/13">ID</th>
-                <th class="w-2/13" pSortableColumn="type">Type de composant <p-sortIcon field="type" /></th>
-                <th class="w-2/13" pSortableColumn="reference">Référence <p-sortIcon field="reference" /></th>
-                <th class="w-2/13" pSortableColumn="name">Nom <p-sortIcon field="name" /></th>
-                <th class="w-3/13" pSortableColumn="supplier.name">Fournisseur <p-sortIcon field="supplier.name" /></th>
-                <th class="w-2/13" pSortableColumn="status">Statut <p-sortIcon field="status" /></th>
+                <th class="w-2/13" pSortableColumn="type">Type de composant
+                    <p-sortIcon field="type"/>
+                </th>
+                <th class="w-2/13" pSortableColumn="reference">Référence
+                    <p-sortIcon field="reference"/>
+                </th>
+                <th class="w-2/13" pSortableColumn="name">Nom
+                    <p-sortIcon field="name"/>
+                </th>
+                <th class="w-3/13" pSortableColumn="supplier.name">Fournisseur
+                    <p-sortIcon field="supplier.name"/>
+                </th>
+                <th class="w-2/13" pSortableColumn="status">Statut
+                    <p-sortIcon field="status"/>
+                </th>
                 <th class="w-1/13 py-3 px-4 text-center">Actions</th>
             </tr>
         </ng-template>
@@ -133,7 +143,7 @@
                 <td>{{ item.name }}</td>
                 <td>{{ item.supplier.name }} ({{ item.supplier.code }})</td>
                 <td>
-                    <p-tag [value]="getStatusName(item.status) | uppercase " [severity]="getStatusClass(item.status)" />
+                    <p-tag [value]="getStatusName(item.status) | uppercase " [severity]="getStatusClass(item.status)"/>
                 </td>
                 <td class="py-3 px-4 text-center">
                     <p-button
@@ -146,25 +156,25 @@
                         (click)="openModal(item)">
                     </p-button>
                     @if (item.status == 'ACTIVE' || item.status == 'DRAFT') {
-                    <p-button
-                        icon="pi pi-trash"
-                        [rounded]="true"
-                        [text]="true"
-                        severity="secondary"
-                        pTooltip="Archiver"
-                        tooltipPosition="top"
-                        (click)="archiveComponent(item)">
-                    </p-button>
+                        <p-button
+                            icon="pi pi-trash"
+                            [rounded]="true"
+                            [text]="true"
+                            severity="secondary"
+                            pTooltip="Archiver"
+                            tooltipPosition="top"
+                            (click)="archiveComponent(item)">
+                        </p-button>
                     } @else {
-                    <p-button
-                        icon="pi pi-refresh"
-                        [rounded]="true"
-                        [text]="true"
-                        severity="secondary"
-                        pTooltip="Réactiver"
-                        tooltipPosition="top"
-                        (click)="activateComponent(item)">
-                    </p-button>
+                        <p-button
+                            icon="pi pi-refresh"
+                            [rounded]="true"
+                            [text]="true"
+                            severity="secondary"
+                            pTooltip="Réactiver"
+                            tooltipPosition="top"
+                            (click)="activateComponent(item)">
+                        </p-button>
                     }
                 </td>
             </tr>

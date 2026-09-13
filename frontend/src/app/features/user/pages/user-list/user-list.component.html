@@ -1,9 +1,9 @@
 <div class="card p-4">
-    <div class="font-semibold text-xl mb-4">Utilisateurs</div>
+    <div class="font-semibold text-xl mb-4">Gestion des utilisateurs</div>
 
-    <!-- Ligne 1 : Recherche -->
-    <p-toolbar role="toolbar" styleclass="mb-6" class="mb-6 p-component p-toolbar" pc471="" data-pc-section="root" data-pc-name="t">
-        <!----><!---->
+    <!-- Recherche -->
+    <p-toolbar role="toolbar" styleclass="mb-6" class="mb-6 p-component p-toolbar" pc471="" data-pc-section="root"
+               data-pc-name="t">
         <div class="p-toolbar-start" data-pc-section="start">
             <p-button label="Nouveau"
                       icon="pi pi-plus"
@@ -23,7 +23,7 @@
                         [(ngModel)]="searchLogin"
                         (keyup.enter)="applyFilters(dt)"
                         placeholder="Login"
-                        size="8" />
+                        size="8"/>
                 </div>
             </div>
             <div>
@@ -35,7 +35,7 @@
                         [(ngModel)]="searchEmail"
                         (keyup.enter)="applyFilters(dt)"
                         placeholder="E-mail"
-                        size="16" />
+                        size="16"/>
                 </div>
             </div>
             <div>
@@ -47,7 +47,7 @@
                         [(ngModel)]="searchFirstname"
                         (keyup.enter)="applyFilters(dt)"
                         size="12"
-                        placeholder="Prénom" />
+                        placeholder="Prénom"/>
                 </div>
             </div>
             <div>
@@ -59,7 +59,7 @@
                         size="12"
                         [(ngModel)]="searchSurname"
                         (keyup.enter)="applyFilters(dt)"
-                        placeholder="Nom de famille" />
+                        placeholder="Nom de famille"/>
                 </div>
             </div>
 
@@ -143,7 +143,7 @@
         </div>
     </p-toolbar>
 
-    <!-- Table PrimeNG -->
+    <!-- Liste -->
     <p-table
         #dt
         styleClass="p-datatable-striped"
@@ -161,14 +161,28 @@
         <ng-template pTemplate="header">
             <tr>
                 <th class="w-2/13">ID</th>
-                <th class="w-1/13" pSortableColumn="login">Login <p-sortIcon field="login" /></th>
-                <th class="w-3/13" pSortableColumn="email">E-mail <p-sortIcon field="email" /></th>
-                <th class="w-1/13" pSortableColumn="firstname">Prénom <p-sortIcon field="firstname" /></th>
-                <th class="w-1/13" pSortableColumn="surname">Nom de famille <p-sortIcon field="surname" /></th>
+                <th class="w-1/13" pSortableColumn="login">Login
+                    <p-sortIcon field="login"/>
+                </th>
+                <th class="w-3/13" pSortableColumn="email">E-mail
+                    <p-sortIcon field="email"/>
+                </th>
+                <th class="w-1/13" pSortableColumn="firstname">Prénom
+                    <p-sortIcon field="firstname"/>
+                </th>
+                <th class="w-1/13" pSortableColumn="surname">Nom de famille
+                    <p-sortIcon field="surname"/>
+                </th>
                 <th class="w-1/13">Rôle(s)</th>
-                <th class="w-1/13" pSortableColumn="status">Statut <p-sortIcon field="status" /></th>
-                <th class="w-1/13" pSortableColumn="createdAt">Date de création <p-sortIcon field="createdAt" /></th>
-                <th class="w-1/13" pSortableColumn="updatedAt">Date de mise à jour <p-sortIcon field="updatedAt" /></th>
+                <th class="w-1/13" pSortableColumn="status">Statut
+                    <p-sortIcon field="status"/>
+                </th>
+                <th class="w-1/13" pSortableColumn="createdAt">Date de création
+                    <p-sortIcon field="createdAt"/>
+                </th>
+                <th class="w-1/13" pSortableColumn="updatedAt">Date de mise à jour
+                    <p-sortIcon field="updatedAt"/>
+                </th>
                 <th class="w-1/13 py-3 px-4 text-center">Actions</th>
             </tr>
         </ng-template>
@@ -183,12 +197,13 @@
                 <td class="py-3 px-4">
                     <div class="flex flex-wrap gap-2">
                         @for (role of item.roles; track role) {
-                            <p-tag [value]="role" [severity]="getRoleClass(role)" [rounded]="true" styleClass="!text-[9px] !px-2 !py-1 !min-w-0 font-normal"></p-tag>
+                            <p-tag [value]="role" [severity]="getRoleClass(role)" [rounded]="true"
+                                   styleClass="!text-[9px] !px-2 !py-1 !min-w-0 font-normal"></p-tag>
                         }
                     </div>
                 </td>
                 <td>
-                    <p-tag [value]="item.status" [severity]="getStatusClass(item.status)" />
+                    <p-tag [value]="item.status" [severity]="getStatusClass(item.status)"/>
                 </td>
                 <td>{{ item.createdAt | date:'dd/MM/yyyy HH:mm:ss' }}</td>
                 <td>{{ item.updatedAt | date:'dd/MM/yyyy HH:mm:ss' }}</td>
@@ -203,15 +218,15 @@
                         (click)="openModal(item)">
                     </p-button>
                     @if (item.status == 'ACTIVE') {
-                    <p-button
-                        icon="pi pi-trash"
-                        [rounded]="true"
-                        [text]="true"
-                        severity="secondary"
-                        pTooltip="Archiver"
-                        tooltipPosition="top"
-                        (click)="archiveUser(item)">
-                    </p-button>
+                        <p-button
+                            icon="pi pi-trash"
+                            [rounded]="true"
+                            [text]="true"
+                            severity="secondary"
+                            pTooltip="Archiver"
+                            tooltipPosition="top"
+                            (click)="archiveUser(item)">
+                        </p-button>
                     } @else if (item.status == 'LOCKED') {
                         <p-button
                             icon="pi pi-lock-open"
@@ -223,15 +238,15 @@
                             (click)="unlockUser(item)">
                         </p-button>
                     } @else {
-                    <p-button
-                        icon="pi pi-refresh"
-                        [rounded]="true"
-                        [text]="true"
-                        severity="secondary"
-                        pTooltip="Réactiver"
-                        tooltipPosition="top"
-                        (click)="activateUser(item)">
-                    </p-button>
+                        <p-button
+                            icon="pi pi-refresh"
+                            [rounded]="true"
+                            [text]="true"
+                            severity="secondary"
+                            pTooltip="Réactiver"
+                            tooltipPosition="top"
+                            (click)="activateUser(item)">
+                        </p-button>
                     }
                 </td>
             </tr>

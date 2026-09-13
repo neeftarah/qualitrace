@@ -1,6 +1,7 @@
 package com.qualitrace.backend.batch.application.assembler;
 
 import com.qualitrace.backend.batch.application.dto.BatchDetailResponse;
+import com.qualitrace.backend.batch.application.dto.BatchValidationRequest;
 import com.qualitrace.backend.batch.domain.type.BatchStatus;
 import com.qualitrace.backend.batch.infrastructure.api.BatchController;
 import org.jspecify.annotations.NullMarked;
@@ -38,6 +39,7 @@ public class BatchDetailModelAssembler implements RepresentationModelAssembler<B
                         null,
                         null,
                         null,
+                        null,
                         Pageable.unpaged(),
                         new PagedResourcesAssembler<>(null, null)
                 )).withRel("batches"),
@@ -45,7 +47,10 @@ public class BatchDetailModelAssembler implements RepresentationModelAssembler<B
         );
 
         if (batch.status() == BatchStatus.QUARANTINE) {
-            model.add(linkTo(methodOn(BatchController.class).validate(batch.id(), null)).withRel("validate"));
+            model.add(linkTo(methodOn(BatchController.class).validate(
+                    batch.id(),
+                    new BatchValidationRequest(true)
+            )).withRel("validate"));
         } else if (batch.status() == BatchStatus.RELEASED) {
             model.add(linkTo(methodOn(BatchController.class).use(batch.id())).withRel("use"));
         }

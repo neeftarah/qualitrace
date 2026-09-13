@@ -52,16 +52,17 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @RequestMapping("/api/v1/batches")
 public class BatchController {
     private static final Set<String> ALLOWED_SORT_FIELDS = Set.of(
-            "code",
-            "name",
             "internalBatchNumber",
+            "componentId",
             "supplierId",
             "supplierBatchNumber",
             "expiryDate",
             "receptionDate",
             "status",
             "validatedBy",
-            "validationDate"
+            "validationDate",
+            "component.name",
+            "component.supplier.name"
     );
     private final BatchService batchService;
     private final BatchModelAssembler assembler;
@@ -98,6 +99,7 @@ public class BatchController {
     @PreAuthorize("isAuthenticated()")
     public CollectionModel<EntityModel<BatchResponse>> list(
             @RequestParam(required = false) String internalBatchNumber,
+            @RequestParam(required = false) Long componentId,
             @RequestParam(required = false) Long supplierId,
             @RequestParam(required = false) String supplierBatchNumber,
             @RequestParam(required = false) LocalDate expiryFromDate,
@@ -114,6 +116,7 @@ public class BatchController {
         PageQuery pageQuery = PageQueryUtils.toPageQuery(pageable, ALLOWED_SORT_FIELDS);
         BatchFilter filter = new BatchFilter(
                 internalBatchNumber,
+                componentId,
                 supplierId,
                 supplierBatchNumber,
                 expiryFromDate,

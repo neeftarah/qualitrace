@@ -84,6 +84,7 @@ public class BatchRepositoryAdapter implements BatchRepository {
 
         Page<BatchEntity> page = jpaRepository.search(
                 internalRefFilter,
+                filter.componentId(),
                 filter.supplierId(),
                 supplierRefFilter,
                 expiryFrom,
@@ -188,8 +189,8 @@ public class BatchRepositoryAdapter implements BatchRepository {
         entity.setStatus(batch.status());
         entity.setValidatedBy(batch.validatedBy() != null
                 ? entityManager.getReference(
-                        com.qualitrace.backend.user.infrastructure.persistence.entity.UserEntity.class,
-                        batch.validatedBy().id())
+                com.qualitrace.backend.user.infrastructure.persistence.entity.UserEntity.class,
+                batch.validatedBy().id())
                 : null);
         entity.setValidatedAt(batch.validatedAt());
 

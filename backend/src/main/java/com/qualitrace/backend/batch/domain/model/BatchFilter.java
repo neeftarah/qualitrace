@@ -7,6 +7,7 @@ import java.util.UUID;
 
 public record BatchFilter(
         String internalBatchNumber,
+        Long componentId,
         Long supplierId,
         String supplierBatchNumber,
         LocalDate expiryFromDate,

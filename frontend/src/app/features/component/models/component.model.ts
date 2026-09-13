@@ -1,3 +1,9 @@
+export interface ComponentOption {
+    id: string;
+    reference: string;
+    name: string;
+}
+
 export interface ComponentSupplier {
     id: string;
     code: string;
