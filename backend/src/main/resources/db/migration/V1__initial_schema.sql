@@ -136,3 +136,20 @@ ALTER TABLE "batches" ADD FOREIGN KEY ("validated_by") REFERENCES "users" ("id")
 ALTER TABLE "deviations" ADD FOREIGN KEY ("batch_id") REFERENCES "batches" ("id") DEFERRABLE INITIALLY IMMEDIATE;
 ALTER TABLE "analysis_results" ADD FOREIGN KEY ("batch_id") REFERENCES "batches" ("id") DEFERRABLE INITIALLY IMMEDIATE;
 ALTER TABLE "analysis_results" ADD FOREIGN KEY ("specification_id") REFERENCES "control_range_specifications" ("id") DEFERRABLE INITIALLY IMMEDIATE;
+
+-- Insert initial users
+INSERT INTO "users"
+("id", "login", "password", "email", "firstname", "surname", "status", "roles", "version", "created_at")
+VALUES
+(
+    '8b289d81-8824-4554-8f16-7ba3f687abe1',
+    'root',
+    '$2y$10$TmcP7m6NXUz.5xI/tULCmeD3l9GynICd64WnY.5pCbOIN0sDzXb26',
+    'jmoreau.dev+root@gmail.com',
+    'Jérémy',
+    'MOREAU',
+    'ACTIVE',
+    '{ADMIN, SUPPLY, AQ, CQ, PLANNING, PRODUCTION}',
+    0,
+    NOW()
+);

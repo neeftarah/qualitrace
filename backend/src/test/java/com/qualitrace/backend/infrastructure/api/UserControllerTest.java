@@ -89,7 +89,7 @@ class UserControllerTest {
                 .expectHeader().contentType(MediaTypes.HAL_JSON)
                 .expectBody()
                 .jsonPath("$._embedded.users").isArray()
-                .jsonPath("$._embedded.users.length()").isEqualTo(2)
+                .jsonPath("$._embedded.users.length()").isEqualTo(3)
                 .jsonPath("$._embedded.users[?(@.login=='user1')]").exists()
                 .jsonPath("$._embedded.users[?(@.login=='user2')]").exists();
     }

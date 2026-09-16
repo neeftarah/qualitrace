@@ -42,21 +42,6 @@ import static org.springframework.security.test.web.servlet.setup.SecurityMockMv
 @AutoConfigureMockMvc
 @Transactional
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@Sql(statements = "INSERT INTO users" +
-        "(id, login, password, email, firstname, surname, status, roles, version, created_at)" +
-        "VALUES" +
-        "(" +
-        "    '8b289d81-8824-4554-8f16-7ba3f687abe1'," +
-        "    'root'," +
-        "    '$2y$10$TmcP7m6NXUz.5xI/tULCmeD3l9GynICd64WnY.5pCbOIN0sDzXb26'," +
-        "    'jmoreau.dev+root@gmail.com'," +
-        "    'Jérémy'," +
-        "    'MOREAU'," +
-        "    'ACTIVE'," +
-        "    '{ADMIN, SUPPLY, AQ, CQ, PLANNING, PRODUCTION}'," +
-        "    0," +
-        "    NOW()" +
-        ")")
 class AuditTrailControllerTest {
     @Container
     @ServiceConnection

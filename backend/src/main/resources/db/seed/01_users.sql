@@ -2,18 +2,6 @@ INSERT INTO "users"
     ("id", "login", "password", "email", "firstname", "surname", "status", "roles", "version", "created_at")
 VALUES
 (
-    '8b289d81-8824-4554-8f16-7ba3f687abe1',
-    'root',
-    '$2y$10$TmcP7m6NXUz.5xI/tULCmeD3l9GynICd64WnY.5pCbOIN0sDzXb26',
-    'jmoreau.dev+root@gmail.com',
-    'Jérémy',
-    'MOREAU',
-    'ACTIVE',
-    '{ADMIN, SUPPLY, AQ, CQ, PLANNING, PRODUCTION}',
-    0,
-    NOW()
-),
-(
     'c36f5ac1-69c2-4d88-a07a-9afe6046f5ce',
     'admin',
     '$2y$10$sz2GyEI3pGtyve29dLuU9eHlWznkaZNJ2QBsBVl4LVH0BdW5kZRYS',
