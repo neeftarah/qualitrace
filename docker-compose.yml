@@ -1,6 +1,6 @@
 services:
   db:
-    image: postgres:16
+    image: postgres:16-alpine
     restart: always
     container_name: qualitrace-db
     environment:
@@ -15,11 +15,43 @@ services:
       - qualitrace_network
 
   redis:
-    image: redis:8
+    image: redis:8-alpine
     restart: unless-stopped
     container_name: qualitrace-redis
     ports:
       - "6379:6379"
+    networks:
+      - qualitrace_network
+
+  backend:
+    build:
+      context: ./backend
+    container_name: qualitrace-backend
+    depends_on:
+      - db
+      - redis
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/qualitrace
+      SPRING_DATASOURCE_USERNAME: qualitrace_app
+      SPRING_DATASOURCE_PASSWORD: app-secret
+      SPRING_FLYWAY_URL: jdbc:postgresql://db:5432/qualitrace
+      SPRING_FLYWAY_USER: ${POSTGRES_USER:-root}
+      SPRING_FLYWAY_PASSWORD: ${POSTGRES_PASSWORD:-P@ssw0rd}
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+    ports:
+      - "8080:8080"
+    networks:
+      - qualitrace_network
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: qualitrace-frontend
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
     networks:
       - qualitrace_network
 
