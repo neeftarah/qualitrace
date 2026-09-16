@@ -16,4 +16,6 @@ public interface DeviationJpaRepository extends JpaRepository<DeviationEntity, L
     List<DeviationEntity> findAllByBatchId(Long componentId);
 
     boolean existsByBatchIdAndStatus(Long id, DeviationStatus deviationStatus);
+
+    boolean existsByBatchId(Long batchId);
 }

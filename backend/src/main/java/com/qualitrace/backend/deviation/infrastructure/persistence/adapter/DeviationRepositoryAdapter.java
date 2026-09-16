@@ -48,6 +48,11 @@ public class DeviationRepositoryAdapter implements DeviationRepository {
     }
 
     @Override
+    public boolean existsByBatchId(Long id) {
+        return jpaRepository.existsByBatchId(id);
+    }
+
+    @Override
     public List<Deviation> findAllByBatchId(Long id) {
         return jpaRepository.findAllByBatchId(id)
                 .stream().map(this::toDomain).toList();

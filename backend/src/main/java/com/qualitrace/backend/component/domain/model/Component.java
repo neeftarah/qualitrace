@@ -5,6 +5,7 @@ import com.qualitrace.backend.specification.domain.repository.SpecificationRepos
 import com.qualitrace.backend.supplier.domain.model.Supplier;
 import com.qualitrace.backend.component.domain.type.ComponentStatus;
 import com.qualitrace.backend.component.domain.type.ComponentType;
+import com.qualitrace.backend.supplier.domain.type.SupplierStatus;
 
 import java.time.Instant;
 
@@ -22,6 +23,9 @@ public record Component(Long id, ComponentType type, String reference, String na
         }
         if (supplier == null) {
             throw new IllegalArgumentException("Component supplier cannot be null");
+        }
+        if (supplier.status() != SupplierStatus.ACTIVE) {
+            throw new IllegalArgumentException("Supplier must be active to create a new component");
         }
 
         return new Component(
@@ -85,6 +89,9 @@ public record Component(Long id, ComponentType type, String reference, String na
         if (this.status == ComponentStatus.ACTIVE) {
             throw new IllegalStateException(
                     "Seul un composant archivé ou en brouillon peut être réactivé ou rendu disponible (statut actuel : %s)".formatted(this.status));
+        }
+        if (this.supplier.status() != SupplierStatus.ACTIVE) {
+            throw new IllegalArgumentException("Supplier must be active to activate the component");
         }
 
         if(this.status == ComponentStatus.DRAFT) {

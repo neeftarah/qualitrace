@@ -16,6 +16,8 @@ import com.qualitrace.backend.user.domain.model.User;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public record Batch(
         Long id,
@@ -94,9 +96,18 @@ public record Batch(
         if (this.status != BatchStatus.QUARANTINE) {
             throw new IllegalStateException("Seul un composant en quarantaine peut être validé");
         }
-        if (this.getAnalysisStatus(analysisRepository, controlRepository) != AnalysisResultStatus.COMPLETED) {
+
+        List<AnalysisResult> results = analysisRepository.findAllByBatchId(this.id);
+        List<Specification> specs = controlRepository.findByComponent(this.component.id());
+
+        if (computeAnalysisStatus(results, specs) != AnalysisResultStatus.COMPLETED) {
             throw new IllegalStateException("Tous les résultats d'analyses doivent avoir été saisis pour valider un lot");
         }
+
+        if (accept && isNonConforming(results, specs) && !deviationRepository.existsByBatchId(this.id)) {
+            throw new IllegalStateException("Un lot non conforme ne peut être libéré sans déviation associée.");
+        }
+
         if (hasOpenDeviations(deviationRepository)) {
             throw new IllegalStateException("Toutes les déviations doivent être clôturées avant de pouvoir valider un lot");
         }
@@ -126,20 +137,27 @@ public record Batch(
         );
     }
 
-    public AnalysisResultStatus getAnalysisStatus(
-            AnalysisResultRepository analysisRepository,
-            SpecificationRepository controlRepository
-    ) {
-        List<AnalysisResult> results = analysisRepository.findAllByBatchId(this.id);
-        List<Specification> controls = controlRepository.findByComponent(this.component.id());
+    public static boolean isNonConforming(List<AnalysisResult> results, List<Specification> specs) {
+        Map<Long, Specification> specsById = specs.stream()
+                .collect(Collectors.toMap(Specification::id, s -> s));
 
-        if (results.isEmpty()) {
-            return AnalysisResultStatus.PENDING;
-        } else if (results.size() == controls.size()) {
-            return AnalysisResultStatus.COMPLETED;
-        } else {
-            return AnalysisResultStatus.IN_PROGRESS;
-        }
+        return results.stream().anyMatch(result -> {
+            Specification spec = specsById.get(result.specificationId());
+            return spec != null && (result.value() < spec.min() || result.value() > spec.max());
+        });
+    }
+
+    public static AnalysisResultStatus computeAnalysisStatus(List<AnalysisResult> results, List<Specification> specs) {
+        if (results.isEmpty()) return AnalysisResultStatus.PENDING;
+        if (results.size() == specs.size()) return AnalysisResultStatus.COMPLETED;
+        return AnalysisResultStatus.IN_PROGRESS;
+    }
+
+    public AnalysisResultStatus getAnalysisStatus(AnalysisResultRepository analysisRepository, SpecificationRepository controlRepository) {
+        return computeAnalysisStatus(
+                analysisRepository.findAllByBatchId(this.id),
+                controlRepository.findByComponent(this.component.id())
+        );
     }
 
     public boolean hasOpenDeviations(DeviationRepository deviationRepository) {

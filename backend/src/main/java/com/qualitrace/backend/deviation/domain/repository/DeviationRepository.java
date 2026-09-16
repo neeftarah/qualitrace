@@ -8,10 +8,8 @@ import java.util.Optional;
 
 public interface DeviationRepository {
     Optional<Deviation> findById(Long id);
-
     List<Deviation> findAllByBatchId(Long id);
-
     Deviation save(Deviation deviation);
-
     boolean existsByBatchIdAndStatus(Long id, DeviationStatus deviationStatus);
+    boolean existsByBatchId(Long batchId);
 }
