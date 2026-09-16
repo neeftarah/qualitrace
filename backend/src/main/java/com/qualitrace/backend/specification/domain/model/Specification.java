@@ -38,7 +38,7 @@ public record Specification(
         if (max == null) {
             throw new IllegalArgumentException("Control range specification maximum cannot be null");
         }
-        if (min >= max) {
+        if (min > max) {
             throw new IllegalArgumentException("Control range specification minimum must be less than maximum");
         }
         if (componentId == null) {
