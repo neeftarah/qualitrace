@@ -51,7 +51,7 @@ export class BatchDetailComponent implements OnInit {
     }
 
     get canEditAnalysis(): boolean {
-        return this.authService.hasAnyRole(['CQ']);
+        return this.authService.hasAnyRole(['CQ']) && this.batch()?.status === 'QUARANTINE';
     }
 
     toggleDeviationExpand(id: number): void {

@@ -123,12 +123,14 @@
                         [value]="dev.status === 'OPENED' ? 'OUVERTE' : 'FERMÉE'"
                         [severity]="dev.status === 'OPENED' ? 'warn' : 'success'"></p-tag></td>
                     <td>
+                        @if (batch.status == 'QUARANTINE') {
                         <p-button
                             [label]="dev.status === 'OPENED' ? 'Clôturer' : 'Ouvrir'"
                             size="small"
                             [severity]="dev.status === 'OPENED' ? 'danger' : 'success'"
                             (click)="toggleDeviationStatus(dev)">
                         </p-button>
+                        }
                     </td>
                 </tr>
             </ng-template>
