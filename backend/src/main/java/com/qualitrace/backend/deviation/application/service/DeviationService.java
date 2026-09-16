@@ -63,7 +63,7 @@ public class DeviationService {
         AuditContext.setEvent("OPENED");
 
         try {
-            return deviationMapper.toResponse(deviationRepository.save(existing.open()));
+            return deviationMapper.toResponse(deviationRepository.save(existing.open(batchRepository)));
         } finally {
             AuditContext.clear();
         }

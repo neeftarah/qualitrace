@@ -29,7 +29,7 @@ public record Deviation(
         }
         Optional<Batch> batch = batchRepository.findById(batchId);
         if (batch.isEmpty() || batch.get().status() != BatchStatus.QUARANTINE) {
-            throw new IllegalArgumentException("The batch must not have been validated");
+            throw new IllegalArgumentException("The batch must not have been released");
         }
 
         return new Deviation(
@@ -44,7 +44,7 @@ public record Deviation(
     public Deviation update(String comment, BatchRepository batchRepository) {
         Optional<Batch> batch = batchRepository.findById(this.batchId);
         if (batch.isEmpty() || batch.get().status() != BatchStatus.QUARANTINE) {
-            throw new IllegalArgumentException("The batch must not have been validated");
+            throw new IllegalArgumentException("The batch must not have been released");
         }
         return new Deviation(
                 this.id,
@@ -55,9 +55,14 @@ public record Deviation(
         );
     }
 
-    public Deviation open() {
+    public Deviation open(BatchRepository batchRepository) {
         if (this.status == DeviationStatus.OPENED) {
             throw new IllegalStateException("La déviation est déjà ouverte");
+        }
+
+        Optional<Batch> batch = batchRepository.findById(this.batchId);
+        if (batch.isEmpty() || batch.get().status() != BatchStatus.QUARANTINE) {
+            throw new IllegalArgumentException("The batch must not have been released");
         }
 
         return withStatus(DeviationStatus.OPENED);

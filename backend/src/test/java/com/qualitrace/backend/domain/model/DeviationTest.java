@@ -124,7 +124,7 @@ class DeviationTest {
         assertThat(deviation.status()).isEqualTo(DeviationStatus.OPENED);
 
         // OPENED ==> OPENED
-        assertThatException().isThrownBy(deviation::open).isInstanceOf(IllegalStateException.class)
+        assertThatException().isThrownBy(() -> deviation.open(batchRepository)).isInstanceOf(IllegalStateException.class)
                 .withMessage("La déviation est déjà ouverte");
 
         // OPENED ==> CLOSED
@@ -136,7 +136,7 @@ class DeviationTest {
                 .withMessage("La déviation est déjà fermée");
 
         // CLOSED ==> OPENED
-        Deviation reopenedDeviation = closedDeviation.open();
+        Deviation reopenedDeviation = closedDeviation.open(batchRepository);
         assertThat(reopenedDeviation.status()).isEqualTo(DeviationStatus.OPENED);
     }
 
@@ -146,7 +146,7 @@ class DeviationTest {
 
         assertThatException().isThrownBy(() -> Deviation.createNew(1L, "DEV-001", DeviationStatus.OPENED, "Comment", batchRepository))
                 .isInstanceOf(IllegalArgumentException.class)
-                .withMessage("The batch must not have been validated");
+                .withMessage("The batch must not have been released");
     }
 
     @Test
@@ -156,7 +156,7 @@ class DeviationTest {
 
         assertThatException().isThrownBy(() -> deviation.update("Updated", batchRepository))
                 .isInstanceOf(IllegalArgumentException.class)
-                .withMessage("The batch must not have been validated");
+                .withMessage("The batch must not have been released");
     }
 
     private Deviation createDeviation() {
