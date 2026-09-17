@@ -39,6 +39,7 @@ services:
       SPRING_FLYWAY_PASSWORD: ${POSTGRES_PASSWORD:-P@ssw0rd}
       SPRING_DATA_REDIS_HOST: redis
       SPRING_DATA_REDIS_PORT: 6379
+      APP_DEBUG: "false" # true|false : active ou désactive l'affichage détaillé des erreurs dans la console et dans les logs
     ports:
       - "8080:8080"
     networks:

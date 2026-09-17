@@ -1,3 +1,5 @@
+import org.springframework.boot.gradle.tasks.run.BootRun
+
 plugins {
 	java
     jacoco
@@ -93,6 +95,10 @@ sentry {
     } else {
         autoUploadSourceContext.set(false)
     }
+}
+
+tasks.named<BootRun>("bootRun") {
+    environment("APP_DEBUG", "true")
 }
 
 // Configuration de la tâche Sentry

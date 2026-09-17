@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.hibernate.exception.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.expression.spel.SpelEvaluationException;
 import org.springframework.http.*;
@@ -30,6 +31,8 @@ import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+    @Value("${app.debug:false}")
+    private boolean debugEnabled;
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     // Gère spécifiquement les 404 (si configuré)
@@ -209,7 +212,21 @@ public class GlobalExceptionHandler {
         problem.setInstance(URI.create(request.getRequestURI()));
         problem.setProperty("timestamp", Instant.now());
 
-        // Enregistrement de l'erreur dans les logs
+        if (debugEnabled) {
+            Throwable rootCause = ex;
+            while (rootCause.getCause() != null && rootCause.getCause() != rootCause) {
+                rootCause = rootCause.getCause();
+            }
+            problem.setProperty("exception", ex.getClass().getName());
+            problem.setProperty("message", ex.getMessage());
+            problem.setProperty("rootCauseType", rootCause.getClass().getName());
+            problem.setProperty("rootCauseMessage", rootCause.getMessage());
+            problem.setProperty("stackTrace", Arrays.stream(rootCause.getStackTrace())
+                    .limit(15)
+                    .map(StackTraceElement::toString)
+                    .collect(Collectors.joining("\n")));
+        }
+
         log.error("Unhandled exception on {}", request.getRequestURI(), ex);
 
         return problem;
