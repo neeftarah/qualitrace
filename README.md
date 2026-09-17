@@ -58,7 +58,6 @@ Le projet vise à garantir l'intégrité des données (**ALCOA+**) et la traçab
 
 ### Pré-requis
 * Docker & Docker Compose
-* JDK 25 (pour le développement local)
 
 
 ### Récupération du projet
@@ -67,33 +66,57 @@ Le projet vise à garantir l'intégrité des données (**ALCOA+**) et la traçab
 git clone https://github.com/neeftarah/qualitrace.git
 ```
 
-### Lancement des services Docker (Base de données, etc.)
+### Lancement de l'application (services Docker)
 
 ```bash
 docker-compose up -d
 ```
 
-### Build du projet avec live reload (Spring Boot DevTools)
+## Accéder à l'application
+
+### URLs
+- **Frontend :** [http://localhost](http://localhost:8080)
+- **API Swagger :** [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html)
+
+### Compte par défaut
+
+| Login    | Mot de passe | Rôle                                                         |
+|----------|--------------|--------------------------------------------------------------|
+| root     | root         | Tous les rôles (ADMIN, SUPPLY, AQ, CQ, PLANNING, PRODUCTION) |
+
+------------------------------------------------------------------------------------------------------------------------
+
+# Outils de développement [OPTIONNEL]
+
+## Pré-requis
+* Docker & Docker Compose
+* JDK 25 (pour le développement local)
+
+## Build du projet avec live reload
+
+### Build du projet back avec live reload (Spring Boot DevTools)
 ```bash
 .\backend\gradlew.bat -p backend build --continuous -x test --write-locks
 ```
 
-### Lancement de l'application
+### Build du projet front avec live reload
+```bash
+npm run watch
+```
+
+### Lancement de l'application back
 ```bash
 .\backend\gradlew.bat -p backend bootRun
 ```
+
 ### Lancement de l'application front
 ```bash
-.\frontend\gradlew.bat -p backend bootRun
+cd frontend
+npm install
+npm start
 ```
 
-## Accéder à l'application
-
-### URLs
-- **Frontend :** [http://localhost:8080](http://localhost:8080)
-- **API Swagger :** [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html)
-
-### [OPTIONNEL] Peupler la base de données avec des données de test
+### Peupler la base de données avec des données de test
 ```bash
 .\backend\gradlew.bat -p backend seedDb
 ```
