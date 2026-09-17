@@ -4,6 +4,7 @@ import com.qualitrace.backend.batch.application.dto.BatchDetailResponse;
 import com.qualitrace.backend.component.domain.type.ComponentType;
 import net.sf.jasperreports.engine.*;
 import net.sf.jasperreports.engine.data.JRMapCollectionDataSource;
+import net.sf.jasperreports.engine.util.JRLoader;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
@@ -18,7 +19,7 @@ import java.util.Map;
 @Service
 public class JasperBatchPdfExporter {
 
-    private static final String TEMPLATE_PATH = "templates/pdf/batch-certificate.jrxml";
+    private static final String TEMPLATE_PATH = "templates/pdf/batch-certificate.jasper";
 
     public byte[] generateBatchReport(BatchDetailResponse batch) {
         InputStream templateStream;
@@ -31,23 +32,15 @@ public class JasperBatchPdfExporter {
                     .getResourceAsStream(TEMPLATE_PATH);
 
             if (templateStream == null) {
-                throw new IllegalStateException(
-                        "Ressource introuvable sur le ClassLoader : " + TEMPLATE_PATH +
-                                " - Vérifiez la présence du fichier dans build/resources/main/"
-                );
+                throw new IllegalStateException("Ressource introuvable : " + TEMPLATE_PATH);
             }
+
+            jasperReport = (JasperReport) JRLoader.loadObject(templateStream); // au lieu de JasperCompileManager.compileReport(...)
         } catch (Exception e) {
-            throw new RuntimeException("Chargement du template PDF impossible : " + TEMPLATE_PATH, e);
+            throw new RuntimeException("Chargement du rapport PDF impossible : " + e.getMessage(), e);
         }
 
-        // 2. Compilation du template JRXML en mémoire
-        try {
-            jasperReport = JasperCompileManager.compileReport(templateStream);
-        } catch (Exception e) {
-            throw new RuntimeException("Compilation du template PDF impossible : " + e.getMessage(), e);
-        }
-
-        // 3. Préparation des paramètres pour le rapport principal
+        // 2. Préparation des paramètres pour le rapport principal
         try {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
                     .withZone(ZoneId.systemDefault());
