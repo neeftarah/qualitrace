@@ -31,7 +31,7 @@
     },
     "devDependencies": {
         "@angular-devkit/build-angular": "^21",
-        "@angular/cli": "^21",
+        "@angular/cli": "^22",
         "@angular/compiler-cli": "^21",
         "@types/jasmine": "~5.1.0",
         "autoprefixer": "^10.4.20",
